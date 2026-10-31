@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Packages by Air | Wander Hub Ai</title>
+   <link rel="icon" type="image/png" href="templates/logofinal.png">
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: "Plus Jakarta Sans", sans-serif; }
+    .card-hover { transition: transform .22s ease, box-shadow .22s ease; }
+    .card-hover:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(13,40,70,.08); }
+    .fade { transition: opacity .3s ease, transform .3s ease; opacity: 0; transform: translateY(20px); }
+    .fade.show { opacity: 1; transform: translateY(0px); }
+    .modal-center { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+    .toast { position: fixed; right: 20px; bottom: 24px; background: #0f766e; color: white; padding: 8px 12px; border-radius: 999px; box-shadow: 0 6px 30px rgba(12,40,40,0.12); z-index: 9999; }
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-orange-400 via-sky-200 to-orange-100">
+
+  <!-- NAVBAR -->
+  <header class="sticky top-0 z-60 bg-white/80 backdrop-blur-md shadow-md">
+    <div class="container mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-12">
+        <img src="templates/logofinal.png"
+          class="w-10 h-10 rounded-full object-contain bg-white shadow-lg"
+          alt="Wander Hub Logo">
+        <div class="text-orange-700 font-bold text-lg">Wander Hub Ai</div>
+        <nav class="ml-6 hidden md:flex gap-6 text-sm text-gray-700">
+          <a href="local-user.html" class="hover:text-orange-600">Home</a>
+          <a href="packages.html" class="hover:text-orange-600">All Packages</a>
+          <a href="packages-by-air.html" class="text-orange-600 font-semibold border-b-2 border-orange-600">Air Packages</a>
+          <a href="packages-by-road.html" class="hover:text-orange-600">Road Packages</a>
+          <a href="travel-guide.html" class="hover:text-orange-600">Travel Guide</a>
+          <a href="contact-us.html" class="hover:text-orange-600">Contact</a>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button id="goToPackages" class="px-3 py-1 rounded-full bg-white/70 hover:bg-white">Open All Packages</button>
+        <button id="viewCartBtn" class="px-3 py-1 rounded-full bg-gradient-to-r from-orange-500 to-sky-400 text-white">
+          Cart (<span id="cartCount">0</span>)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="container mx-auto px-6 py-8 space-y-8">
+
+    <!-- Hero -->
+    <div class="bg-cover bg-center rounded-2xl overflow-hidden relative"style="background-image: url('templates/K63937-03.avif'); min-height: 350px;">
+      <div class="absolute inset-0 bg-black/30"></div>
+      <div class="p-8 relative text-white">
+        <h1 class="text-3xl md:text-4xl font-bold">Packages by Air</h1>
+        <p class="mt-2 text-lg">Fly & explore Pakistan’s most breathtaking destinations — plus Hajj & Umrah groups.</p>
+      </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="flex gap-6">
+      <button id="filterAll" class="pb-3 border-b-2 border-orange-600 text-orange-600 font-semibold">All</button>
+      <button id="filterDomestic" class="pb-3 text-gray-600 hover:text-orange-600 transition">Domestic Air</button>
+      <button id="filterInternational" class="pb-3 text-gray-600 hover:text-orange-600 transition">International Air</button>
+      <button id="filterHajj" class="pb-3 text-gray-600 hover:text-orange-600 transition">Hajj</button>
+      <button id="filterUmrah" class="pb-3 text-gray-600 hover:text-orange-600 transition">Umrah</button>
+    </div>
+
+    <!-- Packages Grid -->
+    <div id="packagesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+  </main>
+
+  <!-- Modal -->
+  <div id="detailModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 modal-center" aria-hidden="true">
+    <div class="bg-white rounded-2xl w-full max-w-3xl overflow-hidden">
+      <div class="p-6">
+        <div class="flex justify-between items-center">
+          <h3 id="detailTitle" class="text-2xl font-semibold"></h3>
+          <button id="closeDetail" class="text-gray-500 hover:text-gray-800 text-lg" aria-label="Close detail">✕</button>
+        </div>
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div id="detailImages" class="space-y-2"></div>
+          <div>
+            <p id="detailDesc" class="text-gray-700"></p>
+            <div class="mt-4">
+              <span id="detailPrice" class="text-xl font-bold text-orange-600"></span>
+            </div>
+            <div class="mt-6 flex gap-3">
+              <button id="btnAddCart" class="px-5 py-2 bg-gradient-to-r from-orange-500 to-sky-400 text-white font-semibold rounded-full hover:scale-105 transition">Add to Cart</button>
+              <button id="btnOpenPackages" class="px-5 py-2 border border-orange-300 rounded-full">Open in All Packages</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- toast -->
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <!-- FOOTER -->
+  <footer class="text-center py-6 text-sm text-gray-700 bg-white/60 backdrop-blur-md mt-8">
+    <p>© 2025 Wander Hub Ai — Discover Pakistan by Air 🇵🇰</p>
+  </footer>
+
+<script>
+  function openInAllPackages(pkg, sourceType) {
+  localStorage.setItem("wh_open_package", JSON.stringify({
+    ...pkg,
+    source: sourceType
+  }));
+
+  window.location.href = "packages.html";
+}
+
+  /***************
+   * PER-USER KEYS (cart, favourites)
+   ***************/
+  const rawUser = localStorage.getItem("wh_user");
+  let currentUser = null;
+  try {
+    currentUser = rawUser ? JSON.parse(rawUser) : null;
+  } catch (e) {
+    currentUser = null;
+  }
+  const currentUserId = currentUser && currentUser.id ? currentUser.id : null;
+  const userSuffix = currentUserId ? ('_' + currentUserId) : '';
+
+  // keys become per-user like wh_cart_12345
+  const CART_KEY = 'wh_cart' + userSuffix;
+  const FAV_KEY  = 'wh_favs' + userSuffix;
+  const NAV_SEARCH_KEY = 'wh_nav_search';
+  const OPEN_PKG_KEY   = 'wh_open_package';
+
+  /***************
+   * Data (Air) + Hajj & Umrah + extras
+   ***************/
+  const packages = [
+    // domestic / scenic
+    { id:'hunza', type:'domestic', title:'Skardu & Hunza by Air', desc:'6 days aerial tour of Skardu and Hunza.', price:375000, priceLabel:'PKR 375,000', images:['templates/c49f5a8fce10300fd3baa0bacf0f09e82d82f4e8_2_690x310.jpeg'] },
+    { id:'skardu-rt', type:'domestic', title:'Islamabad → Skardu Roundtrip', desc:'2-day domestic air package.', price:120000, priceLabel:'PKR 120,000', images:['templates/monument_islamabad.jpg','https://images.unsplash.com/photo-1620204303492-4972efcb483f?q=80&w=800'] },
+    { id:'gilgit', type:'domestic', title:'Gilgit Express Tour', desc:'3-day air tour from Islamabad to Gilgit.', price:140000, priceLabel:'PKR 140,000', images:['templates/DSC_5404-EFFECTS-e1546177012938-934x934.jpg','https://images.unsplash.com/photo-1620204303492-4972efcb483f?q=80&w=800'] },
+    { id:'naran', type:'domestic', title:'Naran Kaghan Aerial Retreat', desc:'4-day mountain retreat via air + road mix.', price:165000, priceLabel:'PKR 165,000', images:['https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=800'] },
+
+    // international / leisure
+    { id:'karachi-dxb', type:'international', title:'Karachi → Dubai & back', desc:'Fly from Karachi to Dubai, 4 nights stay.', price:250000, priceLabel:'PKR 250,000', images:['templates/aerial-view-dubai-palm-jumeirah-island-united-arab-emirates-aerial-view-dubai-palm-jumeirah-island-uae-137295592.webp','https://images.unsplash.com/photo-1600788871950-7a75c8796f56?q=80&w=800'] },
+    { id:'lahore-kl', type:'international', title:'Lahore → Kuala Lumpur', desc:'5-day package including flight & city tours.', price:320000, priceLabel:'PKR 320,000', images:['templates/images123.jpg'] },
+    { id:'islamabad-ist', type:'international', title:'Islamabad → Istanbul', desc:'6-day Istanbul cultural tour.', price:420000, priceLabel:'PKR 420,000', images:['templates/blue-mosque-Turkey-where-to-stay-in-istanbul.webp'] },
+
+    // additional domestic short-breaks
+    { id:'karachi-beach', type:'domestic', title:'Sindh Beach Weekend', desc:'2-day Karachi & coastal escape.', price:45000, priceLabel:'PKR 45,000', images:['templates/20190407-183906-largejpg.jpg'] },
+    { id:'lahore-city', type:'domestic', title:'Lahore Heritage Short', desc:'1-night heritage & food walk.', price:25000, priceLabel:'PKR 25,000', images:['templates/caption1.jpg'] },
+
+    // Hajj packages
+    { id:'hajj-basic', type:'hajj', title:'Hajj Economy Group 2026', desc:'Standard group Hajj package (flights + 7 nights Makkah/Medina accomodation, shared services). Includes guidance and transport.', price:4950000, priceLabel:'PKR 4,950,000', images:['templates/7abe905adf02c849f94a5bab1953a92f12334.jpg'] },
+    { id:'hajj-premium', type:'hajj', title:'Hajj Premium 2026 (Private)', desc:'Premium package with premium hotels, private transport, dedicated guide and flexible schedule.', price:8950000, priceLabel:'PKR 8,950,000', images:['templates/umrah_600x600.webp'] },
+
+    // Umrah packages
+    { id:'umrah-basic', type:'umrah', title:'Umrah Economy (7 days)', desc:'7-day Umrah package including flights, hotel and guided rituals.', price:185000, priceLabel:'PKR 185,000', images:['templates/images22.jpg'] },
+    { id:'umrah-premium', type:'umrah', title:'Umrah Comfort (10 days)', desc:'10-day Umrah with better hotels and small-group guide.', price:345000, priceLabel:'PKR 345,000', images:['templates/istockphoto-1283384409-612x612.jpg'] },
+
+    // seasonal offers
+    { id:'northern-spr', type:'domestic', title:'Spring Northern Highlights', desc:'7-day aerial & road combo to the northern valleys.', price:295000, priceLabel:'PKR 295,000', images:['https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=800'] },
+    { id:'isl-to-kar', type:'domestic', title:'Islamabad → Karachi Comfort', desc:'2-day flight + city stay for business/leisure.', price:64000, priceLabel:'PKR 64,000', images:['https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800'] }
+  ];
+
+  // DOM refs
+  const packagesGrid = document.getElementById('packagesGrid');
+  const detailModal = document.getElementById('detailModal');
+  const detailTitle = document.getElementById('detailTitle');
+  const detailDesc = document.getElementById('detailDesc');
+  const detailPrice = document.getElementById('detailPrice');
+  const detailImages = document.getElementById('detailImages');
+  const btnAddCart = document.getElementById('btnAddCart');
+  const closeDetail = document.getElementById('closeDetail');
+  const btnOpenPackages = document.getElementById('btnOpenPackages');
+
+  const toast = document.getElementById('toast');
+  const cartCount = document.getElementById('cartCount');
+  const viewCartBtn = document.getElementById('viewCartBtn');
+  const goToPackages = document.getElementById('goToPackages');
+
+  let cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+  let favs = JSON.parse(localStorage.getItem(FAV_KEY) || '[]');
+  let currentPkg = null;
+
+  function showToast(msg, ms=1600){
+    toast.textContent = msg;
+    toast.classList.remove('hidden');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(()=> toast.classList.add('hidden'), ms);
+  }
+
+  function renderPackages(filter='all'){
+    packagesGrid.innerHTML='';
+    packages.forEach(pkg=>{
+      if(filter!=='all' && pkg.type!==filter) return;
+      const card=document.createElement('div');
+      card.className='bg-white/95 rounded-2xl overflow-hidden shadow-lg card-hover fade';
+      const favActive = favs.includes(pkg.id) ? '❤️' : '🤍';
+      card.innerHTML=`
+        <div class="h-48 bg-cover bg-center" style="background-image:url('${pkg.images[0]}');"></div>
+        <div class="p-5">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h3 class="text-xl font-semibold text-gray-800">${pkg.title}</h3>
+              <p class="mt-2 text-sm text-gray-600">${pkg.desc}</p>
+            </div>
+            <div class="text-right">
+              <div class="text-lg font-bold text-orange-600">${pkg.priceLabel}</div>
+              <div class="text-xs text-slate-500">${pkg.type === 'hajj' ? 'Hajj package' : pkg.type === 'umrah' ? 'Umrah package' : 'per package'}</div>
+            </div>
+          </div>
+          <div class="mt-4 flex justify-between items-center">
+            <div class="flex gap-2">
+              <button data-id="${pkg.id}" class="text-sm btnViewDetail px-4 py-2 bg-gradient-to-r from-orange-500 to-sky-400 text-white font-semibold rounded-full">View Details</button>
+              <button data-id="${pkg.id}" class="text-sm btnAddCart px-4 py-2 border border-orange-300 rounded-full">Add to Cart</button>
+            </div>
+            <button data-id="${pkg.id}" class="favBtn text-lg" aria-label="Toggle favorite">${favActive}</button>
+          </div>
+        </div>
+      `;
+      packagesGrid.appendChild(card);
+    });
+
+    // animate-in
+    document.querySelectorAll('.fade').forEach((el,i)=>setTimeout(()=>el.classList.add('show'), 50 + i*60));
+
+    // attach handlers
+    document.querySelectorAll('.btnViewDetail').forEach(btn=>{
+      btn.addEventListener('click', (e)=> {
+        const id = e.currentTarget.dataset.id;
+        showDetail(id);
+      });
+    });
+    document.querySelectorAll('.btnAddCart').forEach(btn=>{
+      btn.addEventListener('click', (e)=> {
+        const id = e.currentTarget.dataset.id;
+        addToCart(id);
+      });
+    });
+    document.querySelectorAll('.favBtn').forEach(btn=>{
+      btn.addEventListener('click', (e)=> {
+        const id = e.currentTarget.dataset.id;
+        toggleFav(id, e.currentTarget);
+      });
+    });
+
+    updateCartCount();
+  }
+
+  function showDetail(pkgId){
+    const pkg = packages.find(p=>p.id===pkgId);
+    if(!pkg) return;
+    currentPkg = pkg;
+    detailTitle.textContent = pkg.title;
+    detailDesc.textContent = pkg.desc;
+    detailPrice.textContent = pkg.priceLabel;
+    detailImages.innerHTML = '';
+    pkg.images.forEach(src=>{
+      const img = document.createElement('img');
+      img.src = src;
+      img.className = 'w-full rounded-lg mb-2';
+      detailImages.appendChild(img);
+    });
+    detailModal.classList.remove('hidden');
+    detailModal.setAttribute('aria-hidden','false');
+  }
+
+  closeDetail.addEventListener('click', ()=> {
+    detailModal.classList.add('hidden');
+    detailModal.setAttribute('aria-hidden','true');
+  });
+
+  function addToCart(id){
+    const pkg = packages.find(p=>p.id===id);
+    if(!pkg) return;
+    cart.push({ id: pkg.id, title: pkg.title, price: pkg.price });
+    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    showToast('Added to cart');
+    updateCartCount();
+  }
+
+  function updateCartCount(){
+    cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+    cartCount.textContent = cart.length;
+  }
+
+  function toggleFav(id, btnEl){
+    if(favs.includes(id)) {
+      favs = favs.filter(x=>x!==id);
+      btnEl.textContent = '🤍';
+      showToast('Removed from wishlist');
+    } else {
+      favs.push(id);
+      btnEl.textContent = '❤️';
+      showToast('Added to wishlist');
+    }
+    localStorage.setItem(FAV_KEY, JSON.stringify(favs));
+  }
+
+  // On modal "Open in All Packages"
+ btnOpenPackages.addEventListener("click", () => {
+  if (!currentPkg) return;
+  openInAllPackages(currentPkg, "air"); // road page → "road"
+});
+
+
+  // header buttons
+  viewCartBtn.addEventListener('click', ()=> {
+    localStorage.setItem(NAV_SEARCH_KEY, '');
+    window.location.href = 'packages.html';
+  });
+  goToPackages.addEventListener('click', ()=> window.location.href = 'packages.html');
+
+  // add to cart inside modal
+  btnAddCart.addEventListener('click', ()=> {
+    if(!currentPkg) return;
+    addToCart(currentPkg.id);
+    detailModal.classList.add('hidden');
+  });
+
+  // filters
+  document.getElementById('filterAll').addEventListener('click', ()=> { renderPackages('all'); setActiveFilter('filterAll');});
+  document.getElementById('filterDomestic').addEventListener('click', ()=> { renderPackages('domestic'); setActiveFilter('filterDomestic');});
+  document.getElementById('filterInternational').addEventListener('click', ()=> { renderPackages('international'); setActiveFilter('filterInternational');});
+  document.getElementById('filterHajj').addEventListener('click', ()=> { renderPackages('hajj'); setActiveFilter('filterHajj');});
+  document.getElementById('filterUmrah').addEventListener('click', ()=> { renderPackages('umrah'); setActiveFilter('filterUmrah');});
+
+  function setActiveFilter(activeId){
+    ['filterAll','filterDomestic','filterInternational','filterHajj','filterUmrah'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(id===activeId){ el.classList.add('border-orange-600','text-orange-600','font-semibold'); }
+      else{ el.classList.remove('border-orange-600','text-orange-600','font-semibold'); }
+    });
+  }
+
+  // initial
+  renderPackages('all');
+  setActiveFilter('filterAll');
+
+  /*****************************************
+   * Checkout + custom package button helper
+   *****************************************/
+  (function(){
+    // helper utilities
+    function loadCart(){ try{ return JSON.parse(localStorage.getItem(CART_KEY)||'[]'); }catch(e){ return []; } }
+    function saveCart(arr){ localStorage.setItem(CART_KEY, JSON.stringify(arr)); }
+    function loadPayments(){ try{ return JSON.parse(localStorage.getItem('payments')||'[]'); }catch(e){ return []; } }
+    function savePayments(arr){ localStorage.setItem('payments', JSON.stringify(arr)); localStorage.setItem('payments_last_update', Date.now().toString()); }
+    function loadHistory(){ try{ return JSON.parse(localStorage.getItem('wh_history')||'[]'); }catch(e){ return []; } }
+    function saveHistory(arr){ localStorage.setItem('wh_history', JSON.stringify(arr)); }
+
+    function formatRs(n){ return 'Rs ' + Number(n||0).toLocaleString(); }
+    function showGlobalToast(msg, ms=1600){
+      const t = document.getElementById('toast');
+      if(t){
+        t.textContent = msg;
+        t.classList.remove('hidden');
+        clearTimeout(t._t);
+        t._t = setTimeout(()=> t.classList.add('hidden'), ms);
+      } else {
+        alert(msg);
+      }
+    }
+
+    // 1) Inject "Custom Travel Package" button in navbar
+    (function injectCustomBtn(){
+      try {
+        const rightControls = document.querySelector('header .container .flex.items-center.gap-3');
+        if(!rightControls) return;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.id = 'customPkgBtn';
+        btn.className =
+          'px-4 py-1 rounded-full bg-gradient-to-r from-orange-500 to-sky-400 text-white font-semibold shadow-md hover:scale-[1.03] transition';
+        btn.textContent = 'Custom Travel Package';
+
+        const openBtn = document.getElementById('goToPackages');
+        if (openBtn) {
+          openBtn.insertAdjacentElement('afterend', btn);
+        } else {
+          rightControls.appendChild(btn);
+        }
+
+        btn.addEventListener('click', () => {
+          localStorage.setItem('wh_from_custom_btn', JSON.stringify({ ts: Date.now() }));
+          window.location.href = 'request-package.html';
+        });
+
+      } catch (e) {
+        console.warn('injectCustomBtn error', e);
+      }
+    })();
+
+    // 2) Checkout floating button (per-user cart)
+    const checkoutId = 'wh_checkout_btn';
+    function createCheckoutButton(){
+      if(document.getElementById(checkoutId)) return;
+      const btn = document.createElement('button');
+      btn.id = checkoutId;
+      btn.type = 'button';
+      btn.className = 'fixed right-6 bottom-6 z-80 px-5 py-3 rounded-full shadow-lg flex items-center gap-3';
+      btn.style.background = 'linear-gradient(90deg, #f97316, #38bdf8)';
+      btn.style.color = 'white';
+      btn.style.fontWeight = '600';
+      btn.style.display = 'none';
+      btn.innerHTML =
+        `<span id="${checkoutId}_label">Proceed to Checkout</span>
+         <span id="${checkoutId}_count" style="font-size:0.95rem;opacity:0.95;background:rgba(255,255,255,0.12);padding:4px 8px;border-radius:999px;margin-left:8px;"></span>`;
+      document.body.appendChild(btn);
+      btn.addEventListener('click', startCheckoutFlow);
+    }
+
+    function refreshCheckoutVisibility(){
+      const arr = loadCart();
+      const btn = document.getElementById(checkoutId);
+      if(!btn) return;
+      if(arr && arr.length){
+        btn.style.display = 'flex';
+        const total = arr.reduce((s,i)=> s + (Number(i.price)||0), 0);
+        document.getElementById(`${checkoutId}_count`).textContent = `${arr.length} • ${formatRs(total)}`;
+      } else {
+        btn.style.display = 'none';
+      }
+    }
+
+    async function startCheckoutFlow(){
+      const cart = loadCart();
+      if(!cart || !cart.length) {
+        showGlobalToast('Your cart is empty');
+        return;
+      }
+
+      let email = (currentUser && currentUser.email) ? currentUser.email : '';
+      email = prompt('Enter your email to receive receipt / booking updates (required):', email);
+      if(!email) { showGlobalToast('Email required for checkout'); return; }
+
+      const bookingId = 'bk_' + Date.now();
+      const booking = {
+        id: bookingId,
+        items: cart.map(i => ({ id: i.id, title: i.title, price: i.price })),
+        days: null,
+        people: null,
+        totals: {
+          subtotal: cart.reduce((s,i)=> s + (Number(i.price)||0), 0),
+          tax: 0,
+          total: cart.reduce((s,i)=> s + (Number(i.price)||0), 0)
+        },
+        currency: 'PKR',
+        email,
+        userId: currentUserId || null,
+        createdAt: new Date().toISOString(),
+        notes: 'Checkout from Packages by Air (cart)'
+      };
+updateProfileAfterBooking();
+
+      try {
+        const hist = loadHistory();
+        hist.unshift(booking);
+        if(hist.length > 100) hist.length = 100;
+        saveHistory(hist);
+        localStorage.setItem('wh_history_last_update', Date.now().toString());
+      } catch(e){ console.warn('save history failed', e); }
+
+      try {
+        const payments = loadPayments();
+        const paymentId = 'pay_' + Date.now();
+        const payment = {
+          id: paymentId,
+          bookingId: bookingId,
+          packageIds: cart.map(i=>i.id),
+          packageTitles: cart.map(i=>i.title),
+          email,
+          userId: currentUserId || null,
+          amount: booking.totals.total,
+          currency: booking.currency,
+          status: 'Pending',
+          createdAt: new Date().toISOString(),
+          notes: 'Created from Packages-by-Air checkout'
+        };
+        payments.unshift(payment);
+        savePayments(payments);
+        localStorage.setItem('payments_new', Date.now().toString());
+
+        // clear this user's cart
+        localStorage.removeItem(CART_KEY);
+
+        window.location.href = 'payment.html?pid=' + encodeURIComponent(paymentId);
+      } catch(err){
+        console.error('checkout/create payment failed', err);
+        showGlobalToast('Checkout failed. Try again.');
+      }
+    }
+
+    function wireStorageListener(){
+      window.addEventListener('storage', (ev) => {
+        if(ev.key === CART_KEY || ev.key === 'payments' || ev.key === 'wh_history'){
+          refreshCheckoutVisibility();
+        }
+      });
+    }
+
+    createCheckoutButton();
+    refreshCheckoutVisibility();
+    wireStorageListener();
+    document.addEventListener('visibilitychange', refreshCheckoutVisibility);
+    window.addEventListener('focus', refreshCheckoutVisibility);
+
+    // keep in sync if some other script mutates cart
+    let lastCartLen = (loadCart()||[]).length;
+    setInterval(()=>{
+      const len = (loadCart()||[]).length;
+      if(len !== lastCartLen){
+        lastCartLen = len;
+        refreshCheckoutVisibility();
+      }
+    }, 700);
+  })();
+  btnOpenPackages.addEventListener('click', () => {
+  if(!currentPkg) return;
+
+  localStorage.setItem('wh_open_package', JSON.stringify({
+    id: currentPkg.id,
+    title: currentPkg.title,
+    desc: currentPkg.desc,
+    price: currentPkg.price,
+    priceLabel: currentPkg.priceLabel,
+    images: currentPkg.images,
+    source: 'air' // change to 'road' in road file
+  }));
+
+  window.location.href = 'packages.html';
+});
+function updateProfileAfterBooking() {
+  const rawUser = localStorage.getItem("wh_user");
+  if (!rawUser) return;
+
+  const user = JSON.parse(rawUser);
+  const profileKey = `wanderhub_profile_v1_${user.id}`;
+
+  let profile = {};
+  try {
+    profile = JSON.parse(localStorage.getItem(profileKey)) || {};
+  } catch {}
+
+  // ✅ update trips & points
+  profile.trips = (profile.trips || 0) + 1;
+  profile.points = (profile.points || 0) + 5;
+
+  localStorage.setItem(profileKey, JSON.stringify(profile));
+}
+
+</script>
+</body>
+</html>

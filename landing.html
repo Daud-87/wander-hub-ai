@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wander Hub Ai | Smart Travel Companion</title>
+
+  <link rel="icon" type="image/png" href="templates/logofinal.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body { font-family: "Plus Jakarta Sans", sans-serif; }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-orange-300 via-sky-200 to-orange-100 text-gray-800 flex flex-col">
+
+  <!-- NAVBAR -->
+  <header class="bg-white/70 backdrop-blur-md shadow-md px-8 py-4 flex justify-between items-center">
+    <div class="flex items-center gap-3 text-orange-700 font-extrabold text-xl">
+      <img src="templates/logofinal.png" class="w-10 h-10 rounded-full bg-white shadow" />
+      Wander Hub Ai
+    </div>
+
+    <nav class="hidden md:flex gap-6 text-sm font-semibold">
+      <a href="#features" class="hover:text-orange-600">Features</a>
+      <a href="#roles" class="hover:text-orange-600">Roles</a>
+      <a href="#about" class="hover:text-orange-600">About</a>
+    </nav>
+
+    <a href="login.html"
+       class="bg-gradient-to-r from-orange-500 to-sky-400 text-white px-5 py-2 rounded-full font-semibold shadow hover:scale-105 transition">
+      Login
+    </a>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="relative flex flex-col items-center justify-center text-center px-6 py-28 overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-r from-orange-300 via-orange-200 to-sky-300"></div>
+    <div class="absolute inset-0 bg-white/20 backdrop-blur-sm"></div>
+
+    <div class="relative z-10 max-w-4xl">
+      <h1 class="text-4xl md:text-6xl font-extrabold leading-tight">
+        <span class="text-orange-700">Discover Pakistan</span><br>
+        <span class="text-sky-700">with Wander Hub Ai</span>
+      </h1>
+
+      <p class="mt-6 text-lg md:text-xl text-gray-700 leading-relaxed">
+        Wander Hub Ai is an <span class="font-semibold text-orange-600">AI-powered smart travel platform</span>
+        designed to transform how people explore Pakistan. It connects travelers with verified local guides,
+        intelligent assistance, real-time communication, and data-driven travel insights.
+      </p>
+
+      <p class="mt-4 text-gray-600">
+        Smart Planning • Intelligent Assistance • Seamless Travel Experience
+      </p>
+
+      <div class="mt-12 flex justify-center">
+        <a href="login.html"
+           class="inline-flex items-center justify-center
+                  bg-gradient-to-r from-orange-500 to-sky-400
+                  text-white px-12 py-4 rounded-full text-lg font-bold
+                  shadow-2xl hover:scale-110 transition-transform duration-300">
+          Get Started
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CORE FEATURES -->
+  <section id="features"
+    class="py-24 px-6 bg-gradient-to-br from-orange-200 via-sky-100 to-orange-200">
+    <h2 class="text-3xl font-bold text-center text-orange-700 mb-14">
+      Core Features
+    </h2>
+
+    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
+
+      <!-- Cards remain white (correct UX) -->
+      <div class="bg-white rounded-2xl shadow-xl p-7 hover:scale-105 transition">
+        <h3 class="text-xl font-semibold text-sky-700 mb-2">AI Travel Chatbot</h3>
+        <p class="text-gray-600">Intelligent chatbot assisting users with travel queries and guidance.</p>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-xl p-7 hover:scale-105 transition">
+        <h3 class="text-xl font-semibold text-sky-700 mb-2">Language Translator</h3>
+        <p class="text-gray-600">Built-in translation for smooth communication across regions.</p>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-xl p-7 hover:scale-105 transition">
+        <h3 class="text-xl font-semibold text-sky-700 mb-2">Weather Forecasting</h3>
+        <p class="text-gray-600">Real-time weather updates for safe and smart travel planning.</p>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-xl p-7 hover:scale-105 transition">
+        <h3 class="text-xl font-semibold text-sky-700 mb-2">Voice Recognition</h3>
+        <p class="text-gray-600">Hands-free interaction for searching and navigation.</p>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-xl p-7 hover:scale-105 transition">
+        <h3 class="text-xl font-semibold text-sky-700 mb-2">AI Prediction System</h3>
+        <p class="text-gray-600">Predicts travel trends and popular destinations intelligently.</p>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-xl p-7 hover:scale-105 transition">
+        <h3 class="text-xl font-semibold text-sky-700 mb-2">Currency Converter</h3>
+        <p class="text-gray-600">Instant currency conversion for traveler convenience.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ROLES -->
+  <section id="roles"
+    class="py-20 px-6 text-center bg-gradient-to-r from-sky-100 via-orange-100 to-sky-100">
+    <h2 class="text-3xl font-bold text-orange-700 mb-10">User Roles</h2>
+
+    <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+
+      <div class="bg-white rounded-xl shadow-lg p-6">
+        <h3 class="font-bold text-lg text-sky-600 mb-2">User</h3>
+        <p class="text-gray-600">Explore destinations and book guides easily.</p>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-lg p-6">
+        <h3 class="font-bold text-lg text-sky-600 mb-2">Guider</h3>
+        <p class="text-gray-600">Manage bookings and provide travel services.</p>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-lg p-6">
+        <h3 class="font-bold text-lg text-sky-600 mb-2">Admin</h3>
+        <p class="text-gray-600">Monitor and control the entire platform.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+ <section id="about"
+    class="py-16 px-6 text-center bg-gradient-to-br from-orange-100 via-sky-50 to-orange-100">
+    <h2 class="text-3xl font-bold text-orange-700 mb-4">About the Project</h2>
+    <p class="max-w-4xl mx-auto text-gray-700 text-lg leading-relaxed">
+      Wander Hub Ai is a Final Year Project developed to address real-world travel
+      management challenges by integrating modern web technologies with artificial
+      intelligence. The platform provides an intelligent and user-friendly solution
+      for travelers, guides, and administrators through role-based dashboards.
+      <br><br>
+      The system focuses on smart automation, secure authentication, intelligent
+      recommendations, and real-time communication while promoting local tourism
+      in Pakistan. Wander Hub Ai aims to enhance travel experiences by making
+      planning, communication, and decision-making more efficient and accessible.
+    </p>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-white/80 backdrop-blur-md text-center py-4 text-sm text-gray-600">
+    © 2025 Wander Hub Ai — All Rights Reserved
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat with Guide | Wander Hub Ai</title>
+ <link rel="icon" type="image/png" href="templates/logofinal.png">
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body{
+      font-family:"Plus Jakarta Sans",sans-serif;
+      background:linear-gradient(to bottom,#f97316,#38bdf8,#f97316);
+      min-height:100vh;
+    }
+    .chat-wrapper{
+      max-width:900px;
+      margin:2rem auto;
+      background:rgba(255,255,255,0.95);
+      border-radius:1rem;
+      box-shadow:0 10px 20px rgba(0,0,0,0.1);
+      display:flex;
+      flex-direction:column;
+      height:78vh;
+      overflow:hidden;
+    }
+    .chat-header, .chat-footer{
+      padding:1rem;
+      display:flex;
+      align-items:center;
+      gap:1rem;
+      border-bottom:1px solid #eee;
+    }
+    .chat-body{
+      flex:1;
+      overflow:auto;
+      padding:1rem;
+      background:linear-gradient(#fff,#fafafa);
+    }
+    .message{
+      margin-bottom:1rem;
+      display:flex;
+      gap:0.75rem;
+    }
+    .message.agent .bubble{
+      background:#f4ede6;
+      color:#1d140c;
+      padding:.75rem 1rem;
+      border-radius:1rem;
+      max-width:70%;
+    }
+    .message.user{
+      justify-content:flex-end;
+    }
+    .message.user .bubble{
+      background:linear-gradient(90deg,#06b6d4,#f97316);
+      color:white;
+      padding:.75rem 1rem;
+      border-radius:1rem;
+      max-width:70%;
+    }
+    .small-muted{ color:#6b6b6b; font-size:.95rem; }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <div class="chat-wrapper" data-aos="fade-up">
+    <div class="chat-header">
+      <img id="guideAvatar" src="" alt="guide avatar" class="w-12 h-12 rounded-full object-cover" />
+      <div>
+        <h2 id="guideName" class="text-lg font-bold text-gray-800">Guide</h2>
+        <div class="small-muted" id="guideMeta">Online</div>
+      </div>
+      <div class="ml-auto text-right text-xs small-muted">
+        <div id="convMeta"></div>
+        <a href="travel-guide.html" class="text-sky-600 underline">← Back to guides</a>
+      </div>
+    </div>
+
+    <div id="chatBody" class="chat-body"></div>
+
+    <div class="chat-footer">
+      <input id="chatInput" type="text" placeholder="Type a message..." class="flex-1 px-4 py-2 border rounded-full focus:outline-none" />
+      <button id="sendBtn" class="px-4 py-2 rounded-full" style="background:linear-gradient(90deg,#f97316,#06b6d4); color:white;">Send</button>
+    </div>
+  </div>
+
+  <footer class="text-center py-6 bg-white/60 backdrop-blur-md mt-auto">
+    © 2025 Wander Hub Ai — All Rights Reserved
+  </footer>
+
+<script>
+AOS.init({ duration:600, once:true });
+
+const MSG_KEY = 'wanderhub_messages_v1';
+const PROFILE_KEY = 'wanderhub_profile_v1';
+const LASTREAD_KEY = 'wanderhub_lastread_v1';
+
+/* query helpers */
+function getQuery(key){ return (new URLSearchParams(window.location.search)).get(key); }
+const guideName = getQuery('guide') || 'Guide';
+const guideAvatar = getQuery('avatar') || 'https://via.placeholder.com/100';
+
+document.getElementById('guideName').innerText = guideName;
+document.getElementById('guideAvatar').src = guideAvatar;
+
+/* storage helpers */
+function loadJSON(key){ try{ const r = localStorage.getItem(key); return r? JSON.parse(r): null; }catch(e){ return null; } }
+function saveJSON(key,val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+
+/* unified profile: prefer wh_user, sync with PROFILE_KEY */
+function loadProfile(){
+  let p = loadJSON(PROFILE_KEY) || {};
+  try {
+    const whRaw = localStorage.getItem('wh_user');
+    if (whRaw) {
+      const u = JSON.parse(whRaw);
+      if (u && u.name) {
+        p.name = u.name;
+        saveJSON(PROFILE_KEY, p);
+        return p;
+      }
+    }
+  } catch(e){}
+
+  if(!p.name){
+    const nm = prompt('Enter your name to chat (demo):') || `Guest${Math.floor(Math.random()*1000)}`;
+    p.name = nm;
+    saveJSON(PROFILE_KEY, p);
+  }
+  return p;
+}
+
+let profile = loadProfile();
+document.getElementById('convMeta').innerText = `You: ${profile.name}`;
+
+/* last read helpers (for unread badges) */
+function getLastReads(){ return loadJSON(LASTREAD_KEY) || {}; }
+function setLastRead(convId, iso){ const lr = getLastReads(); lr[convId] = iso; saveJSON(LASTREAD_KEY, lr); }
+
+/* messages helpers */
+function loadMessages(){ return loadJSON(MSG_KEY) || {}; }
+function saveMessages(obj){ saveJSON(MSG_KEY, obj); }
+
+let convId = `${profile.name}__${guideName}`;
+
+/* render chat + mark as read */
+function renderChat(){
+  const body = document.getElementById('chatBody');
+  body.innerHTML = '';
+  const all = loadMessages();
+  const conv = all[convId] || { messages: [], meta: { userName: profile.name, guideName, created: new Date().toISOString() } };
+
+  if(conv.messages.length === 0){
+    const w = document.createElement('div');
+    w.className = 'message agent';
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    b.innerText = `Hi ${profile.name}! You're chatting with ${guideName}. Say hi 👋`;
+    w.appendChild(b);
+    body.appendChild(w);
+  } else {
+    conv.messages.forEach(m=>{
+      const wrapper = document.createElement('div');
+      wrapper.className = 'message';
+      if(m.from === 'user') wrapper.classList.add('user'); else wrapper.classList.add('agent');
+      const bubble = document.createElement('div'); bubble.className = 'bubble'; bubble.innerText = m.text;
+      const meta = document.createElement('div'); meta.className = 'small-muted'; meta.style.fontSize='0.8rem'; meta.style.marginTop='.25rem';
+      meta.innerText = `${m.senderName || (m.from==='user'?'You':'Guide')} · ${new Date(m.created).toLocaleString()}`;
+      wrapper.appendChild(bubble); wrapper.appendChild(meta);
+      body.appendChild(wrapper);
+    });
+  }
+  body.scrollTop = body.scrollHeight;
+
+  // mark all as read for this conv
+  setLastRead(convId, new Date().toISOString());
+}
+
+/* send message */
+document.getElementById('sendBtn').addEventListener('click', sendUserMsg);
+document.getElementById('chatInput').addEventListener('keypress', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); sendUserMsg(); }});
+
+function sendUserMsg(){
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim(); if(!text) return;
+  const store = loadMessages();
+  if(!store[convId]) store[convId] = { messages: [], meta: { userName: profile.name, guideName, created: new Date().toISOString() } };
+  store[convId].messages.push({ from:'user', senderName: profile.name, text, created: new Date().toISOString() });
+  saveMessages(store);
+  input.value = '';
+  renderChat();
+}
+
+/* poll for guide replies and other changes */
+setInterval(renderChat, 900);
+
+/* initial */
+renderChat();
+</script>
+</body>
+</html>

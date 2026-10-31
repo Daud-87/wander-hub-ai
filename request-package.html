@@ -1,0 +1,861 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Request Package | Wander Hub Ai — Full Feature</title>
+ <link rel="icon" type="image/png" href="templates/logofinal.png">
+  <!-- Tailwind & font -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Leaflet CSS (public) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+  <style>
+    :root{
+      --orange-500:#f97316; --orange-600:#ea580c; --sky-400:#38bdf8; --muted:#6b7280;
+      --card-bg: rgba(255,255,255,0.94);
+    }
+    body { font-family: "Plus Jakarta Sans", sans-serif; }
+    .glass { background: var(--card-bg); backdrop-filter: blur(6px); box-shadow: 0 10px 30px rgba(2,6,23,0.06); border-radius: 1rem; }
+    .toast { position: fixed; right: 20px; bottom: 24px; background: linear-gradient(90deg,var(--orange-600),var(--orange-500)); color:white; padding:10px 14px; border-radius:999px; box-shadow:0 8px 30px rgba(2,6,23,.12); z-index:9999; }
+    .focus-ring:focus { outline: none; box-shadow: 0 0 0 4px rgba(249,115,22,0.12); border-color: var(--orange-600); }
+
+    /* Modal & map sizes */
+    #mapModal { display: none; }          /* hidden by default */
+    #mapModal.flex { display: flex; }     /* toggled when open */
+    .modal-panel { max-width: 960px; width: 96%; height: 84vh; overflow: hidden; }
+
+    #leafletMapFull { width: 100%; height: calc(100% - 110px); border-radius: 12px; }
+    #miniMap { width: 100%; height: 160px; border-radius: 8px; }
+
+    /* ensure leaflet popups appear above overlays and preview */
+    .leaflet-container { z-index: 30; }
+    #miniMap .leaflet-container { z-index: 15; }
+
+    @media (max-width: 640px) {
+      .modal-panel { width: 96%; height: 78vh; }
+      #leafletMapFull { height: calc(100% - 120px); }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-orange-400 via-sky-200 to-orange-100 flex flex-col text-[#06393a]">
+
+  <!-- Header -->
+  <header class="flex items-center justify-between px-6 md:px-10 py-4 bg-white/80 backdrop-blur-md shadow-md">
+    <div class="flex items-center gap-3 text-orange-700 font-bold text-lg">
+      <img src="templates/logofinal.png"
+           class="w-10 h-10 rounded-full object-contain bg-white shadow-lg"
+           alt="Wander Hub Logo">
+      Wander Hub Ai
+    </div>
+    <nav class="hidden md:flex items-center gap-8 text-gray-700 font-medium">
+      <a href="local-user.html" class="hover:text-orange-600 transition">Home</a>
+      <a href="packages-by-air.html" class="hover:text-orange-600 transition">Air Packages</a>
+      <a href="packages-by-road.html" class="hover:text-orange-600 transition">Road Packages</a>
+      <a href="travel-guide.html" class="hover:text-orange-600 transition">Travel Guide</a>
+      <a href="about-us.html" class="hover:text-orange-600 transition">About Us</a>
+      <a href="contact-us.html" class="hover:text-orange-600 transition">Contact</a>
+    </nav>
+    <div class="flex items-center gap-3">
+      <button id="viewRequestsBtn" class="px-3 py-1 rounded-full bg-gradient-to-r from-orange-500 to-sky-400 text-white text-sm">View Requests</button>
+      <button id="goToPackages" class="px-3 py-1 rounded-full bg-white/70 hover:bg-white text-sm">All Packages</button>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto p-6 w-full">
+    <div class="glass rounded-3xl p-8 shadow-2xl">
+      <h1 class="text-2xl md:text-3xl font-bold text-orange-700 text-center mb-2">Request a Custom Travel Package</h1>
+      <p class="text-sm text-[var(--muted)] text-center mb-6">Choose a popular destination or pick an exact spot on the map (public OSM & Nominatim).</p>
+
+      <!-- Form -->
+      <form id="packageRequestForm" class="space-y-5" novalidate>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="userName" class="block text-sm font-medium mb-1">Full name</label>
+            <input id="userName" name="userName" type="text" required class="w-full h-12 rounded-xl border border-white/60 bg-sky-50 px-3 focus:ring-0 focus:outline-none" />
+          </div>
+          <div>
+            <label for="userEmail" class="block text-sm font-medium mb-1">Email</label>
+            <input id="userEmail" name="userEmail" type="email" required class="w-full h-12 rounded-xl border border-white/60 bg-sky-50 px-3 focus:ring-0 focus:outline-none" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="destination" class="block text-sm font-medium mb-1">Choose a popular destination</label>
+            <select id="destination" name="destination" class="w-full h-12 rounded-xl border border-white/60 bg-sky-50 px-3 focus:ring-0 focus:outline-none">
+              <option value="">— Select a popular destination —</option>
+              <optgroup label="Northern Pakistan">
+                <option>Hunza Valley</option>
+                <option>Karimabad, Hunza</option>
+                <option>Attabad Lake</option>
+                <option>Skardu</option>
+                <option>Shangrila Resort (Skardu)</option>
+                <option>Deosai National Park</option>
+                <option>Fairy Meadows</option>
+                <option>Naltar Valley</option>
+                <option>Gilgit</option>
+                <option>Chitral</option>
+              </optgroup>
+              <optgroup label="North-East & Kashmir">
+                <option>Neelum Valley</option>
+                <option>Muzaffarabad</option>
+                <option>Rawalakot</option>
+                <option>Gurez</option>
+              </optgroup>
+              <optgroup label="North-West & KPK">
+                <option>Swat</option>
+                <option>Malam Jabba</option>
+                <option>Kumrat Valley</option>
+                <option>Chilas</option>
+              </optgroup>
+              <optgroup label="Punjab & Nearby">
+                <option>Murree</option>
+                <option>Galliyat (Ghora Gali)</option>
+                <option>Lahore (city)</option>
+                <option>Rawalpindi/Islamabad</option>
+              </optgroup>
+              <optgroup label="Sindh & South">
+                <option>Karachi</option>
+                <option>Mohenjo-daro</option>
+                <option>Hingol National Park</option>
+              </optgroup>
+              <optgroup label="International Favorites">
+                <option>Dubai, UAE</option>
+                <option>Istanbul, Turkey</option>
+                <option>Bangkok, Thailand</option>
+                <option>Maldives</option>
+                <option>London, UK</option>
+                <option>Paris, France</option>
+                <option>Kuala Lumpur, Malaysia</option>
+                <option>Singapore</option>
+              </optgroup>
+              <optgroup label="Adventure & Trekking">
+                <option>K2 Base Camp trek</option>
+                <option>Nanga Parbat base</option>
+                <option>Ratti Gali Lake</option>
+              </optgroup>
+              <optgroup label="Coastal & Beaches">
+                <option>Gwadar</option>
+                <option>Ormara</option>
+                <option>Sandspit Beach</option>
+              </optgroup>
+            </select>
+            <div class="mt-2 text-xs text-gray-500">If you want a precise pick, use "Pick on map" to choose an exact spot.</div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">Specific location (custom)</label>
+            <input id="customLocationLabel" placeholder="No location selected" class="w-full h-12 rounded-xl border border-white/60 bg-sky-50 px-3 focus:ring-0 focus:outline-none" readonly />
+            <input id="customLocationCoords" name="customLocationCoords" type="hidden" />
+            <div class="mt-3 flex gap-2">
+              <button type="button" id="openMap" class="flex-1 h-12 rounded-full bg-gradient-to-r from-orange-500 to-sky-400 text-white font-semibold shadow-lg">Pick on map</button>
+              <button type="button" id="clearMapPick" class="px-4 h-12 rounded-full border border-white/60 bg-white text-orange-700">Clear</button>
+            </div>
+
+            <!-- MINI PREVIEW MAP -->
+            <div id="miniMapWrapper" class="mt-4 hidden">
+              <label class="block text-sm font-medium mb-1">Picked location preview</label>
+              <div id="miniMap" class="rounded-lg overflow-hidden cursor-pointer"></div>
+              <div class="mt-2 flex gap-2">
+                <button id="editMapFromMini" class="px-3 py-1 rounded-full bg-white text-orange-700 border border-white/60">Edit</button>
+                <button id="clearMiniPick" class="px-3 py-1 rounded-full border border-white/60">Remove</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trip details -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label for="days" class="block text-sm font-medium mb-1">Days</label>
+            <input id="days" name="days" type="number" min="1" required class="w-full h-12 rounded-xl border border-white/60 bg-sky-50 px-3 focus:ring-0 focus:outline-none" />
+          </div>
+          <div>
+            <label for="adults" class="block text-sm font-medium mb-1">Adults</label>
+            <input id="adults" name="adults" type="number" min="1" required class="w-full h-12 rounded-xl border border-white/60 bg-sky-50 px-3 focus:ring-0 focus:outline-none" />
+          </div>
+          <div>
+            <label for="children" class="block text-sm font-medium mb-1">Children</label>
+            <input id="children" name="children" type="number" min="0" value="0" class="w-full h-12 rounded-xl border border-white/60 bg-sky-50 px-3 focus:ring-0 focus:outline-none" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Meal plan</label>
+          <div class="flex flex-wrap gap-4">
+            <label class="flex items-center gap-2"><input type="checkbox" class="meal" value="Breakfast" /> <span class="text-sm">Breakfast</span></label>
+            <label class="flex items-center gap-2"><input type="checkbox" class="meal" value="Lunch" /> <span class="text-sm">Lunch</span></label>
+            <label class="flex items-center gap-2"><input type="checkbox" class="meal" value="Dinner" /> <span class="text-sm">Dinner</span></label>
+          </div>
+        </div>
+
+        <div>
+          <label for="transportType" class="block text-sm font-medium mb-1">Transport type</label>
+          <select id="transportType" name="transportType" class="w-full h-12 rounded-xl border border-white/60 bg-sky-50 px-3 focus:ring-0 focus:outline-none">
+            <option value="">— Select transport —</option>
+            <option value="air">Air Package</option>
+            <option value="road">Road Package</option>
+            <option value="train">Train</option>
+            <option value="private">Private Van / Car</option>
+            <option value="hike">Trek / Hiking</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="budget" class="block text-sm font-medium mb-1">Estimated budget (PKR)</label>
+            <input id="budget" name="budget" type="number" min="1000" required class="w-full h-12 rounded-xl border border-white/60 bg-sky-50 px-3 focus:ring-0 focus:outline-none" />
+          </div>
+
+          <div>
+            <label for="travelDate" class="block text-sm font-medium mb-1">Preferred travel date</label>
+            <input id="travelDate" name="travelDate" type="date" class="w-full h-12 rounded-xl border border-white/60 bg-sky-50 px-3 focus:ring-0 focus:outline-none" />
+          </div>
+        </div>
+
+        <div>
+          <label for="notes" class="block text-sm font-medium mb-1">Additional notes</label>
+          <textarea id="notes" name="notes" rows="4" class="w-full rounded-xl border border-white/60 bg-sky-50 px-3 py-3 focus:ring-0 focus:outline-none" placeholder="Any preferences, accessibility notes, or requests..."></textarea>
+        </div>
+
+        <div class="flex gap-3">
+          <button type="submit" id="sendBtn" class="flex-1 h-12 rounded-full bg-gradient-to-r from-orange-500 to-sky-400 text-white font-semibold shadow-lg">Send Request</button>
+          <button type="button" id="previewBtn" class="flex-1 h-12 rounded-full border border-white/60 bg-white text-orange-700 font-semibold">Preview</button>
+        </div>
+
+        <div class="flex gap-3 mt-2">
+          <button type="button" id="showMatches" class="px-4 py-2 rounded-full border border-white/60 bg-white text-sm">Show matching packages</button>
+          <button type="button" id="clearDraft" class="px-4 py-2 rounded-full border border-white/60 bg-white text-sm">Clear draft</button>
+        </div>
+
+        <p id="formMsg" class="text-center text-sm text-orange-700 font-medium mt-2 hidden">Request saved — we'll reach out soon (mock).</p>
+      </form>
+    </div>
+
+    <!-- Map Modal -->
+    <div id="mapModal" class="fixed inset-0 items-center justify-center z-60">
+      <div class="absolute inset-0 bg-black/40"></div>
+      <div class="relative bg-white rounded-2xl p-3 modal-panel glass z-70">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold text-orange-700">Pick a location on the map</h3>
+          <div class="flex gap-2">
+            <button id="centerMyLocation" class="px-3 py-1 rounded-full border border-white/60 text-sm">My location</button>
+            <button id="closeMap" class="px-3 py-1 rounded-full border border-white/60 text-sm">Close</button>
+          </div>
+        </div>
+
+        <div id="leafletMapFull" class="mt-3"></div>
+
+        <div class="mt-3 flex gap-2">
+          <input id="mapLabelInput" placeholder="Short label (optional)" class="flex-1 rounded-xl border border-white/60 px-3 h-12" />
+          <button id="saveMapPick" class="px-4 rounded-full bg-gradient-to-r from-orange-500 to-sky-400 text-white">Save</button>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">Click map to place marker. Drag the marker to adjust. Save to store location & name (Nominatim reverse-geocode used).</p>
+      </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div id="previewModal" class="fixed inset-0 hidden items-center justify-center z-50">
+      <div class="absolute inset-0 bg-black/40"></div>
+      <div class="relative bg-white rounded-2xl p-6 max-w-xl w-full glass z-60">
+        <div class="flex justify-between items-start">
+          <div>
+            <h3 class="text-lg font-semibold text-orange-700" id="previewTitle">Request preview</h3>
+            <p class="text-xs text-gray-500 mt-1">Review before sending</p>
+          </div>
+          <button id="closePreview" class="text-slate-600">✕</button>
+        </div>
+        <div id="previewBody" class="mt-4 space-y-2 text-sm text-gray-700"></div>
+        <div class="mt-4 flex gap-2">
+          <button id="downloadPreview" class="px-4 py-2 rounded-full bg-orange-500 text-white">Download JSON</button>
+          <button id="copyPreview" class="px-4 py-2 rounded-full border border-white/60">Copy JSON</button>
+          <button id="sendFromPreview" class="ml-auto px-4 py-2 rounded-full bg-gradient-to-r from-orange-500 to-sky-400 text-white">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Requests Modal -->
+    <div id="requestsModal" class="fixed inset-0 hidden items-center justify-center z-60">
+      <div class="absolute inset-0 bg-black/40"></div>
+      <div class="relative bg-white rounded-2xl p-6 max-w-4xl w-full glass z-70">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-orange-700">Saved Requests</h3>
+          <div class="flex gap-2">
+            <button id="exportAllRequests" class="px-3 py-1 rounded-full border border-white/60">Export All</button>
+            <button id="closeRequests" class="px-3 py-1 rounded-full border border-white/60">Close</button>
+          </div>
+        </div>
+        <div id="requestsList" class="max-h-72 overflow-auto space-y-3"></div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+  </main>
+
+  <footer class="text-center py-4 text-sm text-gray-600 bg-white/60 backdrop-blur-md">© 2025 Wander Hub Ai — All Rights Reserved</footer>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+/* ------------------ Full app logic ------------------ */
+
+const STORAGE_KEY = 'packageRequests';
+const DRAFT_KEY = 'packageRequestDraft';
+const NAV_SEARCH_KEY = 'wh_nav_search';
+
+/* NEW: unified booking history key for profile "My Bookings" */
+const HISTORY_BASE_KEY = 'wh_history';
+let currentUser = null;
+let currentUserId = null;
+try {
+  const rawUser = localStorage.getItem('wh_user');
+  currentUser = rawUser ? JSON.parse(rawUser) : null;
+  if (currentUser && currentUser.id) currentUserId = currentUser.id;
+} catch(e) {
+  currentUser = null;
+  currentUserId = null;
+}
+function getHistoryKey() {
+  return currentUserId ? `${HISTORY_BASE_KEY}_${currentUserId}` : HISTORY_BASE_KEY;
+}
+function pushHistoryFromRequest(req) {
+  try {
+    const key = getHistoryKey();
+    const raw = localStorage.getItem(key);
+    const arr = raw ? JSON.parse(raw) : [];
+    arr.unshift({
+      type: 'custom-request',
+      requestId: req.id,
+      destination: req.destination,
+      days: req.days,
+      adults: req.adults,
+      children: req.children,
+      budget: req.budget,
+      transport: req.transport || '',
+      travelDate: req.travelDate || null,
+      created: req.createdAt,
+      createdFrom: 'request-package.html',
+      customLocation: req.customLocation || null
+    });
+    localStorage.setItem(key, JSON.stringify(arr));
+  } catch (e) {
+    console.warn('Unable to push into wh_history', e);
+  }
+}
+
+// Elements
+const form = document.getElementById('packageRequestForm');
+const previewBtn = document.getElementById('previewBtn');
+const previewModal = document.getElementById('previewModal');
+const previewBody = document.getElementById('previewBody');
+const closePreview = document.getElementById('closePreview');
+const downloadPreview = document.getElementById('downloadPreview');
+const copyPreview = document.getElementById('copyPreview');
+const sendFromPreview = document.getElementById('sendFromPreview');
+const formMsg = document.getElementById('formMsg');
+const toast = document.getElementById('toast');
+
+const viewRequestsBtn = document.getElementById('viewRequestsBtn');
+const requestsModal = document.getElementById('requestsModal');
+const requestsList = document.getElementById('requestsList');
+const closeRequests = document.getElementById('closeRequests');
+const exportAllRequests = document.getElementById('exportAllRequests');
+
+const showMatches = document.getElementById('showMatches');
+const goToPackages = document.getElementById('goToPackages');
+const clearDraft = document.getElementById('clearDraft');
+
+// Map elements
+const mapModal = document.getElementById('mapModal');
+const openMapBtn = document.getElementById('openMap');
+const closeMapBtn = document.getElementById('closeMap');
+const saveMapPickBtn = document.getElementById('saveMapPick');
+const clearMapPickBtn = document.getElementById('clearMapPick');
+const mapLabelInput = document.getElementById('mapLabelInput');
+const customLocationLabel = document.getElementById('customLocationLabel');
+const customLocationCoords = document.getElementById('customLocationCoords');
+const centerMyLocationBtn = document.getElementById('centerMyLocation');
+
+const miniMapWrapper = document.getElementById('miniMapWrapper');
+const miniMapDiv = document.getElementById('miniMap');
+const editMapFromMini = document.getElementById('editMapFromMini');
+const clearMiniPick = document.getElementById('clearMiniPick');
+
+const fields = ['userName','userEmail','destination','phone','days','adults','children','budget','travelDate','notes'];
+
+// small helpers
+function $id(i){ return document.getElementById(i); }
+function showToastMsg(msg, ms=1800){ toast.textContent = msg; toast.classList.remove('hidden'); setTimeout(()=> toast.classList.add('hidden'), ms); }
+function escapeHtml(unsafe){ if (!unsafe) return ''; return unsafe.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;'); }
+
+// read form data (custom map pick preferred)
+function readFormData(){
+  const customCoords = customLocationCoords.value || null;
+  return {
+    id: 'req_' + Date.now(),
+    name: $id('userName').value.trim(),
+    email: $id('userEmail').value.trim(),
+    phone: $id('phone') ? $id('phone').value.trim() : '',
+    destination: customCoords ? (customLocationLabel.value || ('Custom: ' + customCoords)) : $id('destination').value,
+    customLocation: customCoords ? { coords: customCoords, label: customLocationLabel.value || '' } : null,
+    days: parseInt($id('days').value || 0, 10),
+    adults: parseInt($id('adults').value || 0, 10),
+    children: parseInt($id('children').value || 0, 10),
+    meals: Array.from(document.querySelectorAll('.meal:checked')).map(c=>c.value),
+    transport: $id('transportType')?.value || null,
+    budget: parseFloat($id('budget').value || 0),
+    travelDate: $id('travelDate').value || null,
+    notes: $id('notes').value.trim(),
+    createdAt: new Date().toISOString()
+  };
+}
+
+/* UPDATED: also push into wh_history */
+function saveRequest(obj){
+  const arr = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  arr.unshift(obj);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+  pushHistoryFromRequest(obj);
+}
+
+function clearForm(){
+  form.reset();
+  localStorage.removeItem(DRAFT_KEY);
+  customLocationLabel.value = 'No location selected';
+  customLocationCoords.value = '';
+  mapLabelInput.value = '';
+  hideMiniMap();
+  formMsg.classList.add('hidden');
+}
+
+function validate(data){
+  if (!data.name) return 'Please enter your name.';
+  if (!data.email || !/^\S+@\S+\.\S+$/.test(data.email)) return 'Please enter a valid email.';
+  if (!data.destination) return 'Please select a destination or pick one on map.';
+  if (!data.days || data.days < 1) return 'Please enter a valid number of days.';
+  if (!data.adults || data.adults < 1) return 'Please enter at least 1 adult.';
+  if (!data.budget || data.budget < 1000) return 'Please enter a reasonable budget (min PKR 1000).';
+  return null;
+}
+
+/* Autosave draft */
+fields.forEach(id => {
+  const el = $id(id);
+  if (!el) return;
+  el.addEventListener('input', () => {
+    const d = {};
+    fields.forEach(k=> { const e=$id(k); if (e) d[k] = e.value; });
+    d.meals = Array.from(document.querySelectorAll('.meal:checked')).map(c=>c.value);
+    d.transport = $id('transportType')?.value || '';
+    d.customLocation = customLocationCoords.value ? { coords: customLocationCoords.value, label: customLocationLabel.value } : null;
+    d.savedAt = new Date().toISOString();
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+  });
+});
+document.querySelectorAll('.meal').forEach(ch => ch.addEventListener('change', () => {
+  const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || '{}');
+  d.meals = Array.from(document.querySelectorAll('.meal:checked')).map(c=>c.value);
+  d.savedAt = new Date().toISOString();
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+}));
+
+/* Load draft */
+(function loadDraft(){
+  const draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
+  if (!draft) return;
+  fields.forEach(k=> { if (draft[k] !== undefined && $id(k)) $id(k).value = draft[k]; });
+  if (draft.meals && draft.meals.length) document.querySelectorAll('.meal').forEach(ch => ch.checked = draft.meals.includes(ch.value));
+  if (draft.transport && $id('transportType')) $id('transportType').value = draft.transport;
+  if (draft.customLocation) {
+    customLocationCoords.value = draft.customLocation.coords || '';
+    customLocationLabel.value = draft.customLocation.label || draft.customLocation.coords || 'Picked location';
+    mapLabelInput.value = draft.customLocation.label || '';
+    updateMiniMap(customLocationCoords.value, customLocationLabel.value);
+  }
+  if (draft.savedAt) showToastMsg('Draft restored (saved ' + new Date(draft.savedAt).toLocaleTimeString() + ')', 2200);
+})();
+
+/* Submit form */
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const data = readFormData();
+  const err = validate(data);
+  if (err){ alert(err); return; }
+
+  saveRequest(data);
+  localStorage.removeItem(DRAFT_KEY);
+  formMsg.classList.remove('hidden');
+  showToastMsg('Request saved');
+  setTimeout(() => { clearForm(); }, 900);
+});
+
+/* Preview */
+previewBtn.addEventListener('click', () => {
+  const data = readFormData();
+  const err = validate(data);
+  previewBody.innerHTML = `
+    <div><strong>Name:</strong> ${escapeHtml(data.name || '')}</div>
+    <div><strong>Email:</strong> ${escapeHtml(data.email || '')}</div>
+    <div><strong>Phone:</strong> ${escapeHtml(data.phone || '')}</div>
+    <div><strong>Destination:</strong> ${escapeHtml(data.destination || '')}</div>
+    ${data.customLocation ? `<div><strong>Picked coords:</strong> ${escapeHtml(data.customLocation.coords)}</div>` : ''}
+    <div><strong>Days:</strong> ${data.days}</div>
+    <div><strong>Adults:</strong> ${data.adults} • <strong>Children:</strong> ${data.children}</div>
+    <div><strong>Transport:</strong> ${escapeHtml(data.transport || '—')}</div>
+    <div><strong>Meals:</strong> ${data.meals.join(', ') || '—'}</div>
+    <div><strong>Budget:</strong> ₨ ${isFinite(data.budget) ? data.budget.toLocaleString() : ''}</div>
+    <div><strong>Travel date:</strong> ${data.travelDate || '—'}</div>
+    <div><strong>Notes:</strong> ${escapeHtml(data.notes || '')}</div>
+    ${err ? '<div class="text-red-600 mt-2"><em>Note: ' + escapeHtml(err) + '</em></div>' : ''}
+  `;
+  previewModal.classList.remove('hidden'); previewModal.classList.add('flex');
+  previewModal.querySelector('#previewTitle').focus();
+});
+closePreview.addEventListener('click', ()=> { previewModal.classList.add('hidden'); previewModal.classList.remove('flex'); });
+downloadPreview.addEventListener('click', ()=> {
+  const obj = readFormData();
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `${(obj.destination||'request')}_${Date.now()}.json`; a.click(); a.remove(); URL.revokeObjectURL(url);
+  showToastMsg('Downloaded JSON');
+});
+copyPreview.addEventListener('click', async ()=> {
+  const obj = readFormData();
+  try { await navigator.clipboard.writeText(JSON.stringify(obj, null, 2)); showToastMsg('Request copied to clipboard'); }
+  catch (err) { alert('Unable to copy to clipboard'); }
+});
+sendFromPreview.addEventListener('click', ()=> {
+  const data = readFormData();
+  const err = validate(data);
+  if (err){ alert(err); return; }
+  saveRequest(data);
+  previewModal.classList.add('hidden'); previewModal.classList.remove('flex');
+  formMsg.classList.remove('hidden'); localStorage.removeItem(DRAFT_KEY);
+  showToastMsg('Request saved'); setTimeout(()=> clearForm(), 800);
+});
+
+/* Requests admin */
+viewRequestsBtn.addEventListener('click', () => { renderRequestsList(); requestsModal.classList.remove('hidden'); requestsModal.classList.add('flex'); });
+closeRequests.addEventListener('click', () => { requestsModal.classList.add('hidden'); requestsModal.classList.remove('flex'); });
+
+function renderRequestsList(){
+  const arr = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  requestsList.innerHTML = '';
+  if (!arr.length) {
+    requestsList.innerHTML = '<div class="text-slate-600 p-4">No requests yet.</div>';
+    return;
+  }
+  arr.forEach(r => {
+    const el = document.createElement('div');
+    el.className = 'p-3 rounded-lg border border-white/60 flex items-start justify-between gap-3';
+    el.innerHTML = `
+      <div>
+        <div class="font-semibold text-orange-700">${escapeHtml(r.name || r.email)}</div>
+        <div class="text-xs text-gray-500">${new Date(r.createdAt).toLocaleString()}</div>
+        <div class="text-sm text-gray-700 mt-2">Destination: ${escapeHtml(r.destination)} • Days: ${r.days} • Budget: ₨ ${isFinite(r.budget) ? r.budget.toLocaleString() : '-'}</div>
+      </div>
+      <div class="flex flex-col gap-2 items-end">
+        <button data-id="${r.id}" class="openRequest px-3 py-1 rounded-full border border-white/60 text-sm">Open</button>
+        <button data-id="${r.id}" class="exportRequest px-3 py-1 rounded-full border border-white/60 text-sm">Export</button>
+        <button data-id="${r.id}" class="deleteRequest px-3 py-1 rounded-full border border-red-200 text-red-600 text-sm">Delete</button>
+      </div>
+    `;
+    requestsList.appendChild(el);
+  });
+
+  document.querySelectorAll('.openRequest').forEach(b => b.addEventListener('click', (e) => openRequestDetail(e.currentTarget.dataset.id)));
+  document.querySelectorAll('.exportRequest').forEach(b => b.addEventListener('click', (e) => exportRequest(e.currentTarget.dataset.id)));
+  document.querySelectorAll('.deleteRequest').forEach(b => b.addEventListener('click', (e) => {
+    if (!confirm('Delete this request?')) return;
+    deleteRequest(e.currentTarget.dataset.id);
+    renderRequestsList();
+    showToastMsg('Deleted');
+  }));
+}
+
+function openRequestDetail(id){
+  const arr = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  const r = arr.find(x=>x.id === id);
+  if (!r) return alert('Request not found');
+  previewBody.innerHTML = `
+    <div><strong>Name:</strong> ${escapeHtml(r.name)}</div>
+    <div><strong>Email:</strong> ${escapeHtml(r.email)}</div>
+    <div><strong>Phone:</strong> ${escapeHtml(r.phone || '')}</div>
+    <div><strong>Destination:</strong> ${escapeHtml(r.destination)}</div>
+    ${r.customLocation ? `<div><strong>Picked coords:</strong> ${escapeHtml(r.customLocation.coords)}</div>` : ''}
+    <div><strong>Days:</strong> ${r.days}</div>
+    <div><strong>Adults:</strong> ${r.adults} • <strong>Children:</strong> ${r.children}</div>
+    <div><strong>Meals:</strong> ${(r.meals || []).join(', ') || '—'}</div>
+    <div><strong>Budget:</strong> ₨ ${isFinite(r.budget) ? r.budget.toLocaleString() : '-'}</div>
+    <div><strong>Travel date:</strong> ${r.travelDate || '—'}</div>
+    <div><strong>Notes:</strong> ${escapeHtml(r.notes || '')}</div>
+  `;
+  requestsModal.classList.add('hidden'); requestsModal.classList.remove('flex');
+  previewModal.classList.remove('hidden'); previewModal.classList.add('flex');
+}
+
+function exportRequest(id){
+  const arr = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  const r = arr.find(x=>x.id === id);
+  if (!r) return alert('Not found');
+  const blob = new Blob([JSON.stringify(r, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `${(r.destination||'request')}_${id}.json`; a.click(); a.remove(); URL.revokeObjectURL(url);
+  showToastMsg('Exported request');
+}
+
+function deleteRequest(id){
+  let arr = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  arr = arr.filter(x=>x.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+}
+
+exportAllRequests.addEventListener('click', ()=> {
+  const arr = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  const blob = new Blob([JSON.stringify(arr, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `package_requests_${Date.now()}.json`; a.click(); a.remove(); URL.revokeObjectURL(url);
+  showToastMsg('Exported all requests');
+});
+
+/* Clear draft */
+clearDraft.addEventListener('click', ()=> {
+  if (!confirm('Clear local draft?')) return;
+  localStorage.removeItem(DRAFT_KEY);
+  clearForm();
+  showToastMsg('Draft removed');
+});
+
+/* Show matches */
+showMatches.addEventListener('click', ()=> {
+  const dest = $id('destination').value || $id('notes').value || $id('userName').value || customLocationLabel.value;
+  if (!dest) return alert('Add some destination or note to search for.');
+  localStorage.setItem(NAV_SEARCH_KEY, dest);
+  window.location.href = 'packages.html';
+});
+goToPackages.addEventListener('click', ()=> window.location.href = 'packages.html');
+
+/* Keyboard: ESC hides modals */
+document.addEventListener('keydown', (e)=> {
+  if (e.key === 'Escape') {
+    if (!previewModal.classList.contains('hidden')) { previewModal.classList.add('hidden'); previewModal.classList.remove('flex'); }
+    if (!requestsModal.classList.contains('hidden')) { requestsModal.classList.add('hidden'); requestsModal.classList.remove('flex'); }
+    if (mapModal.classList.contains('flex')) { mapModal.classList.add('hidden'); mapModal.classList.remove('flex'); destroyFullMap(); }
+  }
+});
+
+/* Focus first input */
+window.addEventListener('load', ()=> { $id('userName').focus(); });
+
+/* ---------------- Reliable map modal (create/destroy) + Nominatim reverse geocode ---------------- */
+
+let fullMap = null;
+let fullMarker = null;
+
+function createFullMap() {
+  destroyFullMap();
+  fullMap = L.map('leafletMapFull', { center: [30.3753, 69.3451], zoom: 5 });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(fullMap);
+
+  // restore marker if saved coords
+  if (customLocationCoords.value) {
+    try {
+      const [lat, lng] = customLocationCoords.value.split(',').map(s => parseFloat(s));
+      if (!Number.isNaN(lat)) {
+        fullMarker = L.marker([lat, lng], { draggable: true }).addTo(fullMap);
+        fullMarker.on('dragend', onFullMarkerDrag);
+        fullMap.setView([lat, lng], 12);
+      }
+    } catch(e){ console.warn('restore marker failed', e); }
+  }
+
+  fullMap.on('click', (e) => {
+    if (fullMarker) { fullMap.removeLayer(fullMarker); fullMarker = null; }
+    fullMarker = L.marker(e.latlng, { draggable: true }).addTo(fullMap);
+    fullMarker.on('dragend', onFullMarkerDrag);
+    mapLabelInput.value = `Lat ${e.latlng.lat.toFixed(5)}, Lon ${e.latlng.lng.toFixed(5)}`;
+  });
+}
+
+function destroyFullMap() {
+  if (!fullMap) return;
+  try {
+    fullMap.off();
+    fullMap.remove();
+  } catch(e){ console.warn('destroy map error', e); }
+  fullMap = null;
+  fullMarker = null;
+  document.getElementById('leafletMapFull').innerHTML = '';
+}
+
+function onFullMarkerDrag(e) {
+  const latlng = e.target.getLatLng();
+  mapLabelInput.value = `Lat ${latlng.lat.toFixed(5)}, Lon ${latlng.lng.toFixed(5)}`;
+}
+
+openMapBtn.addEventListener('click', () => {
+  mapModal.classList.add('flex'); mapModal.classList.remove('hidden');
+  mapLabelInput.value = '';
+  setTimeout(() => { createFullMap(); try { fullMap.invalidateSize(); } catch(e){}; }, 120);
+});
+
+closeMapBtn.addEventListener('click', () => {
+  destroyFullMap();
+  mapModal.classList.remove('flex'); mapModal.classList.add('hidden');
+});
+
+centerMyLocationBtn.addEventListener('click', () => {
+  if (!navigator.geolocation) { alert('Geolocation not supported'); return; }
+  centerMyLocationBtn.disabled = true;
+  navigator.geolocation.getCurrentPosition((pos) => {
+    const lat = pos.coords.latitude, lng = pos.coords.longitude;
+    if (!fullMap) createFullMap();
+    try {
+      fullMap.setView([lat, lng], 13);
+      if (fullMarker) fullMap.removeLayer(fullMarker);
+      fullMarker = L.marker([lat, lng], { draggable: true }).addTo(fullMap);
+      fullMarker.on('dragend', onFullMarkerDrag);
+      mapLabelInput.value = `My location: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    } catch(e){ console.warn(e); }
+    centerMyLocationBtn.disabled = false;
+  }, (err) => { alert('Unable to get location: ' + err.message); centerMyLocationBtn.disabled = false; });
+});
+
+// Nominatim reverse geocode
+async function reverseGeocodeNominatim(lat, lon){
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=14&addressdetails=0`;
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data && data.display_name) return data.display_name;
+    return null;
+  } catch(e){ console.warn('reverse geocode error', e); return null; }
+}
+
+// Save pick: set fields, reverse-geocode if label empty, update mini map
+saveMapPickBtn.addEventListener('click', async () => {
+  try {
+    if (!fullMarker) { alert('Please place a marker on the map first'); return; }
+    const latlng = fullMarker.getLatLng();
+    const coords = `${latlng.lat.toFixed(6)},${latlng.lng.toFixed(6)}`;
+    let label = mapLabelInput.value.trim();
+    if (!label) {
+      label = await reverseGeocodeNominatim(latlng.lat, latlng.lng) || (`Picked location ${coords}`);
+    }
+    customLocationLabel.value = label;
+    customLocationCoords.value = coords;
+    updateMiniMap(coords, label);
+    destroyFullMap();
+    mapModal.classList.remove('flex'); mapModal.classList.add('hidden');
+    showToastMsg('Location saved');
+  } catch(err) {
+    console.error(err); alert('Unable to save location: ' + err.message);
+  }
+});
+
+clearMapPickBtn.addEventListener('click', ()=> {
+  if (!confirm('Clear saved location?')) return;
+  customLocationLabel.value = 'No location selected';
+  customLocationCoords.value = '';
+  mapLabelInput.value = '';
+  hideMiniMap();
+  showToastMsg('Cleared location');
+});
+
+/* ---------------- Mini preview map logic ---------------- */
+let miniMap = null;
+let miniMarker = null;
+
+function updateMiniMap(coords, label) {
+  if (!coords) { hideMiniMap(); return; }
+  miniMapWrapper.classList.remove('hidden');
+  const [lat, lng] = coords.split(',').map(s => parseFloat(s));
+  if (!miniMap) {
+    miniMap = L.map('miniMap', { zoomControl: false, attributionControl: false }).setView([lat, lng], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(miniMap);
+    miniMarker = L.marker([lat, lng]).addTo(miniMap).bindPopup(label || '').openPopup();
+    miniMapDiv.addEventListener('click', () => {
+      openMapBtn.click();
+      setTimeout(()=> {
+        if (!fullMap) createFullMap();
+        setTimeout(()=> {
+          try {
+            const [lat2, lng2] = customLocationCoords.value.split(',').map(s => parseFloat(s));
+            if (!Number.isNaN(lat2)) {
+              if (fullMarker) fullMap.removeLayer(fullMarker);
+              fullMarker = L.marker([lat2, lng2], { draggable: true }).addTo(fullMap);
+              fullMarker.on('dragend', onFullMarkerDrag);
+              fullMap.setView([lat2, lng2], 12);
+            }
+          } catch(e){ console.warn(e); }
+        }, 300);
+      }, 150);
+    });
+  } else {
+    miniMarker.setLatLng([lat, lng]);
+    miniMarker.bindPopup(label || '').openPopup();
+    miniMap.setView([lat, lng], 12);
+    setTimeout(()=> { try { miniMap.invalidateSize(); } catch(e){} }, 150);
+  }
+}
+
+function hideMiniMap() {
+  miniMapWrapper.classList.add('hidden');
+  if (miniMap) { try { miniMap.remove(); } catch(e){} miniMap = null; miniMarker = null; }
+}
+
+editMapFromMini.addEventListener('click', ()=> {
+  if (!customLocationCoords.value) return alert('No saved location to edit');
+  openMapBtn.click();
+  setTimeout(()=> {
+    if (!fullMap) createFullMap();
+    try {
+      const [lat, lng] = customLocationCoords.value.split(',').map(s => parseFloat(s));
+      if (!Number.isNaN(lat)) {
+        if (fullMarker) fullMap.removeLayer(fullMarker);
+        fullMarker = L.marker([lat, lng], { draggable: true }).addTo(fullMap);
+        fullMarker.on('dragend', onFullMarkerDrag);
+        fullMap.setView([lat, lng], 12);
+      }
+    } catch(e){ console.warn(e); }
+  }, 300);
+});
+
+clearMiniPick.addEventListener('click', ()=> {
+  if (!confirm('Remove saved location?')) return;
+  customLocationLabel.value = 'No location selected';
+  customLocationCoords.value = '';
+  mapLabelInput.value = '';
+  hideMiniMap();
+  showToastMsg('Saved location removed');
+});
+
+/* On load: restore mini map if draft has coords */
+window.addEventListener('load', ()=> {
+  const coords = customLocationCoords.value;
+  const label = customLocationLabel.value && customLocationLabel.value !== 'No location selected' ? customLocationLabel.value : '';
+  if (coords) updateMiniMap(coords, label);
+});
+
+/* notifyAdminNewRequest helper: storage event for other tabs */
+(function(){
+  function notifyAdminNewRequest() {
+    localStorage.setItem('packageRequests_new', JSON.stringify({ at: Date.now() }));
+    const metaKey = 'packageRequests_meta';
+    const meta = JSON.parse(localStorage.getItem(metaKey) || '{}');
+    meta.last = Date.now();
+    meta.count = (meta.count || 0) + 1;
+    localStorage.setItem(metaKey, JSON.stringify(meta));
+  }
+  if (form){
+    form.addEventListener('submit', () => { setTimeout(()=> { notifyAdminNewRequest(); }, 120); });
+  }
+})();
+</script>
+</body>
+</html>

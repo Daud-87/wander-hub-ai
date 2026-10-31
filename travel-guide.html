@@ -1,0 +1,747 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Travel Guides | Wander Hub Ai</title>
+ <link rel="icon" type="image/png" href="templates/logofinal.png">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+
+<style>
+  :root{
+    --accent-1:#f97316; /* orange */
+    --accent-2:#06b6d4; /* sky */
+    --muted:#7f6a57;
+    --text:#181410;
+    --card-bg: rgba(255,255,255,0.96);
+  }
+  html,body{height:100%}
+  body {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    background: linear-gradient(135deg,#fb923c 0%, #7dd3fc 50%, #fb923c 100%);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  header {
+    backdrop-filter: blur(6px);
+    z-index: 80;
+  }
+
+  .container-lg {
+    max-width:1200px;
+    margin-left:auto;
+    margin-right:auto;
+    padding-left:1rem;
+    padding-right:1rem;
+    width:100%;
+    box-sizing: border-box;
+  }
+
+  .nav-row { display:flex; align-items:center; gap:12px; }
+  .site-nav { display:flex; gap:1.25rem; align-items:center; }
+  .site-nav a { white-space:nowrap; }
+  .nav-toggle { display:none; }
+
+  .grid-cards { display:grid; grid-template-columns: repeat(1,1fr); gap:1.25rem; }
+  @media(min-width:640px){ .grid-cards { grid-template-columns: repeat(2,1fr); } }
+  @media(min-width:1024px){ .grid-cards { grid-template-columns: repeat(3,1fr); } }
+
+  .guide-card { border-radius: 1rem; overflow:hidden; border: 1px solid rgba(0,0,0,0.04); background: var(--card-bg); transition: transform .18s cubic-bezier(.22,.9,.28,1), box-shadow .18s cubic-bezier(.22,.9,.28,1); position:relative; display:flex; flex-direction:column; height:100%; }
+  .guide-card:hover{ transform: translateY(-4px); box-shadow: 0 10px 24px rgba(13,40,70,.08); }
+  .guide-media { height:180px; background-size:cover; background-position:center; flex-shrink:0; }
+  .card-body { padding:1rem; display:flex; flex-direction:column; gap:.6rem; flex:1; }
+  .card-head { display:flex; justify-content:space-between; align-items:flex-start; gap:.6rem; }
+  .card-left { display:flex; gap:.6rem; align-items:center; }
+  .guide-avatar { width:56px; height:56px; border-radius:12px; background-size:cover; background-position:center; flex-shrink:0; }
+
+  .stars { color: #0ea5e9; font-weight:700; letter-spacing:.02em; }
+
+  .info-overlay { transform: translateY(6px); opacity: 0; transition: all .22s ease; margin-top:.5rem; }
+  .guide-card:hover .info-overlay { transform: translateY(0); opacity: 1; }
+
+  .tag { background: rgba(243,115,22,.08); color: var(--accent-1); padding: .25rem .5rem; border-radius: 999px; font-weight:600; font-size:.82rem; display:inline-block; margin-right:.35rem; }
+
+  .btn { padding:.5rem .8rem; border-radius:999px; font-weight:600; cursor:pointer; border: none; }
+  .btn-primary { background:linear-gradient(90deg,var(--accent-1),var(--accent-2)); color:white; box-shadow:0 8px 20px rgba(6,182,212,0.08); }
+  .btn-ghost { background:white; border:1px solid rgba(0,0,0,0.04); color:var(--text); }
+
+  .badge { background:var(--accent-1); color:white; font-size:.8rem; padding:.2rem .45rem; border-radius:999px; font-weight:700; }
+
+  .card-actions { display:flex; gap:.5rem; align-items:center; margin-top:.6rem; flex-wrap:wrap; }
+
+  .filters { display:flex; gap:.75rem; align-items:center; flex-wrap:wrap; }
+
+  .modal { display:none; position:fixed; inset:0; z-index:60; align-items:center; justify-content:center; background:rgba(0,0,0,.45); padding:1rem; }
+  .modal.show { display:flex; }
+  .modal-card { width:100%; max-width:880px; background:white; border-radius:.75rem; overflow:hidden; box-shadow: 0 30px 80px rgba(0,0,0,.35); }
+
+  .small-muted{ color:var(--muted); font-size:.95rem; }
+  .right-end{ margin-left:auto; }
+
+  @media (min-width: 768px){
+    .guide-media { height:260px; }
+  }
+
+  @media(max-width: 860px){
+    .container-lg { padding-left:0.75rem; padding-right:0.75rem; }
+    .site-nav { display:none; }
+    .nav-toggle { display:inline-flex; align-items:center; gap:8px; background:white; padding:.4rem .6rem; border-radius:999px; border:1px solid rgba(0,0,0,0.04); }
+    .nav-toggle svg { width:18px; height:18px; }
+    .guide-media { height:160px; }
+    .card-body { padding:.85rem; }
+    .btn { padding:.45rem .7rem; font-size:0.95rem; }
+  }
+
+  .mobile-nav { display:none; position:absolute; left:0; right:0; top:100%; background:rgba(255,255,255,0.98); border-bottom-left-radius:12px; border-bottom-right-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.07); padding:0.75rem; z-index:75; }
+  .mobile-nav.show { display:block; }
+  .mobile-nav a { display:block; padding:.6rem .5rem; border-radius:.5rem; color:var(--text); text-decoration:none; }
+
+  footer {
+    width:100%;
+    box-sizing:border-box;
+    padding: 1rem 0.75rem;
+  }
+  .footer-inner { max-width:1200px; margin:0 auto; padding:0 1rem; display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:.5rem; }
+
+  button, a { -webkit-tap-highlight-color: rgba(0,0,0,0.06); }
+
+</style>
+
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- NAV -->
+  <header class="sticky top-0 z-60 bg-white/80 backdrop-blur-md shadow-md">
+    <div class="container mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-12">
+        <img src="templates/logofinal.png" class="w-10 h-10 rounded-full object-contain bg-white shadow-lg" alt="Wander Hub Logo">
+        <div class="text-orange-700 font-bold text-lg">Wander Hub Ai</div>
+        <nav class="ml-6 hidden md:flex gap-6 text-sm text-gray-700">
+          <a href="local-user.html" class="hover:text-orange-600">Home</a>
+          <a href="packages.html" class="hover:text-orange-600">All Packages</a>
+          <a href="packages-by-air.html" class="hover:text-orange-600">Air Packages</a>
+          <a href="packages-by-road.html" class="hover:text-orange-600">Road Packages</a>
+          <a href="travel-guide.html" class="text-orange-600 font-semibold border-b-2 border-orange-600">Travel Guide</a>
+          <a href="about-us.html" class="hover:text-orange-600">About Us</a>
+          <a href="contact-us.html" class="hover:text-orange-600">Contact</a>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <div class="hidden sm:block">
+          <input id="navSearch" placeholder="Search guides (name, language, region)..." class="rounded-full px-4 py-2 w-72 bg-sky-50 focus:ring-2 focus:ring-orange-300 outline-none" />
+        </div>
+
+        <button id="profileBtn" onclick="location.href='profile-user.html'" class="bg-orange-100 hover:bg-orange-200 text-orange-700 font-semibold rounded-full px-4 py-2 transition"">
+          <div class="hidden sm:flex flex-col text-left">
+            <span class="text">Profile</span>
+          </div>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="container-lg py-10">
+    <div class="bg-cover bg-center rounded-2xl overflow-hidden relative" style="background-image: linear-gradient(180deg, rgba(0,0,0,0.28), rgba(0,0,0,0.02)), url('https://images.unsplash.com/photo-1549880338-65ddcdfd017b?q=80&w=1600&auto=format&fit=crop'); min-height:220px;">
+      <div class="p-8 md:p-12 text-white">
+        <h1 class="text-3xl md:text-4xl font-extrabold">Meet Local Travel Guides — Pakistan</h1>
+        <p class="mt-2 max-w-xl text-white/90">Handpicked local experts for mountain treks, culture tours, city walks, wildlife and photography trips across Pakistan.</p>
+        <div class="mt-4 flex gap-3">
+          <button onclick="document.getElementById('guidesSection').scrollIntoView({behavior:'smooth'})" class="btn btn-primary">Explore Guides</button>
+          <button id="quickFilterBtn" class="btn btn-ghost">Popular Regions</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN -->
+  <main class="container-lg flex-1 pb-16">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+      <div class="flex items-center gap-3 w-full md:w-1/2">
+        <input id="search" placeholder="Search by name, language or region" class="w-full rounded-xl border border-gray-200 p-3 bg-white" />
+      </div>
+
+      <div class="filters">
+        <select id="filterRegion" class="rounded-xl border border-gray-200 p-3 bg-white">
+          <option value="all">All regions</option>
+          <option value="northern">Northern Areas</option>
+          <option value="lahore">Punjab / Lahore</option>
+          <option value="sindh">Sindh / Karachi</option>
+          <option value="balochistan">Balochistan</option>
+        </select>
+
+        <select id="filterLang" class="rounded-xl border border-gray-200 p-3 bg-white">
+          <option value="all">All languages</option>
+          <option value="English">English</option>
+          <option value="Urdu">Urdu</option>
+          <option value="Punjabi">Punjabi</option>
+          <option value="Pashto">Pashto</option>
+          <option value="Sindhi">Sindhi</option>
+          <option value="Balochi">Balochi</option>
+        </select>
+
+        <button id="clearFilters" class="px-4 py-2 rounded-xl bg-white/90 text-[var(--muted)]">Clear</button>
+      </div>
+    </div>
+
+    <!-- Guides grid -->
+    <section id="guidesSection" class="grid-cards">
+      <!-- injected -->
+    </section>
+
+    <div id="noResults" class="hidden mt-8 text-center small-muted">
+      No guides found. Try different filters or <a href="contact-us.html" class="text-orange-600 underline">contact us</a>.
+    </div>
+  </main>
+
+  <!-- BOOKING MODAL -->
+  <div id="bookingModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-card p-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <h3 id="modalGuideName" class="text-2xl font-bold text-[var(--accent-1)]">Guide</h3>
+          <p id="modalGuideMeta" class="small-muted mb-3">—</p>
+
+          <form id="bookingForm" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium">Your name</label>
+              <input id="bookerName" class="mt-1 w-full rounded-xl border border-gray-200 p-3" required />
+            </div>
+            <div>
+              <label class="block text-sm font-medium">Date</label>
+              <input id="bookDate" type="date" class="mt-1 w-full rounded-xl border border-gray-200 p-3" required />
+            </div>
+            <div>
+              <label class="block text-sm font-medium">Notes (optional)</label>
+              <textarea id="bookNotes" rows="3" class="mt-1 w-full rounded-xl border border-gray-200 p-3"></textarea>
+            </div>
+
+            <div class="flex gap-2">
+              <button type="submit" class="flex-1 btn btn-primary">Confirm Booking</button>
+              <button type="button" id="cancelBooking" class="flex-1 btn btn-ghost">Cancel</button>
+            </div>
+
+            <div id="bookingSuccess" class="mt-3 hidden text-green-600">Booked! The guide will contact you soon.</div>
+          </form>
+        </div>
+
+        <div class="hidden md:block p-4 border-l">
+          <div id="modalGuideImg" class="w-full h-48 rounded-lg bg-cover bg-center"></div>
+          <div class="mt-4" id="modalGuideDetails">
+            <div id="modalGuideLanguages" class="flex flex-wrap gap-2"></div>
+            <div class="mt-3">
+              <div id="modalGuideRating" class="stars font-semibold"></div>
+              <p id="modalGuideExp" class="small-muted mt-1"></p>
+              <p id="modalGuideBio" class="mt-3 text-gray-700"></p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAIL MODAL -->
+  <div id="detailModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-card p-6">
+      <button id="closeDetail" class="text-[var(--muted)] text-lg ml-auto">✕</button>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div id="detailImg" class="w-full h-56 rounded-lg bg-cover bg-center"></div>
+        <div>
+          <h3 id="detailName" class="text-2xl font-bold text-[var(--accent-1)]">Name</h3>
+          <p id="detailLang" class="small-muted mt-1"></p>
+          <p id="detailBio" class="mt-4 text-gray-700"></p>
+          <div class="mt-4 flex gap-2">
+            <button id="detailBookBtn" class="btn btn-primary">Book</button>
+            <button id="detailChatBtn" class="btn btn-ghost">Chat</button>
+            <button id="detailFavBtn" class="btn btn-ghost">★ Favorite</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="text-center py-6 bg-white/60 backdrop-blur-md mt-auto">
+    © 2025 Wander Hub Ai — All Rights Reserved
+  </footer>
+
+<script>
+/* --------------
+  Travel Guide client script (self-contained)
+  Replace the current <script> block with this one.
+  --------------
+*/
+
+/* ---------- DOM refs ---------- */
+const guidesGrid = document.getElementById('guidesSection');
+const searchEl = document.getElementById('search');
+const filterRegion = document.getElementById('filterRegion');
+const filterLang = document.getElementById('filterLang');
+const clearFilters = document.getElementById('clearFilters');
+const navSearch = document.getElementById('navSearch');
+const noResults = document.getElementById('noResults');
+const quickFilterBtn = document.getElementById('quickFilterBtn');
+
+const bookingModal = document.getElementById('bookingModal');
+const detailModal = document.getElementById('detailModal');
+
+/* ---------- Constants & storage keys ---------- */
+const SHARED_GUIDERS_KEY = 'wh_guiders';
+const SHARED_GUIDERS_PING = 'wh_guiders_sync_ping';
+const PROFILE_KEY = 'wanderhub_profile_v1';
+const BOOKING_KEY = 'wanderhub_bookings_v1';
+const FAVS_KEY = 'wanderhub_favs_v1';
+const MSG_KEY = 'wanderhub_messages_v1';
+const LASTREAD_KEY = 'wanderhub_lastread_v1';
+
+/* ---------- Seed guides (fallback) ---------- */
+const localGuidesSeed = [
+  { id: 'aisha', name: "Aisha Khan", region: "northern",   langs: ["English","Urdu"],         exp: 6, rating: 4.9, img: "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?q=80&w=1200&auto=format&fit=crop", bio:"Expert in Hunza & Skardu trekking — photography-friendly itineraries." },
+  { id: 'zain',  name: "Zain Malik", region: "lahore",     langs: ["English","Punjabi"],      exp: 5, rating: 4.8, img: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1200&auto=format&fit=crop", bio:"City historian & cultural guide for Lahore and Punjab." },
+  { id: 'fatima',name: "Fatima Ali", region: "sindh",      langs: ["English","Sindhi","Urdu"],exp: 7, rating: 4.9, img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200&auto=format&fit=crop", bio:"Cultural tours in Sindh, local cuisine and heritage walks." },
+  { id: 'hassan',name: "Hassan Raza",region: "northern",   langs: ["English","Pashto"],       exp: 4, rating: 4.6, img: "https://images.unsplash.com/photo-1482192596544-9eb780fc7f66?q=80&w=1200&auto=format&fit=crop", bio:"Mountain wildlife & photography guide based around Gilgit." },
+  { id: 'sara',  name: "Sara Khan", region: "balochistan", langs: ["English","Balochi"],      exp: 6, rating: 4.7, img: "https://images.unsplash.com/photo-1470770903676-69b98201ea1c?q=80&w=1200&auto=format&fit=crop", bio:"Desert & coastal expert for Balochistan adventures." },
+  { id: 'ali',   name: "Ali Ahmed", region: "lahore",      langs: ["English","Kashmiri"],     exp: 3, rating: 4.5, img: "https://images.unsplash.com/photo-1526772662000-3f88f10405ff?q=80&w=1200&auto=format&fit=crop", bio:"Short local hikes and weekend cultural tours." }
+];
+
+/* ---------- Helpers: localStorage read/write ---------- */
+function loadJSON(key){ try{ const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; } catch(e){ return null; } }
+function saveJSON(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); return true; }catch(e){ console.warn('saveJSON fail', e); return false; } }
+
+/* ---------- Shared guiders helpers ---------- */
+function loadSharedGuidersFromStorage(){
+  try {
+    const raw = localStorage.getItem(SHARED_GUIDERS_KEY) || '[]';
+    const arr = JSON.parse(raw);
+    if(!Array.isArray(arr)) return [];
+    return arr;
+  } catch(e) { console.warn('loadSharedGuidersFromStorage parse failed', e); return []; }
+}
+function saveSharedGuidersToStorage(arr){
+  try {
+    localStorage.setItem(SHARED_GUIDERS_KEY, JSON.stringify(arr));
+    localStorage.setItem(SHARED_GUIDERS_PING, Date.now().toString());
+    return true;
+  } catch(e){ console.warn('saveSharedGuidersToStorage failed', e); return false; }
+}
+
+/* ---------- Utility formatting ---------- */
+function escapeHtml(s){ return String(s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function truncate(s,n=120){ return s && s.length>n ? s.slice(0,n-1)+'…' : (s||''); }
+
+/* ---------- Merge shared guiders with seed ---------- */
+function getAllGuides(){
+  const shared = loadSharedGuidersFromStorage();
+  const merged = localGuidesSeed.map(g => Object.assign({}, g));
+  shared.forEach(s => {
+    const normalized = {
+      id: s.id || ('g' + Math.floor(Math.random()*100000)),
+      name: s.name || 'Guide',
+      region: s.region || 'all',
+      langs: Array.isArray(s.langs) ? s.langs : (typeof s.langs === 'string' ? s.langs.split(',').map(x=>x.trim()) : []),
+      exp: Number(s.exp || 0),
+      rating: Number(s.rating || 4.5),
+      img: s.img || s.avatar || '',
+      bio: s.bio || s.spec || s.description || '',
+      contact: s.contact || s.email || ''
+    };
+    const found = merged.find(x => String(x.id) === String(normalized.id));
+    if(found) Object.assign(found, normalized);
+    else merged.push(normalized);
+  });
+  return merged;
+}
+function findGuideById(id){ return getAllGuides().find(g => String(g.id) === String(id)); }
+
+/* ---------- Favorites & messages (small stubs) ---------- */
+function getFavs(){ return loadJSON(FAVS_KEY) || []; }
+function toggleFav(id){ let f = getFavs(); if(f.includes(id)) f = f.filter(x=>x!==id); else f.unshift(id); saveJSON(FAVS_KEY, f); return f; }
+
+/* unread message count helper (safe stub if messages not present) */
+function unreadRepliesForGuide(guideName){
+  const profile = ensureProfileName();
+  const convId = `${profile.name || 'Guest'}__${guideName}`;
+  const msgs = loadJSON(MSG_KEY) || {};
+  const conv = msgs[convId];
+  if(!conv || !conv.messages) return 0;
+  const lastReads = loadJSON(LASTREAD_KEY) || {};
+  const lastReadIso = lastReads[convId] ? new Date(lastReads[convId]) : new Date(0);
+  return conv.messages.reduce((acc,m) => (m.from === 'guide' && new Date(m.created) > lastReadIso) ? acc+1 : acc, 0);
+}
+
+/* ---------- Render guides (uses merged dataset) ---------- */
+function renderGuides(list){
+  const all = Array.isArray(list) ? list : getAllGuides();
+  if(!guidesGrid) return;
+  guidesGrid.innerHTML = '';
+  if(!all || all.length === 0){ noResults && noResults.classList.remove('hidden'); return; }
+  noResults && noResults.classList.add('hidden');
+
+  const favs = getFavs();
+  all.forEach((g, idx) => {
+    const unread = unreadRepliesForGuide(g.name);
+    const isFav = favs.includes(g.id);
+    const el = document.createElement('article');
+    el.className = 'guide-card card-hover';
+    el.setAttribute('data-aos','fade-up');
+    if (idx) el.setAttribute('data-aos-delay', String(Math.min(idx*40, 240)));
+
+    // decide if current local wh_user can edit this guider
+    const whRaw = localStorage.getItem('wh_user');
+    let showEdit = false;
+    try{
+      if(whRaw){
+        const u = JSON.parse(whRaw);
+        if(u && (String(u.role||'').toLowerCase() === 'guider')){
+          if(String(u.guiderId || u.id || '').toLowerCase() === String(g.id).toLowerCase()) showEdit = true;
+          if(!showEdit && u.email && g.contact && String(u.email).toLowerCase() === String(g.contact).toLowerCase()) showEdit = true;
+        }
+      }
+    }catch(e){}
+
+    el.innerHTML = `
+      <div class="guide-media" style="background-image:url('${escapeHtml(g.img || '')}')"></div>
+      <div class="card-body">
+        <div class="card-head">
+          <div class="card-left">
+            <div class="guide-avatar" style="background-image:url('${escapeHtml(g.img || '')}')"></div>
+            <div>
+              <h3 class="text-lg font-semibold">${escapeHtml(g.name)}</h3>
+              <div class="small-muted">${escapeHtml((g.langs||[]).join(', '))}</div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="stars text-sm font-semibold">${(Number(g.rating)||0).toFixed(1)} ★</div>
+            <div class="text-xs small-muted mt-1">${Number(g.exp||0)} yrs</div>
+          </div>
+        </div>
+
+        <p class="mt-2 text-sm text-gray-700">${escapeHtml(truncate(g.bio,120))}</p>
+
+        <div class="card-actions">
+          <button class="btn btn-primary bookBtn" data-id="${escapeHtml(g.id)}">Book</button>
+          <button class="btn btn-ghost chatBtnLocal" data-id="${escapeHtml(g.id)}">Chat</button>
+          <button class="btn btn-ghost detailBtn" data-id="${escapeHtml(g.id)}">Details</button>
+          ${ showEdit ? `<button class="btn btn-ghost editProfileBtn" data-id="${escapeHtml(g.id)}">Edit profile</button>` : '' }
+          <div class="right-end" style="display:flex;gap:.5rem;align-items:center">
+            ${ unread ? `<span class="badge" title="${unread} unread replies">${unread}</span>` : '' }
+            <button class="btn btn-ghost favBtn" data-id="${escapeHtml(g.id)}">${isFav? '★' : '☆'}</button>
+            <button class="btn btn-ghost shareBtn" data-id="${escapeHtml(g.id)}">⇪</button>
+          </div>
+        </div>
+
+        <div class="info-overlay text-sm small-muted">
+          <span class="tag">${escapeHtml(g.region || 'all')}</span>
+          ${(g.langs || []).map(l => `<span class="tag">${escapeHtml(l)}</span>`).join(' ')}
+        </div>
+      </div>
+    `;
+    guidesGrid.appendChild(el);
+  });
+
+  // bind handlers
+  document.querySelectorAll('.bookBtn').forEach(b => { b.removeEventListener('click', bookClick); b.addEventListener('click', bookClick); });
+  document.querySelectorAll('.chatBtnLocal').forEach(b => { b.removeEventListener('click', chatClick); b.addEventListener('click', chatClick); });
+  document.querySelectorAll('.detailBtn').forEach(b => { b.removeEventListener('click', detailClick); b.addEventListener('click', detailClick); });
+  document.querySelectorAll('.favBtn').forEach(b => { b.removeEventListener('click', favClick); b.addEventListener('click', favClick); });
+  document.querySelectorAll('.shareBtn').forEach(b => { b.removeEventListener('click', shareClick); b.addEventListener('click', shareClick); });
+  document.querySelectorAll('.editProfileBtn').forEach(b => { b.removeEventListener('click', onEditProfileClick); b.addEventListener('click', onEditProfileClick); });
+}
+
+/* ---------- Filter logic ---------- */
+function applyCurrentFilters(source){
+  const all = Array.isArray(source) ? source : getAllGuides();
+  const q = (searchEl ? searchEl.value : '').trim().toLowerCase();
+  const region = filterRegion ? filterRegion.value : 'all';
+  const lang = filterLang ? filterLang.value : 'all';
+  return all.filter(g => {
+    if(region !== 'all' && String((g.region||'')).toLowerCase() !== String(region).toLowerCase()) return false;
+    if(lang !== 'all' && !(g.langs || []).map(x=>String(x).toLowerCase()).includes(String(lang).toLowerCase())) return false;
+    if(!q) return true;
+    if(String(g.name||'').toLowerCase().includes(q)) return true;
+    if((g.langs||[]).join(' ').toLowerCase().includes(q)) return true;
+    if((g.region||'').toLowerCase().includes(q)) return true;
+    if((g.bio||'').toLowerCase().includes(q)) return true;
+    return false;
+  });
+}
+
+/* ---------- Booking / detail / chat handlers ---------- */
+let activeGuideId = null;
+
+function bookClick(ev){ const id = ev.currentTarget.dataset.id; openBookingModal(id); }
+function chatClick(ev){ const id = ev.currentTarget.dataset.id; startChatFor(id); }
+function detailClick(ev){ const id = ev.currentTarget.dataset.id; openDetail(id); }
+function favClick(ev){ toggleFav(ev.currentTarget.dataset.id); renderGuides(applyCurrentFilters()); }
+function shareClick(ev){
+  const id = ev.currentTarget.dataset.id; const g = findGuideById(id);
+  if(!g) return;
+  const url = `${window.location.origin + window.location.pathname.replace('travel-guide.html','travel-guide-chat.html')}?guide=${encodeURIComponent(g.name)}&avatar=${encodeURIComponent(g.img||'')}`;
+  navigator.clipboard?.writeText(url).then(()=> toast('Chat link copied')).catch(()=> toast('Unable to copy link'));
+}
+
+function openBookingModal(id){
+  const g = findGuideById(id); if(!g) return;
+  activeGuideId = id;
+  document.getElementById('modalGuideName').textContent = g.name;
+  document.getElementById('modalGuideMeta').textContent = `${(g.region||'').toUpperCase()} · ${(g.langs||[]).join(', ')}`;
+  document.getElementById('modalGuideImg').style.backgroundImage = `url('${g.img||''}')`;
+  document.getElementById('modalGuideLanguages').innerHTML = (g.langs||[]).map(l=>`<span class="tag">${escapeHtml(l)}</span>`).join(' ');
+  document.getElementById('modalGuideExp').textContent = `${g.exp||0} years experience`;
+  document.getElementById('modalGuideRating').textContent = `${(Number(g.rating)||0).toFixed(1)} ★`;
+  document.getElementById('modalGuideBio').textContent = g.bio||'';
+  document.getElementById('bookingSuccess').classList.add('hidden');
+
+  const profile = ensureProfileName();
+  if(profile.name) document.getElementById('bookerName').value = profile.name;
+
+  bookingModal.classList.add('show'); bookingModal.setAttribute('aria-hidden','false');
+}
+
+document.getElementById('cancelBooking')?.addEventListener('click', ()=> {
+  bookingModal.classList.remove('show'); bookingModal.setAttribute('aria-hidden','true'); document.getElementById('bookingForm').reset();
+});
+
+document.getElementById('bookingForm')?.addEventListener('submit', (ev) => {
+  ev.preventDefault();
+  if(!activeGuideId) return;
+  const g = findGuideById(activeGuideId);
+  const booking = {
+    guideName: g.name, guideId: g.id,
+    name: document.getElementById('bookerName').value,
+    date: document.getElementById('bookDate').value,
+    notes: document.getElementById('bookNotes').value,
+    created: new Date().toISOString(), status: "Pending"
+  };
+  const arr = loadJSON(BOOKING_KEY) || []; arr.unshift(booking); saveJSON(BOOKING_KEY, arr);
+  document.getElementById('bookingSuccess').classList.remove('hidden');
+  setTimeout(()=> { bookingModal.classList.remove('show'); document.getElementById('bookingForm').reset(); toast('Booking saved'); }, 900);
+});
+
+function openDetail(id){
+  const g = findGuideById(id); if(!g) return;
+  activeGuideId = id;
+  document.getElementById('detailImg').style.backgroundImage = `url('${g.img||''}')`;
+  document.getElementById('detailName').textContent = g.name;
+  document.getElementById('detailLang').textContent = (g.langs||[]).join(', ');
+  document.getElementById('detailBio').textContent = g.bio || '';
+  detailModal.classList.add('show'); detailModal.setAttribute('aria-hidden','false');
+
+  document.getElementById('detailBookBtn').onclick = ()=> { detailModal.classList.remove('show'); openBookingModal(id); };
+  document.getElementById('detailChatBtn').onclick = ()=> { detailModal.classList.remove('show'); startChatFor(id); };
+  document.getElementById('detailFavBtn').onclick = ()=> { toggleFav(id); renderGuides(applyCurrentFilters()); detailModal.classList.remove('show'); };
+}
+
+function startChatFor(id){
+  const g = findGuideById(id); if(!g) return;
+  const profile = ensureProfileName();
+  const convId = `${profile.name}__${g.name}`;
+  setLastRead(convId, new Date().toISOString());
+  const url = `travel-guide-chat.html?guide=${encodeURIComponent(g.name)}&avatar=${encodeURIComponent(g.img||'')}`;
+  window.location.href = url;
+}
+
+/* last-read helper */
+function setLastRead(convId, iso){ const lr = loadJSON(LASTREAD_KEY) || {}; lr[convId]= iso; saveJSON(LASTREAD_KEY, lr); }
+
+/* ---------- Edit profile flow ---------- */
+function onEditProfileClick(ev){
+  const id = ev.currentTarget.dataset.id;
+  openEditProfileModal(id);
+}
+function openEditProfileModal(guideId){
+  const g = findGuideById(guideId); if(!g) { toast('Guide not found'); return; }
+
+  // create/populate modal
+  let modal = document.getElementById('editProfileModal');
+  if(!modal){
+    modal = document.createElement('div');
+    modal.id = 'editProfileModal';
+    modal.className = 'modal';
+    modal.innerHTML = `
+      <div class="modal-card p-6">
+        <button id="closeEditProfile" class="text-[var(--muted)] text-lg ml-auto">✕</button>
+        <h3 class="text-xl font-bold mb-3">Edit your profile</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm">Full name</label><input id="edit_name" class="mt-1 w-full rounded-xl border p-2" />
+            <label class="block text-sm mt-3">Region</label><input id="edit_region" class="mt-1 w-full rounded-xl border p-2" />
+            <label class="block text-sm mt-3">Languages (comma separated)</label><input id="edit_langs" class="mt-1 w-full rounded-xl border p-2" />
+            <label class="block text-sm mt-3">Years experience</label><input id="edit_exp" type="number" class="mt-1 w-full rounded-xl border p-2" />
+            <label class="block text-sm mt-3">Rating (0-5)</label><input id="edit_rating" type="number" step="0.1" max="5" class="mt-1 w-full rounded-xl border p-2" />
+          </div>
+          <div>
+            <label class="block text-sm">Profile image URL</label><input id="edit_img" class="mt-1 w-full rounded-xl border p-2" />
+            <label class="block text-sm mt-3">Short bio</label><textarea id="edit_bio" rows="6" class="mt-1 w-full rounded-xl border p-2"></textarea>
+          </div>
+        </div>
+        <div class="mt-4 flex gap-2">
+          <button id="saveEditProfile" class="px-4 py-2 rounded btn btn-primary">Save</button>
+          <button id="cancelEditProfile" class="px-4 py-2 rounded btn btn-ghost">Cancel</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    document.getElementById('closeEditProfile').addEventListener('click', ()=> { modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); });
+    document.getElementById('cancelEditProfile').addEventListener('click', ()=> { modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); });
+  }
+
+  document.getElementById('edit_name').value = g.name || '';
+  document.getElementById('edit_region').value = g.region || '';
+  document.getElementById('edit_langs').value = (g.langs || []).join(', ');
+  document.getElementById('edit_exp').value = g.exp || 0;
+  document.getElementById('edit_rating').value = g.rating || 4.5;
+  document.getElementById('edit_img').value = g.img || '';
+  document.getElementById('edit_bio').value = g.bio || '';
+
+  modal.classList.add('show'); modal.setAttribute('aria-hidden','false');
+
+  document.getElementById('saveEditProfile').onclick = () => {
+    const whRaw = localStorage.getItem('wh_user');
+    if(!whRaw){ toast('Not logged in'); return; }
+    let u = null; try { u = JSON.parse(whRaw); } catch(e){}
+    if(!u || String((u.role||'')).toLowerCase() !== 'guider'){ toast('Permission denied'); return; }
+    if(String(u.guiderId || u.id || '').toLowerCase() !== String(guideId).toLowerCase()){
+      // allow by matching stored contact/email if present - otherwise deny
+      const shared = loadSharedGuidersFromStorage();
+      const found = shared.find(s => String(s.id) === String(guideId));
+      if(found && u.email && found.contact && String(u.email).toLowerCase() !== String(found.contact).toLowerCase()){
+        toast('Permission denied (mismatched identity)'); return;
+      }
+    }
+
+    const updated = {
+      id: guideId,
+      name: (document.getElementById('edit_name').value || '').trim(),
+      region: (document.getElementById('edit_region').value || '').trim(),
+      langs: (document.getElementById('edit_langs').value || '').split(',').map(x=>x.trim()).filter(Boolean),
+      exp: Number(document.getElementById('edit_exp').value || 0),
+      rating: Number(document.getElementById('edit_rating').value || 4.5),
+      img: (document.getElementById('edit_img').value || '').trim(),
+      bio: (document.getElementById('edit_bio').value || '').trim()
+    };
+
+    const sharedArr = loadSharedGuidersFromStorage();
+    const idx = sharedArr.findIndex(x => String(x.id) === String(guideId));
+    if(idx >= 0) sharedArr[idx] = Object.assign({}, sharedArr[idx], updated);
+    else sharedArr.push(updated);
+    const ok = saveSharedGuidersToStorage(sharedArr);
+    if(ok){
+      // reflect immediately in local seed as well
+      const localIdx = localGuidesSeed.findIndex(x => String(x.id) === String(guideId));
+      if(localIdx >= 0) localGuidesSeed[localIdx] = Object.assign({}, localGuidesSeed[localIdx], updated);
+      else localGuidesSeed.push(updated);
+
+      modal.classList.remove('show'); modal.setAttribute('aria-hidden','true');
+      toast('Profile saved — visible across site');
+      renderGuides(applyCurrentFilters());
+      try { localStorage.setItem('wh_last_guider_update', JSON.stringify({ id: guideId, ts: Date.now() })); } catch(e){}
+    } else {
+      toast('Failed to save profile');
+    }
+  };
+}
+
+/* ---------- Storage event listener: update UI when admin changes guiders ---------- */
+window.addEventListener('storage', (ev) => {
+  if(!ev.key) return;
+  if(ev.key === SHARED_GUIDERS_KEY || ev.key === SHARED_GUIDERS_PING || ev.key === 'wh_last_guider_update'){
+    try { renderGuides(applyCurrentFilters()); } catch(e){ console.warn('refresh on storage failed', e); }
+  }
+});
+
+/* ---------- Toast helper ---------- */
+function toast(msg){
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.className = 'fixed right-6 bottom-6 bg-[rgba(0,0,0,0.8)] text-white px-4 py-2 rounded shadow';
+  document.body.appendChild(t);
+  setTimeout(()=> t.remove(), 2200);
+}
+
+/* ---------- Minimal profile helper (used for bookings/chat demo) ---------- */
+function ensureProfileName(){
+  let p = loadJSON(PROFILE_KEY) || {};
+  try {
+    const whRaw = localStorage.getItem('wh_user');
+    if (whRaw) {
+      const u = JSON.parse(whRaw);
+      if (u && u.name) {
+        if (p.name !== u.name) { p.name = u.name; saveJSON(PROFILE_KEY, p); }
+        return p;
+      }
+    }
+  } catch(e){}
+  if(!p.name){
+    p.name = `Guest${Math.floor(Math.random()*9000)+1000}`;
+    saveJSON(PROFILE_KEY, p);
+  }
+  return p;
+}
+
+/* ---------- Bind search/filter controls ---------- */
+function bindControls(){
+  searchEl?.addEventListener('input', () => { renderGuides(applyCurrentFilters()); });
+  navSearch?.addEventListener('keydown', (e)=> { if(e.key === 'Enter'){ e.preventDefault(); searchEl.value = navSearch.value; renderGuides(applyCurrentFilters()); }});
+  filterRegion?.addEventListener('change', ()=> renderGuides(applyCurrentFilters()));
+  filterLang?.addEventListener('change', ()=> renderGuides(applyCurrentFilters()));
+  clearFilters?.addEventListener('click', () => { if(searchEl) searchEl.value=''; if(filterRegion) filterRegion.value='all'; if(filterLang) filterLang.value='all'; if(navSearch) navSearch.value=''; renderGuides(applyCurrentFilters()); });
+  quickFilterBtn?.addEventListener('click', ()=>{ const order = ['northern','lahore','sindh','balochistan','all']; const cur = filterRegion.value; const next = order[(order.indexOf(cur) + 1) % order.length] || 'all'; filterRegion.value = next; renderGuides(applyCurrentFilters()); });
+
+  // card-click opens detail (if not clicked on a button)
+  guidesGrid?.addEventListener('click', (ev) => {
+    if(ev.target.closest('.bookBtn') || ev.target.closest('.detailBtn') || ev.target.closest('.chatBtnLocal') || ev.target.closest('.favBtn') || ev.target.closest('.editProfileBtn')) return;
+    const card = ev.target.closest('.guide-card');
+    if(!card) return;
+    const idBtn = card.querySelector('.bookBtn, .detailBtn, .chatBtnLocal, .favBtn, .editProfileBtn');
+    if(idBtn){
+      const id = idBtn.getAttribute('data-id');
+      openDetail(id);
+    }
+  });
+
+  // close modals clicking outside
+  window.addEventListener('click', (e)=> {
+    if(e.target === bookingModal){ bookingModal.classList.remove('show'); bookingModal.setAttribute('aria-hidden','true'); document.getElementById('bookingForm').reset(); }
+    if(e.target === detailModal){ detailModal.classList.remove('show'); detailModal.setAttribute('aria-hidden','true'); }
+  });
+  // ESC closes
+  window.addEventListener('keydown', (e)=> { if(e.key === 'Escape'){ bookingModal.classList.remove('show'); detailModal.classList.remove('show'); }});
+}
+
+/* ---------- Init ---------- */
+function init(){
+  ensureProfileName();
+
+  // Load region param (optional)
+  try{
+    const params = new URLSearchParams(location.search);
+    const regionParam = params.get('region');
+    const allowedRegions = ['northern','lahore','sindh','balochistan','all'];
+    if (regionParam && allowedRegions.includes(regionParam) && filterRegion) filterRegion.value = regionParam;
+  }catch(e){}
+
+  bindControls();
+  renderGuides(applyCurrentFilters());
+  AOS?.init?.({ duration: 420, once: true, easing: 'ease-out-cubic', offset: 90 });
+  AOS?.refresh?.();
+
+  // gentle periodic refresh to reflect cross-tab changes
+  setInterval(()=> { try{ renderGuides(applyCurrentFilters()); } catch(e){} }, 10000);
+}
+
+init();
+
+</script>
+
+</body>
+</html>

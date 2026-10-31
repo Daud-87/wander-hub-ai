@@ -1,0 +1,10 @@
+node_modules/
+.env
+.env.*
+backend/.env
+backend/node_modules/
+backend/uploads/
+backend/users.json
+backend/resetTokens.json
+.DS_Store
+*.log

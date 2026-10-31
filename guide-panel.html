@@ -1,0 +1,1338 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Guide Panel — Wander Hub Ai</title>
+ <link rel="icon" type="image/png" href="templates/logofinal.png">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root{
+      --accent-1:#f97316;
+      --accent-2:#06b6d4;
+      --muted:#7f6a57;
+      --card-bg: rgba(255,255,255,0.96);
+    }
+    body{
+      font-family:"Plus Jakarta Sans",sans-serif;
+      background:linear-gradient(180deg,#fb923c 0%, #7dd3fc 50%, #fb923c 100%);
+      min-height:100vh;
+      margin:0;
+    }
+    .app {
+      max-width:1200px;
+      margin:2rem auto;
+      background:var(--card-bg);
+      border-radius:1rem;
+      box-shadow:0 30px 60px rgba(3,10,18,0.12);
+      overflow:hidden;
+      display:grid;
+      grid-template-columns:300px 1fr 340px;
+      min-height:72vh;
+      position:relative;
+    }
+    @media(max-width:1024px){
+      .app{ grid-template-columns: 1fr; }
+      .right-col{ order:3 }
+      .left-col{ order:1 }
+      .center-col{ order:2; min-height:48vh }
+    }
+
+    .panel-head{
+      display:flex;
+      align-items:center;
+      gap:1rem;
+      padding:1rem 1.25rem;
+      border-bottom:1px solid rgba(0,0,0,0.04);
+      background: linear-gradient(90deg, rgba(255,255,255,0.6), rgba(255,255,255,0.5));
+    }
+
+    /* Header left */
+    .brand {
+      display:flex;
+      align-items:center;
+      gap:0.75rem;
+    }
+    .brand .logo {
+      width:42px; height:42px; border-radius:10px; overflow:hidden; display:flex;align-items:center;justify-content:center;
+      background:white; box-shadow:0 6px 20px rgba(0,0,0,0.08);
+    }
+    .brand .title { font-weight:700; color:var(--accent-1); letter-spacing:0.2px; }
+
+    /* Header right (logout) */
+    .header-actions { margin-left:auto; display:flex; align-items:center; gap:0.75rem; }
+    .logout-btn {
+      display:inline-flex; align-items:center; gap:10px;
+      padding:8px 16px; border-radius:999px; color:white; font-weight:700; cursor:pointer;
+      background:linear-gradient(90deg,var(--accent-2),var(--accent-1));
+      box-shadow:0 10px 30px rgba(3,10,18,0.12);
+      transition:transform .15s ease, box-shadow .15s ease, opacity .12s;
+    }
+    .logout-btn:hover{ transform:translateY(-3px); box-shadow:0 18px 40px rgba(3,10,18,0.14); }
+    .logout-btn .icon { width:18px; height:18px; display:inline-block; border-radius:4px; background:rgba(255,255,255,0.15); text-align:center; line-height:18px; }
+
+    .left-col{
+      padding:1rem;
+      border-right:1px solid rgba(0,0,0,0.04);
+      overflow:auto;
+    }
+    .center-col{
+      display:flex;
+      flex-direction:column;
+      padding:0.8rem;
+    }
+    .right-col{
+      padding:1rem;
+      border-left:1px solid rgba(0,0,0,0.04);
+      overflow:auto;
+    }
+
+    .guide-card{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:0.75rem;
+      padding:0.6rem;
+      border-radius:0.8rem;
+      cursor:pointer;
+      transition:all .18s cubic-bezier(.2,.9,.3,1);
+      border:1px solid transparent;
+      background:white;
+    }
+    .guide-card:hover{
+      transform:translateY(-6px);
+      box-shadow:0 18px 42px rgba(12,20,30,0.06);
+      border-color: rgba(0,0,0,0.04);
+    }
+    .guide-card-left{
+      display:flex;
+      align-items:center;
+      gap:0.6rem;
+    }
+    .guide-card-left img{ width:46px; height:46px; border-radius:10px; object-fit:cover; box-shadow:0 8px 18px rgba(10,10,10,0.06); }
+    .guide-card-meta{
+      font-size:0.75rem;
+      color:var(--muted);
+    }
+    .guide-card-stats{
+      text-align:right;
+      font-size:0.75rem;
+      color:var(--muted);
+    }
+    .pill{
+      display:inline-block;
+      padding:0.15rem 0.5rem;
+      border-radius:999px;
+      font-size:0.7rem;
+      background:#fef2e2;
+      color:#b45309;
+      margin-left:0.25rem;
+    }
+
+    /* Search + sort */
+    .left-controls {
+  display:flex; align-items:center; }
+    .left-controls input{
+      flex:1; padding:10px 5px; border-radius:999px; border:1px solid rgba(0,0,0,0.06);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+    .left-controls select{
+      padding:10px 2px; border-radius:999px; border:1px solid rgba(0,0,0,0.06);
+    }
+
+    .booking-row{
+      background:white;
+      margin-bottom:0.6rem;
+      padding:0.6rem;
+      border-radius:0.7rem;
+      border:1px solid rgba(0,0,0,0.04);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:0.6rem;
+    }
+
+    /* chat */
+    .messages {
+      flex:1;
+      overflow:auto;
+      padding:1rem;
+      display:flex;
+      flex-direction:column;
+      gap:0.6rem;
+      background: linear-gradient(180deg,#fff,#fbfbfb);
+      border-radius:0.6rem;
+    }
+    .msg {
+      max-width:78%;
+      padding:0.6rem 0.9rem;
+      border-radius:1rem;
+      display:inline-block;
+      line-height:1.25;
+    }
+    .msg.user {
+      margin-left:auto;
+      background:linear-gradient(90deg,var(--accent-2),var(--accent-1));
+      color:white;
+      border-bottom-right-radius:.25rem;
+    }
+    .msg.guide {
+      background:#f4ede6;
+      color:#1d140c;
+      border-bottom-left-radius:.25rem;
+    }
+    .meta {
+      font-size:0.8rem;
+      color:var(--muted);
+      margin-top:0.25rem;
+    }
+
+    .chat-input{
+      display:flex;
+      gap:0.6rem;
+      padding:0.6rem;
+      border-top:1px solid rgba(0,0,0,0.04);
+    }
+    .btn {
+      padding:0.55rem 0.9rem;
+      border-radius:999px;
+      font-weight:600;
+      cursor:pointer;
+    }
+    .btn-primary {
+      background:linear-gradient(90deg,var(--accent-1),var(--accent-2));
+      color:white;
+    }
+    .btn-ghost {
+      background:white;
+      border:1px solid rgba(0,0,0,0.04);
+    }
+
+    .empty {
+      text-align:center;
+      color:var(--muted);
+      padding:2rem 1rem;
+    }
+
+    .status-badge {
+      font-size:0.75rem;
+      padding:0.25rem 0.45rem;
+      border-radius:999px;
+      background:rgba(243,115,22,0.08);
+      color:var(--accent-1);
+      font-weight:600;
+    }
+
+    .small-muted{ color:var(--muted); font-size:0.9rem; }
+
+    .hide { display:none !important; }
+    .readonly { pointer-events:none; opacity:.95; }
+
+    /* Online dot animation */
+    .online-dot{ width:10px;height:10px;border-radius:999px;background:linear-gradient(90deg,#34d399,#10b981); box-shadow:0 4px 10px rgba(16,185,129,0.18); display:inline-block; margin-right:8px; transform-origin:center; animation: pulse 1600ms infinite ease-in-out; }
+    @keyframes pulse {
+      0%{ transform:scale(.9); opacity:.9 } 50%{ transform:scale(1.15); opacity:1 } 100%{ transform:scale(.9); opacity:.9 }
+    }
+
+    /* subtle scrollbar */
+    ::-webkit-scrollbar { width:8px; height:8px;}
+    ::-webkit-scrollbar-thumb { background:rgba(0,0,0,0.12); border-radius:999px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+
+  </style>
+</head>
+<body>
+  <header class="panel-head">
+    <div class="brand">
+      <div class="logo">
+        <img src="templates/logofinal.png" alt="logo" style="width:36px;height:36px;object-fit:contain;" />
+      </div>
+      <div>
+        <div class="title">Wander Hub Ai — Guide Panel</div>
+        <div class="small-muted" style="font-size:12px;">Per-guide secure access • Bookings • Chats</div>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <!-- Only logout here now -->
+      <button id="logoutBtn" class="logout-btn" title="Logout and return to login">
+        <span class="icon">⎋</span>
+        Logout
+      </button>
+    </div>
+  </header>
+
+  <!-- Per-guide LOGIN / SIGNUP overlay (unchanged) -->
+  <div id="guideAuthOverlay" class="fixed inset-0 hidden items-center justify-center z-50">
+    <div id="guideAuthCard" class="p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-2xl">🔐</div>
+        <div>
+          <h2 id="authTitle" class="text-lg font-bold text-gray-800">Guide Portal</h2>
+          <p id="authSubtitle" class="small-muted text-xs">Secure access for each guide separately.</p>
+        </div>
+      </div>
+
+      <div class="flex mb-3 bg-slate-100 rounded-full p-1 text-xs">
+        <button id="authTabLogin" class="tab-btn active" type="button">Login</button>
+        <button id="authTabSignup" class="tab-btn" type="button">Signup</button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-sm font-semibold mb-1">Guide</label>
+          <div id="authGuideName" class="text-sm small-muted">—</div>
+        </div>
+
+        <div id="authExtraSignupFields" class="hidden">
+          <div><label class="block text-sm font-semibold mb-1">Email (optional)</label>
+            <input id="authEmailInput" type="email" class="w-full rounded-xl border border-gray-200 p-2.5" placeholder="guide@example.com" />
+          </div>
+          <div><label class="block text-sm font-semibold mb-1">Phone (optional)</label>
+            <input id="authPhoneInput" type="text" class="w-full rounded-xl border border-gray-200 p-2.5" placeholder="+92..." />
+          </div>
+        </div>
+
+        <div>
+          <label id="authPasswordLabel" class="block text-sm font-semibold mb-1">Password</label>
+          <input id="authPasswordInput" type="password" class="w-full rounded-xl border border-gray-200 p-2.5" placeholder="Enter password" />
+        </div>
+
+        <div id="authConfirmRow" class="hidden">
+          <label class="block text-sm font-semibold mb-1">Confirm password</label>
+          <input id="authConfirmInput" type="password" class="w-full rounded-xl border border-gray-200 p-2.5" placeholder="Re-enter password" />
+        </div>
+
+        <div id="authError" class="text-xs text-red-500 hidden"></div>
+        <button id="authActionBtn" class="btn btn-primary w-full mt-1">Unlock</button>
+        <p id="authHint" class="small-muted text-xs mt-1">Passwords are stored.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change password overlay -->
+  <div id="changePwOverlay" class="fixed inset-0 hidden items-center justify-center z-50">
+    <div id="changePwCard" class="p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-full bg-sky-50 flex items-center justify-center text-2xl">🛠</div>
+        <div>
+          <h2 class="text-lg font-bold text-gray-800">Change password</h2>
+          <p id="changePwGuideLabel" class="small-muted text-xs">—</p>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-sm font-semibold mb-1">Current password</label>
+          <input id="changePwCurrent" type="password" class="w-full rounded-xl border border-gray-200 p-2.5" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-1">New password</label>
+          <input id="changePwNew" type="password" class="w-full rounded-xl border border-gray-200 p-2.5" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-1">Confirm new password</label>
+          <input id="changePwConfirm" type="password" class="w-full rounded-xl border border-gray-200 p-2.5" />
+        </div>
+        <div id="changePwError" class="text-xs text-red-500 hidden"></div>
+
+        <button id="changePwSaveBtn" class="btn btn-primary w-full mt-1">Update password</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="app" data-aos="fade-up">
+    <!-- LEFT: guides + bookings -->
+    <section class="left-col" id="leftCol">
+      <h4 class="text-sm font-semibold mb-2">Guide accounts</h4>
+      <div class="small-muted text-xs mb-2">Click a guide and login / signup with their password. Stats show total bookings & chats.</div>
+
+      <!-- Search + sort -->
+      <div class="left-controls">
+        <input id="guideSearch" placeholder="Search guides by name or id..." />
+        <div class="relative">
+  <select
+    id="guideSort"
+    class="appearance-none w-25 px-4 py-2 pr-10 rounded-full border border-gray-200 bg-white text-sm font-semibold text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+    <option value="name">Sort Name▼</option>
+    <option value="bookings">Sort by Bookings</option>
+  </select>
+</div>
+      </div>
+
+      <div id="guidesList" class="space-y-2 mb-4"></div>
+
+      <h5 class="text-sm font-semibold mt-4 mb-2">Bookings</h5>
+      <div id="bookingsList"></div>
+
+      <h5 class="text-sm font-semibold mt-4 mb-2">Conversations</h5>
+      <div id="convsList"></div>
+    </section>
+
+    <!-- CENTER: chat -->
+    <section class="center-col">
+      <div class="flex items-center justify-between p-3 border-b">
+        <div class="flex items-center gap-3">
+          <img id="panelAvatar" class="w-12 h-12 rounded-lg object-cover" src="https://via.placeholder.com/120" alt="guide avatar">
+          <div>
+            <div id="panelGuideName" class="font-semibold text-lg">Pick a guide</div>
+            <div id="panelGuideMeta" class="small-muted">Click any guide from the list and login using their password.</div>
+          </div>
+        </div>
+
+        <div id="currentConvInfo" class="text-right small-muted">No conversation</div>
+      </div>
+
+      <div class="messages" id="messagesArea">
+        <div class="empty" id="noConvMsg">No conversation selected. Pick a guide and then choose a booking or conversation.</div>
+      </div>
+
+      <div class="chat-input" id="chatInputWrap" style="display:none">
+        <input id="guideMsg" placeholder="Write a message to the user..." class="flex-1 rounded-full border p-3" />
+        <button id="sendGuide" class="btn btn-primary">Send</button>
+        <button id="endConv" class="btn btn-ghost">Close</button>
+      </div>
+    </section>
+
+    <!-- RIGHT: booking & details + stats -->
+    <aside class="right-col">
+      <div class="p-3 bg-white rounded-lg shadow-sm mb-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm small-muted">Signed in as</div>
+            <div id="signedGuide" class="font-semibold">—</div>
+          </div>
+          <div class="text-right">
+            <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end;">
+              <span id="onlineDot" class="online-dot" title="online status"></span>
+              <div id="onlineBadge" class="status-badge mb-1">Offline</div>
+            </div>
+            <button id="changePwBtn" class="btn btn-ghost text-xs px-3 py-1" style="display:none;">Change password</button>
+          </div>
+        </div>
+
+        <hr class="my-3" />
+
+        <div id="selectedBooking" class="mb-3"><div class="small-muted">Select booking to see details</div></div>
+
+        <div class="flex gap-2 mb-2">
+          <button id="acceptBtn" class="btn btn-primary" style="display:none">Accept Booking</button>
+          <button id="declineBtn" class="btn btn-ghost" style="display:none">Decline</button>
+        </div>
+
+        <hr class="my-3" />
+        <div class="mb-3">
+          <div class="text-sm font-semibold mb-1">Guide stats (live)</div>
+          <div id="statsArea" class="small-muted text-xs space-y-1">
+            <div>Bookings: 0 (Pending: 0 · Accepted: 0 · Declined: 0)</div>
+            <div>Conversations: 0</div>
+          </div>
+        </div>
+
+        <hr class="my-3" />
+
+        <div>
+          <div class="text-sm font-semibold">Profile</div>
+          <div class="mt-2 small-muted text-xs">Update profile — saved profile will appear on Travel Guides page.</div>
+          <div class="mt-3">
+            <input id="profileName" class="w-full rounded-xl border p-2 mb-2" placeholder="Guide name" />
+            <input id="profileImg" class="w-full rounded-xl border p-2 mb-2" placeholder="Avatar image URL" />
+
+            <!-- NEW fields added: region, languages, bio -->
+            <input id="profileRegion" class="w-full rounded-xl border p-2 mb-2" placeholder="Region (e.g. northern, lahore, sindh, balochistan)" />
+            <input id="profileLangs" class="w-full rounded-xl border p-2 mb-2" placeholder="Languages (comma separated, e.g. English, Urdu)" />
+            <textarea id="profileBio" rows="4" class="w-full rounded-xl border p-2 mb-2" placeholder="Short bio / specialties (e.g. mountain trekking, photography)"></textarea>
+
+            <button id="saveProfile" class="btn btn-primary w-full">Save Profile</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-3 bg-white rounded-lg shadow-sm">
+        <div class="text-sm font-semibold">Quick tips</div>
+        <ul class="mt-2 small-muted list-disc pl-4 text-xs space-y-1">
+          <li>First time: click guide → Signup tab → create password.</li>
+          <li>Next time: Login tab → enter password.</li>
+          <li>Use “Change password” to update after entering the current one.</li>
+          <li>Bookings are shared with Travel Guides page; chats are shared with the Chat page.</li>
+        </ul>
+      </div>
+    </aside>
+  </main>
+
+<script>
+AOS.init({ duration: 540, once: true });
+
+// ---------- Keys ----------
+const BOOKING_KEY = 'wanderhub_bookings_v1';
+const MSG_KEY = 'wanderhub_messages_v1';
+function GUIDE_PROFILE_KEY(id){
+  return `wanderhub_guideprofile_v1_${id}`;
+}
+const GUIDE_ACCOUNTS_KEY = 'wanderhub_guides_accounts_v1'; // password + guide info backend (legacy/local)
+
+// Shared guiders key used by admin <> public pages (travel-guide)
+const SHARED_GUIDERS_KEY = 'wh_guiders';
+const SHARED_GUIDERS_PING = 'wh_guiders_sync_ping';
+
+// Base guides (must match travel-guide.html IDs + names)
+const baseGuides = [
+  { id:'aisha', name:'Aisha Khan', img:'https://images.unsplash.com/photo-1549880338-65ddcdfd017b?q=80&w=1200&auto=format&fit=crop' },
+  { id:'zain',  name:'Zain Malik', img:'https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1200&auto=format&fit=crop' },
+  { id:'fatima',name:'Fatima Ali', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200&auto=format&fit=crop' },
+  { id:'hassan',name:'Hassan Raza',img:'https://images.unsplash.com/photo-1482192596544-9eb780fc7f66?q=80&w=1200&auto=format&fit=crop' },
+  { id:'sara',  name:'Sara Khan', img:'https://images.unsplash.com/photo-1470770903676-69b98201ea1c?q=80&w=1200&auto=format&fit=crop' },
+  { id:'ali',   name:'Ali Ahmed', img:'https://images.unsplash.com/photo-1526772662000-3f88f10405ff?q=80&w=1200&auto=format&fit=crop' }
+];
+
+// ---------- Helpers ----------
+function loadBookings(){ try{ const r = localStorage.getItem(BOOKING_KEY); return r? JSON.parse(r): []; }catch(e){ return []; } }
+function saveBookings(arr){ localStorage.setItem(BOOKING_KEY, JSON.stringify(arr)); }
+function loadMessages(){ try{ const r = localStorage.getItem(MSG_KEY); return r? JSON.parse(r): {}; }catch(e){ return {}; } }
+function saveMessages(obj){ localStorage.setItem(MSG_KEY, JSON.stringify(obj)); }
+function loadGuideProfile(id){
+  if(!id) return {};
+  try{
+    const r = localStorage.getItem(GUIDE_PROFILE_KEY(id));
+    return r ? JSON.parse(r) : {};
+  }catch(e){
+    return {};
+  }
+}
+
+function saveGuideProfile(id, profile){
+  if(!id) return;
+  localStorage.setItem(
+    GUIDE_PROFILE_KEY(id),
+    JSON.stringify(profile)
+  );
+}
+
+function loadAccounts(){ try{ const r = localStorage.getItem(GUIDE_ACCOUNTS_KEY); return r? JSON.parse(r): []; }catch(e){ return []; } }
+function saveAccounts(list){ localStorage.setItem(GUIDE_ACCOUNTS_KEY, JSON.stringify(list)); }
+
+// Shared guiders helpers (admin/public sync)
+function loadSharedGuidersFromStorage(){
+  try{
+    const raw = localStorage.getItem(SHARED_GUIDERS_KEY) || '[]';
+    const arr = JSON.parse(raw);
+    if(!Array.isArray(arr)) return [];
+    return arr;
+  }catch(e){
+    console.warn('loadSharedGuidersFromStorage parse failed', e);
+    return [];
+  }
+}
+function saveSharedGuidersToStorage(arr){
+  try{
+    localStorage.setItem(SHARED_GUIDERS_KEY, JSON.stringify(arr));
+    localStorage.setItem(SHARED_GUIDERS_PING, Date.now().toString());
+    return true;
+  }catch(e){
+    console.warn('saveSharedGuidersToStorage failed', e);
+    return false;
+  }
+}
+function upsertSharedGuider(guiderObj){
+  // guiderObj should contain at least id, name
+  const arr = loadSharedGuidersFromStorage();
+  const idx = arr.findIndex(x => String(x.id) === String(guiderObj.id));
+  if(idx >= 0){
+    arr[idx] = Object.assign({}, arr[idx], guiderObj);
+  } else {
+    arr.push(Object.assign({}, guiderObj));
+  }
+  const ok = saveSharedGuidersToStorage(arr);
+  return ok;
+}
+
+// Very simple hash (demo only)
+function hashPassword(pw){ return btoa('wanderhub-salt::' + String(pw || '')); }
+
+function escapeHtml(s){ return String(s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function fmtTime(iso){ try{ const d=new Date(iso); return d.toLocaleString(); }catch(e){ return iso; } }
+function truncate(s,n=36){ return s && s.length>n? s.slice(0,n-1)+'…': s; }
+
+// ---------- UI refs ----------
+const guidesListEl = document.getElementById('guidesList');
+const bookingsListEl = document.getElementById('bookingsList');
+const convsListEl   = document.getElementById('convsList');
+const panelAvatar   = document.getElementById('panelAvatar');
+const panelGuideName= document.getElementById('panelGuideName');
+const panelGuideMeta= document.getElementById('panelGuideMeta');
+const signedGuide   = document.getElementById('signedGuide');
+const onlineBadge   = document.getElementById('onlineBadge');
+const onlineDot     = document.getElementById('onlineDot');
+const changePwBtn   = document.getElementById('changePwBtn');
+const messagesArea  = document.getElementById('messagesArea');
+const noConvMsg     = document.getElementById('noConvMsg');
+const chatInputWrap = document.getElementById('chatInputWrap');
+const guideMsgInput = document.getElementById('guideMsg');
+const sendGuideBtn  = document.getElementById('sendGuide');
+const currentConvInfo = document.getElementById('currentConvInfo');
+const selectedBookingEl = document.getElementById('selectedBooking');
+const acceptBtn     = document.getElementById('acceptBtn');
+const declineBtn    = document.getElementById('declineBtn');
+const profileNameIn = document.getElementById('profileName');
+const profileImgIn  = document.getElementById('profileImg');
+const profileRegionIn = document.getElementById('profileRegion');
+const profileLangsIn = document.getElementById('profileLangs');
+const profileBioIn = document.getElementById('profileBio');
+const saveProfileBtn= document.getElementById('saveProfile');
+const statsArea     = document.getElementById('statsArea');
+const logoutBtn     = document.getElementById('logoutBtn');
+
+// Auth overlay refs
+const guideAuthOverlay   = document.getElementById('guideAuthOverlay');
+const authTitle          = document.getElementById('authTitle');
+const authSubtitle       = document.getElementById('authSubtitle');
+const authGuideName      = document.getElementById('authGuideName');
+const authPasswordLabel  = document.getElementById('authPasswordLabel');
+const authPasswordInput  = document.getElementById('authPasswordInput');
+const authConfirmRow     = document.getElementById('authConfirmRow');
+const authConfirmInput   = document.getElementById('authConfirmInput');
+const authError          = document.getElementById('authError');
+const authActionBtn      = document.getElementById('authActionBtn');
+const authHint           = document.getElementById('authHint');
+const authExtraSignupFields = document.getElementById('authExtraSignupFields');
+const authEmailInput     = document.getElementById('authEmailInput');
+const authPhoneInput     = document.getElementById('authPhoneInput');
+const authTabLogin       = document.getElementById('authTabLogin');
+const authTabSignup      = document.getElementById('authTabSignup');
+
+// Change password overlay
+const changePwOverlay    = document.getElementById('changePwOverlay');
+const changePwGuideLabel = document.getElementById('changePwGuideLabel');
+const changePwCurrent    = document.getElementById('changePwCurrent');
+const changePwNew        = document.getElementById('changePwNew');
+const changePwConfirm    = document.getElementById('changePwConfirm');
+const changePwError      = document.getElementById('changePwError');
+const changePwSaveBtn    = document.getElementById('changePwSaveBtn');
+
+// Left controls
+const guideSearch = document.getElementById('guideSearch');
+const guideSort   = document.getElementById('guideSort');
+
+// ---------- State ----------
+let signedGuideId = null;
+let signedGuideObj = null;
+let currentConvId = null;
+let authMode = 'login'; // 'login' or 'signup'
+let authForGuide = null;
+
+// ---------- Accounts helpers ----------
+function combinedGuides(){
+  const accounts = loadAccounts();
+  const map = new Map();
+  baseGuides.forEach(g => map.set(g.id, {...g}));
+  accounts.forEach(a => {
+    const existing = map.get(a.id) || {};
+    map.set(a.id, {
+      id: a.id,
+      name: a.name || existing.name || a.id,
+      img: a.img || existing.img || 'https://via.placeholder.com/160?text=Guide'
+    });
+  });
+  // also include admin/shared guiders
+  const shared = loadSharedGuidersFromStorage();
+  shared.forEach(s => {
+    if(!map.has(String(s.id))){
+      map.set(String(s.id), {
+        id: s.id,
+        name: s.name || s.id,
+        img: s.img || 'https://via.placeholder.com/160?text=Guide'
+      });
+    }
+  });
+  return Array.from(map.values());
+}
+
+function getAccountFor(id){
+  const list = loadAccounts();
+  return list.find(a => a.id === id) || null;
+}
+
+function setAccount(acc){
+  const list = loadAccounts();
+  const idx = list.findIndex(a => a.id === acc.id);
+  if(idx >= 0) list[idx] = acc; else list.push(acc);
+  saveAccounts(list);
+}
+
+// ---------- Render guide selector with booking + chat counts ----------
+function calcStatsForGuide(g){
+  const bookings = loadBookings();
+  const msgs = loadMessages();
+  const guideNameLower = (g.name || '').toLowerCase();
+
+  const mineBookings = bookings.filter(b => ((b.guideName || b.guide || '') + '').toLowerCase() === guideNameLower);
+  const totalBookings = mineBookings.length;
+  let pending=0, accepted=0, declined=0;
+  mineBookings.forEach(b=>{
+    const st = (b.status || 'Pending').toLowerCase();
+    if(st === 'pending') pending++;
+    else if(st === 'accepted') accepted++;
+    else if(st === 'declined') declined++;
+  });
+
+  const convIds = Object.keys(msgs).filter(k => {
+    const meta = msgs[k].meta || {};
+    return (meta.guideName || '').toLowerCase() === guideNameLower;
+  });
+  const totalConvs = convIds.length;
+
+  return { totalBookings, pending, accepted, declined, totalConvs };
+}
+
+function renderGuideSelector(){
+  guidesListEl.innerHTML = '';
+  const profile = loadGuideProfile();
+  let list = combinedGuides();
+  const accounts = loadAccounts();
+  const admin = window.adminGuidersFromStorage || [];
+  admin.forEach(a => {
+    if(!list.find(x=>x.id === a.id)){
+      list.push({
+        id: a.id,
+        name: a.name,
+        contact: a.contact,
+        img: a.img || ''
+      });
+    }
+  });
+
+  // remove unwanted "Guider" items:
+  list = list.filter(g=>{
+    const nameLower = (g.name || '').toLowerCase();
+    if(nameLower === 'guider') return false;
+    if(String(g.id || '').startsWith('guider_')) return false;
+    if(signedGuideId && g.id === signedGuideId) return false;
+    return true;
+  });
+
+  // apply search filter
+  const q = (guideSearch && guideSearch.value || '').trim().toLowerCase();
+  if(q){
+    list = list.filter(g => (g.name + ' ' + g.id).toLowerCase().includes(q));
+  }
+
+  // apply sort
+  if(guideSort && guideSort.value === 'bookings'){
+    list.sort((a,b)=> calcStatsForGuide(b).totalBookings - calcStatsForGuide(a).totalBookings);
+  } else {
+    list.sort((a,b)=> a.name.localeCompare(b.name));
+  }
+
+  list.forEach(g=>{
+    const stats = calcStatsForGuide(g);
+    const acc = accounts.find(a => a.id === g.id);
+    const hasPw = !!acc;
+    const card = document.createElement('div');
+    card.className = 'guide-card';
+    card.innerHTML = `
+      <div class="guide-card-left">
+        <img src="${g.img}" class=""/>
+        <div>
+          <div class="font-semibold text-sm">${escapeHtml(g.name)}</div>
+          <div class="guide-card-meta">
+            ID: ${escapeHtml(g.id)}
+            ${hasPw ? '<span class="pill">password set</span>' : '<span class="pill" style="background:#fee2e2;color:#b91c1c;">no password</span>'}
+          </div>
+        </div>
+      </div>
+      <div class="guide-card-stats">
+        <div>Bookings: ${stats.totalBookings}</div>
+        <div>Pending: ${stats.pending}</div>
+        <div>Chats: ${stats.totalConvs}</div>
+      </div>
+    `;
+    card.addEventListener('click', ()=> openGuideAuth(g));
+    guidesListEl.appendChild(card);
+  });
+
+  if(profile.name){
+    profileNameIn.value = profile.name;
+    profileImgIn.value = profile.img || '';
+  }
+
+}
+
+// ----------------------
+// Guide-panel: load admin-guiders shared via localStorage
+// ----------------------
+function loadSharedGuidersIntoUI(){
+  const shared = loadSharedGuidersFromStorage();
+  window.adminGuidersFromStorage = shared;
+  console.log('Guide-panel: loaded shared guiders', shared);
+  renderGuideSelector();
+}
+
+// Listen for admin updates (storage event fires in other tabs)
+window.addEventListener('storage', (ev) => {
+  if(!ev.key) return;
+  if(ev.key === SHARED_GUIDERS_KEY || ev.key === SHARED_GUIDERS_KEY + '_last' || ev.key === SHARED_GUIDERS_PING){
+    console.log('Guide-panel: detected guiders change via storage event', ev.key);
+    loadSharedGuidersIntoUI();
+  }
+});
+
+// ---------- Per-guide LOGIN / SIGNUP modal ----------
+function openGuideAuth(g){
+  authForGuide = g;
+  authPasswordInput.value = '';
+  authConfirmInput.value = '';
+  authEmailInput.value = '';
+  authPhoneInput.value = '';
+  authError.classList.add('hidden');
+  authError.textContent = '';
+
+  const acc = getAccountFor(g.id);
+  authGuideName.textContent = g.name;
+
+  // default active tab: if account exists => login, else signup
+  if(acc){
+    setAuthTab('login');
+  } else {
+    setAuthTab('signup');
+  }
+
+  guideAuthOverlay.classList.remove('hidden');
+  guideAuthOverlay.classList.add('flex');
+  setTimeout(()=> authPasswordInput.focus(), 50);
+}
+
+function closeGuideAuth(){
+  guideAuthOverlay.classList.add('hidden');
+  guideAuthOverlay.classList.remove('flex');
+}
+
+guideAuthOverlay.addEventListener('click', (e)=>{ if(e.target === guideAuthOverlay) closeGuideAuth(); });
+
+authTabLogin.addEventListener('click', ()=> setAuthTab('login'));
+authTabSignup.addEventListener('click', ()=> setAuthTab('signup'));
+
+function setAuthTab(mode){
+  authMode = mode;
+  authTabLogin.classList.toggle('active', mode === 'login');
+  authTabSignup.classList.toggle('active', mode === 'signup');
+  const hasAcc = authForGuide && getAccountFor(authForGuide.id);
+
+  if(mode === 'login'){
+    authTitle.textContent = 'Guide Login';
+    authSubtitle.textContent = 'Enter password to unlock this guide panel.';
+    authPasswordLabel.textContent = 'Password';
+    authConfirmRow.classList.add('hidden');
+    authExtraSignupFields.classList.add('hidden');
+    authActionBtn.textContent = 'Login & unlock';
+    authHint.textContent = 'If you never set a password, switch to Signup tab.';
+  } else {
+    authTitle.textContent = hasAcc ? 'Update signup details' : 'Signup this guide';
+    authSubtitle.textContent = 'Create or update password & contact info for this guide.';
+    authPasswordLabel.textContent = 'Create password';
+    authConfirmRow.classList.remove('hidden');
+    authExtraSignupFields.classList.remove('hidden');
+    authActionBtn.textContent = hasAcc ? 'Update account & unlock' : 'Create account & unlock';
+    authHint.textContent = 'Passwords & contact saved only in this browser (local backend).';
+  }
+
+  authError.classList.add('hidden');
+  authError.textContent = '';
+}
+
+authActionBtn.addEventListener('click', handleGuideAuthSubmit);
+authPasswordInput.addEventListener('keypress', e=>{ if(e.key==='Enter'){ e.preventDefault(); handleGuideAuthSubmit(); } });
+authConfirmInput.addEventListener('keypress', e=>{ if(e.key==='Enter' && authMode==='signup'){ e.preventDefault(); handleGuideAuthSubmit(); } });
+
+function handleGuideAuthSubmit(){
+  if(!authForGuide){
+    authError.textContent = 'No guide selected.';
+    authError.classList.remove('hidden');
+    return;
+  }
+  const pw = authPasswordInput.value.trim();
+  const pw2 = authConfirmInput.value.trim();
+  const accounts = loadAccounts();
+  const existing = accounts.find(a => a.id === authForGuide.id);
+
+  if(authMode === 'login'){
+    if(!existing){
+      authError.textContent = 'No password set yet. Use Signup tab first.';
+      authError.classList.remove('hidden');
+      return;
+    }
+    if(existing.pwHash !== hashPassword(pw)){
+      authError.textContent = 'Incorrect password.';
+      authError.classList.remove('hidden');
+      return;
+    }
+    existing.lastLogin = new Date().toISOString();
+    setAccount(existing);
+    toast('Logged in as ' + authForGuide.name);
+    closeGuideAuth();
+    signInAs(authForGuide);
+  } else {
+    // signup / update
+    if(pw.length < 4){
+      authError.textContent = 'Password must be at least 4 characters.';
+      authError.classList.remove('hidden');
+      return;
+    }
+    if(pw !== pw2){
+      authError.textContent = 'Passwords do not match.';
+      authError.classList.remove('hidden');
+      return;
+    }
+    const acc = {
+      id: authForGuide.id,
+      name: authForGuide.name,
+      img: authForGuide.img,
+      email: authEmailInput.value.trim() || (existing && existing.email) || '',
+      phone: authPhoneInput.value.trim() || (existing && existing.phone) || '',
+      pwHash: hashPassword(pw),
+      created: existing ? existing.created : new Date().toISOString(),
+      lastLogin: new Date().toISOString()
+    };
+    setAccount(acc);
+    toast('Account saved for ' + authForGuide.name);
+    closeGuideAuth();
+    signInAs(authForGuide);
+  }
+  renderGuideSelector();
+}
+
+// ---------- Change password ----------
+function openChangePassword(){
+  if(!signedGuideObj) return;
+  changePwGuideLabel.textContent = 'Guide: ' + signedGuideObj.name;
+  changePwCurrent.value = '';
+  changePwNew.value = '';
+  changePwConfirm.value = '';
+  changePwError.classList.add('hidden');
+  changePwError.textContent = '';
+  changePwOverlay.classList.remove('hidden');
+  changePwOverlay.classList.add('flex');
+  setTimeout(()=> changePwCurrent.focus(), 50);
+}
+function closeChangePassword(){
+  changePwOverlay.classList.add('hidden');
+  changePwOverlay.classList.remove('flex');
+}
+changePwOverlay.addEventListener('click', (e)=>{ if(e.target === changePwOverlay) closeChangePassword(); });
+changePwSaveBtn.addEventListener('click', handleChangePw);
+
+function handleChangePw(){
+  if(!signedGuideObj){
+    changePwError.textContent = 'No guide signed in.';
+    changePwError.classList.remove('hidden');
+    return;
+  }
+  const current = changePwCurrent.value.trim();
+  const newPw   = changePwNew.value.trim();
+  const newPw2  = changePwConfirm.value.trim();
+  const acc = getAccountFor(signedGuideObj.id);
+  if(!acc){
+    changePwError.textContent = 'No account found for this guide (signup first).';
+    changePwError.classList.remove('hidden');
+    return;
+  }
+  if(acc.pwHash !== hashPassword(current)){
+    changePwError.textContent = 'Current password is incorrect.';
+    changePwError.classList.remove('hidden');
+    return;
+  }
+  if(newPw.length < 4){
+    changePwError.textContent = 'New password must be at least 4 characters.';
+    changePwError.classList.remove('hidden');
+    return;
+  }
+  if(newPw !== newPw2){
+    changePwError.textContent = 'New password confirmation does not match.';
+    changePwError.classList.remove('hidden');
+    return;
+  }
+  acc.pwHash = hashPassword(newPw);
+  acc.lastLogin = new Date().toISOString();
+  setAccount(acc);
+  toast('Password updated successfully.');
+  closeChangePassword();
+}
+
+// ---------- Sign in & stats ----------
+function signInAs(g){
+  signedGuideId = g.id;
+  signedGuideObj = {...g};
+  panelAvatar.src = g.img;
+  panelGuideName.textContent = g.name;
+  panelGuideMeta.textContent = `Signed in as ${g.id}`;
+  signedGuide.textContent = g.name;
+  onlineBadge.textContent = 'Online';
+  onlineDot.style.display = 'inline-block';
+  changePwBtn.style.display = 'inline-block';
+
+  // pre-fill profile inputs with either shared guider info or signed guide info
+ const myProfile = loadGuideProfile(g.id);
+
+profileNameIn.value   = myProfile.name   || g.name || '';
+profileImgIn.value    = myProfile.img    || g.img  || '';
+profileRegionIn.value = myProfile.region || '';
+profileLangsIn.value  = (myProfile.langs || []).join(', ');
+profileBioIn.value    = myProfile.bio    || '';
+
+  refreshAll();
+}
+
+// helper to refresh both lists and stats
+function refreshAll() {
+  refreshBookings();
+  refreshConversations();
+  refreshStatsPanel();
+}
+
+// ---------- Render bookings for this guide ----------
+function refreshBookings(){
+  bookingsListEl.innerHTML = '';
+  if(!signedGuideId){
+    bookingsListEl.innerHTML = '<div class="small-muted">Select & login as a guide above to view bookings</div>';
+    return;
+  }
+  const all = loadBookings();
+  const guideNameLower = signedGuideObj ? signedGuideObj.name.toLowerCase() : '';
+
+  const mine = all.filter(b => ((b.guideName || b.guide || '') + '').toLowerCase() === guideNameLower);
+
+  if(mine.length === 0){
+    bookingsListEl.innerHTML = '<div class="small-muted">No bookings yet.</div>';
+    return;
+  }
+  mine.forEach(b=>{
+    const div = document.createElement('div');
+    div.className = 'booking-row';
+    div.innerHTML =
+      `<div>
+         <div class="font-semibold">${escapeHtml(b.name)}</div>
+         <div class="small-muted text-xs">${b.date || '—'} · ${truncate(b.notes||'No notes',40)}</div>
+       </div>
+       <div class="flex flex-col gap-1 items-end">
+         <button class="btn btn-ghost openConvBtn" data-user="${escapeHtml(b.name)}">Chat</button>
+         <div class="small-muted text-xs">${escapeHtml(b.status || 'Pending')}</div>
+       </div>`;
+    bookingsListEl.appendChild(div);
+    div.querySelector('.openConvBtn').addEventListener('click', ()=> openConversation(b.name));
+  });
+}
+
+// ---------- Render conversations list ----------
+function refreshConversations(){
+  convsListEl.innerHTML = '';
+  if(!signedGuideId){
+    convsListEl.innerHTML = '<div class="small-muted">Sign in to see conversations</div>';
+    return;
+  }
+  const msgs = loadMessages();
+ const convs = Object.keys(msgs).filter(k =>
+  msgs[k].meta &&
+  msgs[k].meta.guideName &&
+  msgs[k].meta.guideName.toLowerCase() === signedGuideObj.name.toLowerCase()
+);
+  if(convs.length === 0){
+    convsListEl.innerHTML = '<div class="small-muted">No conversations</div>';
+    return;
+  }
+  convs.sort((a,b)=> {
+    const ma = msgs[a].messages; const mb = msgs[b].messages;
+    const ta = ma.length? new Date(ma[ma.length-1].created): new Date(0);
+    const tb = mb.length? new Date(mb[mb.length-1].created): new Date(0);
+    return tb - ta;
+  });
+  convs.forEach(k=>{
+    const c = msgs[k];
+    const last = c.messages[c.messages.length-1];
+    const preview = last? `${last.from==='user' ? 'User: ' : 'Guide: '}${truncate(last.text,40)}` : 'No messages yet';
+    const wrap = document.createElement('div');
+    wrap.className = 'booking-row';
+    wrap.innerHTML =
+      `<div>
+         <div class="font-semibold">${escapeHtml(c.meta.userName)}</div>
+         <div class="small-muted text-xs">${preview}</div>
+       </div>
+       <div>
+         <div class="small-muted text-xs">${fmtTime(last ? last.created : c.meta.created)}</div>
+       </div>`;
+    wrap.addEventListener('click', ()=> openConversation(c.meta.userName));
+    convsListEl.appendChild(wrap);
+  });
+}
+
+// ---------- Stats panel ----------
+function refreshStatsPanel(){
+  if(!signedGuideObj){
+    statsArea.innerHTML = `<div>Bookings: 0 (Pending: 0 · Accepted: 0 · Declined: 0)</div>
+                           <div>Conversations: 0</div>`;
+    return;
+  }
+  const stats = calcStatsForGuide(signedGuideObj);
+  statsArea.innerHTML =
+    `<div>Bookings: ${stats.totalBookings} (Pending: ${stats.pending} · Accepted: ${stats.accepted} · Declined: ${stats.declined})</div>
+     <div>Conversations: ${stats.totalConvs}</div>`;
+}
+
+// ---------- Open conversation ----------
+function openConversation(userName){
+  if(!signedGuideObj) return alert('Select and login as a guide first.');
+ currentConvId = `${userName}__${signedGuideObj.name}`;
+  currentConvInfo.textContent = `Chat with ${userName}`;
+  chatInputWrap.style.display = 'flex';
+  renderMessages();
+
+  const all = loadBookings();
+  const guideNameLower = signedGuideObj.name.toLowerCase();
+  const bk = all.find(b =>
+    (b.name || '') === (userName || '') &&
+   b.guideId === signedGuideId
+  );
+
+  if(bk){
+    selectedBookingEl.innerHTML =
+      `<div class="font-semibold">${escapeHtml(bk.name)}</div>
+       <div class="small-muted mt-1">${bk.date || '—'}</div>
+       <div class="mt-2">${escapeHtml(bk.notes||'')}</div>
+       <div class="small-muted text-xs mt-2">Created: ${fmtTime(bk.created)}</div>`;
+    acceptBtn.style.display = 'inline-block';
+    declineBtn.style.display = 'inline-block';
+    acceptBtn.onclick = ()=> updateBookingStatus(bk, 'Accepted');
+    declineBtn.onclick = ()=> updateBookingStatus(bk, 'Declined');
+  } else {
+    selectedBookingEl.innerHTML = '<div class="small-muted">No booking for this user</div>';
+    acceptBtn.style.display='none';
+    declineBtn.style.display='none';
+  }
+}
+
+// ---------- Render messages ----------
+function renderMessages(){
+  messagesArea.innerHTML = '';
+  if(!currentConvId){
+    messagesArea.appendChild(noConvMsg);
+    chatInputWrap.style.display='none';
+    return;
+  }
+  const store = loadMessages();
+  const conv = store[currentConvId] || {
+    messages: [],
+    meta: {
+      userName: currentConvId.split('__')[0],
+      guideName: signedGuideObj.name,
+      created: new Date().toISOString()
+    }
+  };
+  if(conv.messages.length === 0){
+    const e = document.createElement('div');
+    e.className='empty';
+    e.textContent='No messages yet — say hello.';
+    messagesArea.appendChild(e);
+  } else {
+    conv.messages.forEach(m=>{
+      const wrapper = document.createElement('div');
+      const block = document.createElement('div');
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.textContent =
+        `${m.senderName || (m.from==='user'?'User':'Guide')} · ${new Date(m.created).toLocaleString()}`;
+      block.className = 'msg ' + (m.from === 'user' ? 'user' : 'guide');
+      block.textContent = m.text;
+      wrapper.appendChild(block);
+      wrapper.appendChild(meta);
+      messagesArea.appendChild(wrapper);
+    });
+  }
+  messagesArea.scrollTop = messagesArea.scrollHeight;
+}
+
+// ---------- Send guide message ----------
+sendGuideBtn.addEventListener('click', sendGuideMessage);
+guideMsgInput.addEventListener('keypress', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); sendGuideMessage(); } });
+
+function sendGuideMessage(){
+  const text = guideMsgInput.value.trim();
+  if(!text || !currentConvId) return;
+  const store = loadMessages();
+  if(!store[currentConvId]){
+  store[currentConvId] = {
+    messages: [],
+    meta: {
+      userName: currentConvId.split('__')[0],
+      guideName: signedGuideObj.name,
+      created: new Date().toISOString()
+    }
+  };
+}
+  store[currentConvId].messages.push({
+    from:'guide',
+    senderName: signedGuideObj.name,
+    text,
+    created: new Date().toISOString()
+  });
+  saveMessages(store);
+  guideMsgInput.value = '';
+  renderMessages();
+}
+
+// ---------- Booking status update ----------
+function updateBookingStatus(booking, status){
+  try{
+    const all = loadBookings();
+    const idx = all.findIndex(b => b.created === booking.created && b.name === booking.name);
+    if(idx !== -1){
+      all[idx].status = status;
+      saveBookings(all);
+      toast(`Booking ${status}`);
+    }
+    refreshBookings();
+    renderMessages();
+    refreshConversations();
+    refreshStatsPanel();
+  }catch(e){
+    console.error(e);
+  }
+}
+
+// ---------- Save demo profile (ENHANCED: publish to wh_guiders) ----------
+saveProfileBtn.addEventListener('click', ()=>{
+  const nm = profileNameIn.value.trim();
+  const img = profileImgIn.value.trim();
+  const region = profileRegionIn.value.trim();
+  const langsRaw = profileLangsIn.value.trim();
+  const bio = profileBioIn.value.trim();
+
+  if(!nm) return alert('Enter guide name');
+
+  // update local demo profile
+  const p = { name:nm, img, region, langs: langsRaw ? langsRaw.split(',').map(x=>x.trim()).filter(Boolean) : [], bio };
+saveGuideProfile(signedGuideId, {
+  name: nm,
+  img,
+  region,
+  langs: langsRaw ? langsRaw.split(',').map(x=>x.trim()) : [],
+  bio
+});
+
+  toast('Profile saved');
+
+  // update signedGuideObj if signed in
+  if(signedGuideObj){
+    signedGuideObj.name = nm;
+    if(img) signedGuideObj.img = img;
+    panelAvatar.src = img || panelAvatar.src;
+    panelGuideName.textContent = nm;
+    signedGuide.textContent = nm;
+  }
+
+  // If signed in as a guide (has an id), publish/update to shared guiders so travel-guide will see it
+  if(signedGuideId){
+    const guiderPayload = {
+      id: signedGuideId,
+      name: nm,
+      img: img,
+      region: region || '',
+      langs: p.langs,
+      bio: bio || ''
+    };
+    const ok = upsertSharedGuider(guiderPayload);
+    if(ok){
+      toast('Published profile — will appear on Travel Guides page');
+      // try to refresh UI everywhere
+      loadSharedGuidersIntoUI();
+    } else {
+      toast('Failed to publish profile');
+    }
+  } else {
+    // not signed in as guide: still update local UI
+    renderGuideSelector();
+  }
+
+  renderGuideSelector();
+  refreshConversations();
+  refreshBookings();
+  refreshStatsPanel();
+});
+
+// ---------- Toast ----------
+function toast(txt){
+  const t = document.createElement('div');
+  t.textContent = txt;
+  t.className='fixed right-6 bottom-6 bg-[rgba(0,0,0,0.8)] text-white px-4 py-2 rounded shadow';
+  document.body.appendChild(t);
+  setTimeout(()=> t.remove(), 2200);
+}
+
+// ---------- Polling ----------
+setInterval(()=>{
+  if(signedGuideObj){
+    refreshBookings();
+    refreshConversations();
+    refreshStatsPanel();
+  }
+  if(currentConvId){
+    renderMessages();
+  }
+}, 900);
+
+// ---------- Init ----------
+(function init(){
+  if(!localStorage.getItem(MSG_KEY)) saveMessages({});
+  loadSharedGuidersIntoUI();
+  renderGuideSelector();
+
+  // Quick UI: wire search/sort
+  guideSearch.addEventListener('input', ()=> renderGuideSelector());
+  guideSort.addEventListener('change', ()=> renderGuideSelector());
+
+  // Check login token & role saved by login.html
+  const token = localStorage.getItem('wh_token');
+  const userStr = localStorage.getItem('wh_user');
+  const role = (localStorage.getItem('wh_role') || '').toLowerCase();
+
+  if(!token || !userStr || role !== 'guider'){
+    // Not logged in as guider — redirect back to login.
+    window.location.href = 'login.html';
+    return;
+  }
+
+  try {
+    const user = JSON.parse(userStr);
+    let guide = baseGuides.find(g => g.name.toLowerCase() === (user.name||'').toLowerCase());
+    if(!guide){
+      guide = { id: 'guider_' + (user.id||Date.now()), name: user.name || 'Guider', img: 'https://via.placeholder.com/160?text=Guide' };
+    }
+    signInAs(guide);
+  } catch(e){
+    console.error('Error parsing wh_user', e);
+    window.location.href = 'login.html';
+    return;
+  }
+
+})();
+
+// ---------- Small handlers ----------
+document.getElementById('endConv').addEventListener('click', ()=>{
+  currentConvId = null;
+  currentConvInfo.textContent = 'No conversation';
+  renderMessages();
+});
+changePwBtn.addEventListener('click', openChangePassword);
+
+// Logout behavior: clear login keys and redirect
+logoutBtn.addEventListener('click', ()=>{
+  localStorage.removeItem('wh_token');
+  localStorage.removeItem('wh_user');
+  localStorage.removeItem('wh_role');
+  // optional: keep demo bookings/messages
+  window.location.href = 'login.html';
+});
+</script>
+</body>
+</html>

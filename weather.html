@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Weather — Wander Hub Ai</title>
+ <link rel="icon" type="image/png" href="templates/logofinal.png">
+  <!-- Tailwind (same plugin usage as your other pages) -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root{
+      --accent-1:#f97316;
+      --accent-2:#06b6d4;
+      --muted:#7f6a57;
+      --card-bg: rgba(255,255,255,0.96);
+      --text:#181410;
+    }
+    html,body{height:100%}
+    body{
+      font-family:"Plus Jakarta Sans",sans-serif;
+      background: linear-gradient(135deg,#fb923c 0%, #7dd3fc 50%, #fb923c 100%);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      color:var(--text);
+      margin:0;
+      display:flex;
+      flex-direction:column;
+      min-height:100vh;
+    }
+
+    header { backdrop-filter: blur(6px); }
+    .container-lg { max-width:1200px; margin-left:auto; margin-right:auto; padding-left:1rem; padding-right:1rem; }
+
+    /* site theme buttons (same look as your other pages) */
+    .btn-theme {
+      background: linear-gradient(90deg,var(--accent-1),var(--accent-2));
+      color:white;
+      border-radius:999px;
+      padding:.55rem 1rem;
+      font-weight:700;
+      box-shadow:0 10px 28px rgba(6,182,212,0.06);
+    }
+    .btn-ghost { background:white; border-radius:12px; padding:.5rem .8rem; }
+    .glass { background: rgba(255,255,255,0.92); backdrop-filter: blur(6px); border-radius:12px; box-shadow: 0 18px 48px rgba(2,6,23,0.06); }
+
+    .card { background: var(--card-bg); border-radius: 14px; padding: 1rem; box-shadow: 0 12px 40px rgba(2,6,23,0.05); }
+    .stat { font-weight:700; color:var(--accent-1); }
+    .small-muted { color:var(--muted); }
+
+    /* forecast grid */
+    .forecast-grid { display:grid; grid-template-columns: repeat(2,1fr); gap:.75rem; }
+    @media(min-width:640px) { .forecast-grid { grid-template-columns: repeat(4,1fr); } }
+    @media(min-width:1024px){ .forecast-grid { grid-template-columns: repeat(6,1fr); } }
+
+    footer { margin-top:auto; }
+
+    /* small helpers */
+    .icon-lg { width:64px; height:64px; }
+  </style>
+</head>
+<body>
+
+  <!-- NAV (keeps look consistent) -->
+  <header class="sticky top-0 z-50 bg-white/70 backdrop-blur-md">
+    <div class="container-lg mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="templates/logofinal.png" class="w-10 h-10 rounded-full object-contain bg-white shadow-lg" alt="Wander Hub Logo">
+        <div class="text-orange-700 font-bold text-lg">Wander Hub Ai</div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="local-user.html" class="text-sm small-muted hover:text-orange-600">Home</a>
+        <a href="packages.html" class="text-sm small-muted hover:text-orange-600">Packages</a>
+        <a href="travel-guide.html" class="text-sm small-muted hover:text-orange-600">Guides</a>
+        <a href="weather.html" class="text-sm font-semibold text-orange-600">Weather</a>
+        <button onclick="location.href='profile-user.html'" class="btn-ghost">Profile</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="container-lg mx-auto px-6 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Left: Controls -->
+      <div class="lg:col-span-1 glass p-5">
+        <h2 class="text-xl font-bold text-orange-700">Weather Forecast</h2>
+        <p class="small-muted mt-1">Search by city or allow location to get local weather.</p>
+
+        <div class="mt-4 space-y-3">
+          <label class="block text-sm text-slate-700">City</label>
+          <input id="cityInput" placeholder="e.g., Gilgit, Lahore, Karachi" class="w-full rounded-xl border border-gray-200 p-3 bg-white" />
+
+          <div class="flex gap-2">
+            <button id="btnSearch" class="btn-theme flex-1">Get Weather</button>
+            <button id="btnGeo" class="btn-ghost" title="Use my location">Use my location</button>
+          </div>
+
+          <div class="mt-2">
+            <label class="text-sm text-slate-700">Units</label>
+            <select id="unitSelect" class="w-full rounded-xl border border-gray-200 p-2 bg-white">
+              <option value="metric">Metric (°C, m/s)</option>
+              <option value="imperial">Imperial (°F, mph)</option>
+              <option value="standard">Standard (K)</option>
+            </select>
+          </div>
+
+          <div class="mt-3 text-sm small-muted">
+            <strong>Note:</strong> This page uses the public <em>Open-Meteo</em> API. No API key required — it works worldwide.
+          </div>
+        </div>
+      </div>
+
+      <!-- Middle: Current weather -->
+      <div class="lg:col-span-2 space-y-6">
+        <div id="currentCard" class="card p-4 flex items-center gap-4">
+          <div class="flex-1">
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <div id="placeName" class="text-2xl font-bold text-orange-700">—</div>
+                <div id="placeMeta" class="small-muted">—</div>
+              </div>
+
+              <div class="text-right">
+                <div id="tempMain" class="text-4xl font-extrabold">—</div>
+                <div id="descMain" class="small-muted mt-1">—</div>
+              </div>
+            </div>
+
+            <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div class="bg-white rounded-lg p-3 text-center">
+                <div class="small-muted">Feels</div>
+                <div id="feelsLike" class="stat">—</div>
+              </div>
+              <div class="bg-white rounded-lg p-3 text-center">
+                <div class="small-muted">Humidity</div>
+                <div id="humidity" class="stat">—</div>
+              </div>
+              <div class="bg-white rounded-lg p-3 text-center">
+                <div class="small-muted">Wind</div>
+                <div id="wind" class="stat">—</div>
+              </div>
+              <div class="bg-white rounded-lg p-3 text-center">
+                <div class="small-muted">Pressure</div>
+                <div id="pressure" class="stat">—</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="w-32 text-center hidden sm:block">
+            <!-- Emoji icon instead of external icon set -->
+            <div id="weatherEmoji" class="text-5xl">☀️</div>
+            <div id="iconTemp" class="small-muted mt-2">—</div>
+          </div>
+        </div>
+
+        <!-- Forecast grid -->
+        <div class="card p-4">
+          <h3 class="font-semibold text-orange-700">5-Day Forecast</h3>
+          <p class="small-muted mt-1">Daily summary based on Open-Meteo data</p>
+
+          <div id="forecastWrap" class="mt-3 forecast-grid">
+            <!-- day cards injected here -->
+          </div>
+        </div>
+
+        <!-- Map & extra -->
+        <div class="card p-4">
+          <h3 class="font-semibold text-orange-700">Map & More</h3>
+          <p class="small-muted mt-1">Click the map to open location on Google Maps</p>
+
+          <div id="mapWrap" class="mt-3">
+            <!-- map iframe inserted dynamically when available -->
+            <div id="mapPlaceholder" class="text-slate-600">No location selected yet.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="text-center py-4 bg-white/60 backdrop-blur-md mt-auto">
+    © 2025 Wander Hub Ai — All Rights Reserved
+  </footer>
+
+  <!-- Script (logic) -->
+  <script>
+    /*
+      Weather page script (no user API key)
+      - Public API: Open-Meteo
+        Geocoding (city -> lat/lon):
+          https://geocoding-api.open-meteo.com/v1/search?name={city}&count=1&language=en&format=json
+        Forecast + current:
+          https://api.open-meteo.com/v1/forecast?latitude=..&longitude=..&
+             current_weather=true&
+             hourly=apparent_temperature,relative_humidity_2m,surface_pressure&
+             daily=weathercode,temperature_2m_max,temperature_2m_min,wind_speed_10m_max&
+             windspeed_unit=ms&timezone=auto
+      - No key, works worldwide.
+      - Caches last result in localStorage.
+    */
+
+    // DOM refs
+    const cityInput = document.getElementById('cityInput');
+    const btnSearch = document.getElementById('btnSearch');
+    const btnGeo = document.getElementById('btnGeo');
+    const unitSelect = document.getElementById('unitSelect');
+
+    const placeName = document.getElementById('placeName');
+    const placeMeta = document.getElementById('placeMeta');
+    const tempMain = document.getElementById('tempMain');
+    const descMain = document.getElementById('descMain');
+    const feelsLike = document.getElementById('feelsLike');
+    const humidity = document.getElementById('humidity');
+    const wind = document.getElementById('wind');
+    const pressure = document.getElementById('pressure');
+    const weatherEmoji = document.getElementById('weatherEmoji');
+    const iconTemp = document.getElementById('iconTemp');
+
+    const forecastWrap = document.getElementById('forecastWrap');
+    const mapWrap = document.getElementById('mapWrap');
+    const mapPlaceholder = document.getElementById('mapPlaceholder');
+
+    // storage keys
+    const KEY_CACHE = 'wh_weather_cache_v2'; // v2 since structure changed
+
+    // cache helpers
+    function saveCache(obj){ try{ localStorage.setItem(KEY_CACHE, JSON.stringify(obj)); }catch(e){} }
+    function loadCache(){ try{ return JSON.parse(localStorage.getItem(KEY_CACHE) || 'null'); }catch(e){ return null; } }
+
+    // units helpers
+    function convertTempBaseC(tC, units){
+      if(tC === null || tC === undefined || isNaN(tC)) return null;
+      if(units === 'imperial') return tC * 9/5 + 32;     // °F
+      if(units === 'standard') return tC + 273.15;       // K
+      return tC;                                         // °C (metric)
+    }
+    function formatTemp(tC, units){
+      const v = convertTempBaseC(tC, units);
+      if(v === null) return '—';
+      let unitLabel = '°C';
+      if(units === 'imperial') unitLabel = '°F';
+      else if(units === 'standard') unitLabel = 'K';
+      return Math.round(v) + unitLabel;
+    }
+
+    function convertWindBaseMS(speedMS, units){
+      if(speedMS === null || speedMS === undefined || isNaN(speedMS)) return null;
+      if(units === 'imperial') return speedMS * 2.23694; // mph
+      return speedMS;                                    // m/s for metric & standard
+    }
+    function formatWind(speedMS, units){
+      const v = convertWindBaseMS(speedMS, units);
+      if(v === null) return '—';
+      const unitLabel = (units === 'imperial') ? ' mph' : ' m/s';
+      return (Math.round(v * 10) / 10) + unitLabel;
+    }
+
+    // weathercode -> text + emoji
+    function weatherCodeToInfo(code){
+      code = Number(code);
+      if(code === 0) return { text:'Clear sky', emoji:'☀️' };
+      if([1,2,3].includes(code)) return { text:'Partly cloudy', emoji:'⛅' };
+      if([45,48].includes(code)) return { text:'Foggy', emoji:'🌫️' };
+      if([51,53,55].includes(code)) return { text:'Drizzle', emoji:'🌦️' };
+      if([61,63,65].includes(code)) return { text:'Rain', emoji:'🌧️' };
+      if([66,67].includes(code)) return { text:'Freezing rain', emoji:'🌧️' };
+      if([71,73,75,77].includes(code)) return { text:'Snow', emoji:'❄️' };
+      if([80,81,82].includes(code)) return { text:'Rain showers', emoji:'🌦️' };
+      if([85,86].includes(code)) return { text:'Snow showers', emoji:'❄️' };
+      if([95,96,99].includes(code)) return { text:'Thunderstorm', emoji:'⛈️' };
+      return { text:'Unknown', emoji:'🌍' };
+    }
+
+    // render functions
+    function renderCurrent(data, meta, units){
+      if(!data || !data.current_weather) return;
+
+      const cw = data.current_weather;
+      const hourly = data.hourly || {};
+      const times = hourly.time || [];
+
+      // find index where hourly time matches current time to get humidity, feels-like, pressure
+      let idx = times.indexOf(cw.time);
+      if(idx === -1 && times.length > 0){
+        // fallback: nearest time
+        let bestDiff = Infinity;
+        let bestIdx = 0;
+        const nowTs = new Date(cw.time).getTime();
+        times.forEach((t,i)=>{
+          const diff = Math.abs(new Date(t).getTime() - nowTs);
+          if(diff < bestDiff){ bestDiff = diff; bestIdx = i; }
+        });
+        idx = bestIdx;
+      }
+
+      const feels = hourly.apparent_temperature ? hourly.apparent_temperature[idx] : null;
+      const hum = hourly.relative_humidity_2m ? hourly.relative_humidity_2m[idx] : null;
+      const pres = hourly.surface_pressure ? hourly.surface_pressure[idx] : null;
+
+      const locLabel = meta && meta.label ? meta.label : 'Unknown location';
+      placeName.textContent = locLabel;
+      placeMeta.textContent = 'Updated: ' + new Date(cw.time).toLocaleString();
+
+      tempMain.textContent = formatTemp(cw.temperature, units);
+
+      const info = weatherCodeToInfo(cw.weathercode);
+      descMain.textContent = info.text.toUpperCase();
+      weatherEmoji.textContent = info.emoji;
+      iconTemp.textContent = formatTemp(cw.temperature, units);
+
+      feelsLike.textContent = formatTemp(feels, units);
+      humidity.textContent = (hum !== null && hum !== undefined) ? hum + ' %' : '—';
+      wind.textContent = formatWind(cw.windspeed_ms ?? cw.windspeed, units);
+      pressure.textContent = (pres !== null && pres !== undefined) ? Math.round(pres) + ' hPa' : '—';
+    }
+
+    function renderForecast(data, units){
+      const daily = data.daily || {};
+      const times = daily.time || [];
+      const minArr = daily.temperature_2m_min || [];
+      const maxArr = daily.temperature_2m_max || [];
+      const windArr = daily.wind_speed_10m_max || [];
+      const codeArr = daily.weathercode || [];
+
+      forecastWrap.innerHTML = '';
+
+      if(times.length === 0){
+        forecastWrap.innerHTML = '<div class="text-slate-700">No forecast available.</div>';
+        return;
+      }
+
+      const daysCount = Math.min(5, times.length);
+      for(let i=0;i<daysCount;i++){
+        const d = new Date(times[i]);
+        const dayLabel = d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
+        const minT = minArr[i];
+        const maxT = maxArr[i];
+        const windMaxMS = windArr[i]; // already m/s because of windspeed_unit=ms
+        const info = weatherCodeToInfo(codeArr[i]);
+
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-lg p-3 text-center';
+        card.innerHTML = `
+          <div class="text-sm small-muted">${dayLabel}</div>
+          <div class="mt-2 text-3xl">${info.emoji}</div>
+          <div class="mt-1 text-xs small-muted">${info.text}</div>
+          <div class="mt-2">
+            <div class="text-sm small-muted">Min</div>
+            <div class="font-semibold">${formatTemp(minT, units)}</div>
+          </div>
+          <div class="mt-1">
+            <div class="text-sm small-muted">Max</div>
+            <div class="font-semibold">${formatTemp(maxT, units)}</div>
+          </div>
+          <div class="mt-2 small-muted text-xs">Wind: ${formatWind(windMaxMS, units)}</div>
+        `;
+        forecastWrap.appendChild(card);
+      }
+    }
+
+    function renderMap(lat, lon){
+      mapWrap.innerHTML = '';
+      const a = document.createElement('a');
+      a.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.className = 'inline-block w-full';
+      a.innerHTML = `
+        <iframe class="w-full rounded-lg" style="min-height:300px;border-radius:10px;border:0" loading="lazy"
+          src="https://maps.google.com/maps?q=${lat},${lon}&z=8&output=embed"></iframe>`;
+      mapWrap.appendChild(a);
+    }
+
+    // API calls
+    async function geocodeCity(city){
+      const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`;
+      const res = await fetch(url);
+      if(!res.ok) throw new Error('Failed to geocode city: ' + res.status);
+      const data = await res.json();
+      if(!data.results || !data.results.length) throw new Error('City not found');
+      const r = data.results[0];
+      return {
+        lat: r.latitude,
+        lon: r.longitude,
+        label: `${r.name}${r.country ? ', ' + r.country : ''}`
+      };
+    }
+
+    async function fetchWeatherData(lat, lon){
+      const params = new URLSearchParams({
+        latitude: lat,
+        longitude: lon,
+        current_weather: 'true',
+        hourly: 'apparent_temperature,relative_humidity_2m,surface_pressure',
+        daily: 'weathercode,temperature_2m_max,temperature_2m_min,wind_speed_10m_max',
+        windspeed_unit: 'ms', // we convert to mph if needed
+        timezone: 'auto'
+      });
+      const url = `https://api.open-meteo.com/v1/forecast?${params.toString()}`;
+      const res = await fetch(url);
+      if(!res.ok) throw new Error('Failed to fetch weather: ' + res.status);
+      return res.json();
+    }
+
+    // main flow
+    async function doGetWeather({ city = null, coords = null } = {}){
+      const units = unitSelect.value || 'metric';
+      try{
+        const now = Date.now();
+        const cache = loadCache();
+        let useCache = false;
+
+        if(cache && cache.units === units && (now - (cache.ts || 0)) < (1000*60*10)){
+          // same city or close coords
+          if(city && cache.city && cache.city.toLowerCase() === city.toLowerCase()) useCache = true;
+          if(coords && cache.coords){
+            if(Math.abs(cache.coords.lat - coords.lat) < 0.01 && Math.abs(cache.coords.lon - coords.lon) < 0.01){
+              useCache = true;
+            }
+          }
+        }
+
+        if(useCache){
+          renderCurrent(cache.data, { label: cache.label }, units);
+          renderForecast(cache.data, units);
+          renderMap(cache.coords.lat, cache.coords.lon);
+          return;
+        }
+
+        // need fresh call
+        let locationMeta;
+        if(city){
+          locationMeta = await geocodeCity(city);
+        }else if(coords){
+          locationMeta = {
+            lat: coords.lat,
+            lon: coords.lon,
+            label: 'Your location'
+          };
+        }else{
+          alert('Provide a city or allow location');
+          return;
+        }
+
+        const data = await fetchWeatherData(locationMeta.lat, locationMeta.lon);
+
+        renderCurrent(data, { label: locationMeta.label }, units);
+        renderForecast(data, units);
+        renderMap(locationMeta.lat, locationMeta.lon);
+
+        saveCache({
+          ts: Date.now(),
+          units,
+          city: city || null,
+          coords: { lat: locationMeta.lat, lon: locationMeta.lon },
+          label: locationMeta.label,
+          data
+        });
+      }catch(err){
+        console.error(err);
+        alert('Weather error: ' + (err.message || err));
+      }
+    }
+
+    // events
+    btnSearch.addEventListener('click', () => {
+      const city = cityInput.value.trim();
+      if(!city){
+        alert('Please enter a city name (e.g., "Hunza" or "Lahore")');
+        return;
+      }
+      doGetWeather({ city });
+    });
+
+    btnGeo.addEventListener('click', () => {
+      if(!navigator.geolocation){
+        alert('Geolocation not supported in your browser');
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(pos => {
+        const coords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+        doGetWeather({ coords });
+      }, err => {
+        alert('Location error: ' + (err.message || 'Permission denied'));
+      }, { timeout: 10000 });
+    });
+
+    // Enter key for city input
+    cityInput.addEventListener('keydown', (e) => { if(e.key === 'Enter'){ btnSearch.click(); } });
+
+    // On load: show cache if exists
+    window.addEventListener('load', () => {
+      const cache = loadCache();
+      if(cache && cache.data){
+        if(cache.units) unitSelect.value = cache.units;
+        renderCurrent(cache.data, { label: cache.label }, cache.units || 'metric');
+        renderForecast(cache.data, cache.units || 'metric');
+        if(cache.coords) renderMap(cache.coords.lat, cache.coords.lon);
+      }
+    });
+  </script>
+</body>
+</html>

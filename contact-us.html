@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact Us | Wander Hub Ai</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
+    </style>
+  </head>
+
+  <body class="min-h-screen bg-gradient-to-br from-orange-400 via-sky-200 to-orange-100 flex flex-col text-[#181410]">
+    <!-- Navbar -->
+    <header class="flex items-center justify-between px-10 py-4 bg-white/80 backdrop-blur-md shadow-md">
+      <div class="flex items-center gap-3 text-orange-700 font-bold text-lg">
+       <img src="templates/logofinal.png"
+          class="w-10 h-10 rounded-full object-contain bg-white shadow-lg"
+          alt="Wander Hub Logo">
+        Wander Hub Ai
+      </div>
+
+      <nav class="flex gap-12 text-gray-700 font-medium">
+        <a href="local-user.html" class="hover:text-orange-600 transition">Home</a>
+         <a href="packages-by-road.html" class="hover:text-orange-600 transition">All Packages</a>
+        <a href="packages-by-air.html" class="hover:text-orange-600 transition">Air Packages</a>
+        <a href="packages-by-road.html" class="hover:text-orange-600 transition">Road Packages</a>
+        <a href="about-us.html" class="hover:text-orange-600 transition">About Us</a>
+        <a href="contact-us.html" class="text-orange-600 font-semibold">Contact</a>
+      </nav>
+
+      <a href="profile-user.html" class="bg-orange-100 hover:bg-orange-200 text-orange-700 font-semibold rounded-full px-4 py-2 transition">
+        Profile
+      </a>
+    </header>
+
+    <!-- Contact Section -->
+    <main class="flex flex-1 justify-center items-center px-5 py-10">
+      <div class="bg-white/90 backdrop-blur-md shadow-2xl rounded-3xl p-10 w-full max-w-lg transition transform hover:scale-[1.02]">
+        <h2 class="text-center text-3xl font-bold text-orange-700 mb-2">Get In Touch</h2>
+        <p class="text-center text-gray-500 mb-8">We’d love to hear from you!</p>
+
+        <!-- Contact Form -->
+        <form id="contactForm">
+          <div class="mb-5">
+            <label class="block text-gray-700 font-medium mb-2">Full Name</label>
+            <input
+              type="text"
+              id="name"
+              placeholder="Enter your full name"
+              class="w-full rounded-xl border border-gray-200 bg-sky-50 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-400 h-12 px-4 outline-none transition"
+            />
+          </div>
+
+          <div class="mb-5">
+            <label class="block text-gray-700 font-medium mb-2">Email</label>
+            <input
+              type="email"
+              id="email"
+              placeholder="Enter your email"
+              class="w-full rounded-xl border border-gray-200 bg-sky-50 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-400 h-12 px-4 outline-none transition"
+            />
+          </div>
+
+          <div class="mb-5">
+            <label class="block text-gray-700 font-medium mb-2">Message</label>
+            <textarea
+              id="message"
+              rows="4"
+              placeholder="Type your message..."
+              class="w-full rounded-xl border border-gray-200 bg-sky-50 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-400 px-4 py-3 outline-none transition"
+            ></textarea>
+          </div>
+
+          <button
+            type="submit"
+            class="w-full h-12 bg-gradient-to-r from-orange-500 to-sky-400 hover:from-orange-600 hover:to-sky-500 text-white font-bold rounded-full shadow-lg transition-transform hover:scale-[1.02]"
+          >
+            Send Message
+          </button>
+        </form>
+
+        <p id="successMsg" class="hidden text-center text-green-600 font-semibold mt-6">
+          ✅ Message sent successfully!
+        </p>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-sm text-gray-600 bg-white/60 backdrop-blur-md">
+      © 2025 Wander Hub Ai — All Rights Reserved
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+
+  const form = document.getElementById("contactForm");
+  const successMsg = document.getElementById("successMsg");
+
+  // small helpers
+  function getThreads() {
+    try { return JSON.parse(localStorage.getItem("inboxThreads") || "{}"); }
+    catch { return {}; }
+  }
+  function saveThreads(obj) {
+    localStorage.setItem("inboxThreads", JSON.stringify(obj));
+  }
+  function bumpUnread(email){
+    // per-user unread
+    const map = JSON.parse(localStorage.getItem("inboxUnread") || "{}");
+    map[email] = (map[email] || 0) + 1;
+    localStorage.setItem("inboxUnread", JSON.stringify(map));
+    // global ping for admin panels listening
+    localStorage.setItem("inbox_last_update", Date.now().toString());
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim().toLowerCase();
+    const message = document.getElementById("message").value.trim();
+
+    if (!name || !email || !message) {
+      alert("Please fill out all fields!");
+      return;
+    }
+
+    const threads = getThreads();
+    if (!threads[email]) {
+      threads[email] = {
+        email,
+        name,
+        messages: []
+      };
+    }
+    threads[email].name = name; // keep latest display name
+
+    threads[email].messages.push({
+      id: "m" + Math.floor(Math.random() * 1e9),
+      from: "user",
+      text: message,
+      ts: new Date().toISOString()
+    });
+
+    saveThreads(threads);
+    bumpUnread(email);
+
+    successMsg.classList.remove("hidden");
+    form.reset();
+    setTimeout(() => successMsg.classList.add("hidden"), 3000);
+  });
+
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Currency Converter | Wander Hub Ai</title>
+ <link rel="icon" type="image/png" href="templates/logofinal.png">
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+:root{--accent-1:#f97316;--accent-2:#06b6d4;--muted:#7f6a57;--card-bg: rgba(255,255,255,0.96);}
+body{font-family:"Plus Jakarta Sans",sans-serif;background: linear-gradient(180deg,#fb923c 0%, #7dd3fc 50%, #fb923c 100%);min-height:100vh;color:#111;}
+.wrap{max-width:980px;margin:28px auto;background:var(--card-bg);border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,0.12);overflow:hidden;}
+.header{padding:18px 22px;display:flex;gap:12px;align-items:center;border-bottom:1px solid rgba(0,0,0,0.04);background:linear-gradient(90deg, rgba(255,255,255,0.6), rgba(255,255,255,0.5));}
+.header h1{font-size:20px;font-weight:700;color:var(--accent-1);margin:0;}
+.body{padding:20px;display:grid;grid-template-columns:1fr 340px;gap:20px}
+@media(max-width:980px){.body{grid-template-columns:1fr}.right-col{order:2}}
+.panel{background:white;border-radius:10px;padding:18px;box-shadow:0 6px 18px rgba(10,20,30,0.04);}
+.select,.input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #e6e6e6;background:#fff;}
+.row{display:flex;gap:12px;align-items:center;}
+.col{display:flex;flex-direction:column;gap:8px;}
+.btn{padding:10px 14px;border-radius:999px;font-weight:700;cursor:pointer;border:none;}
+.btn-primary{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:white;box-shadow:0 8px 20px rgba(6,182,212,0.08);}
+.btn-ghost{background:white;border:1px solid rgba(0,0,0,0.06);}
+.swap{background:transparent;border:1px dashed #ddd;border-radius:10px;padding:8px;cursor:pointer;}
+.result{margin-top:14px;padding:12px;border-radius:10px;background:linear-gradient(90deg,#f8fafc,#ffffff);font-weight:700;font-size:18px;}
+.muted{color:var(--muted);font-size:13px;}
+.small{font-size:13px;color:#555;}
+.history-item{padding:8px 10px;border-radius:8px;border:1px solid rgba(0,0,0,0.03);background:#fff;display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px;}
+.clear-link{cursor:pointer;color:var(--accent-1);text-decoration:underline;font-weight:600;}
+.footer-note{font-size:13px;color:#666;margin-top:10px;}
+.error{color:crimson;margin-top:8px;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+   
+    <div>
+      <h1>💸 Currency Converter</h1>
+    </div>
+  </div>
+
+  <div class="body">
+    <section class="panel left-col">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="small muted">Convert currencies instantly</div>
+        <div class="small muted">Auto-fallback to proxy if required</div>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <div class="col">
+        <label class="small muted">Amount</label>
+        <input id="amount" class="input" type="number" min="0" step="any" value="1" />
+
+        <div class="row" style="align-items:flex-start;">
+          <div style="flex:1;">
+            <label class="small muted">From</label>
+            <select id="fromC" class="select"></select>
+          </div>
+
+          <div style="width:48px;display:flex;align-items:center;justify-content:center;">
+            <button id="swapBtn" class="swap" title="Swap currencies">⇄</button>
+          </div>
+
+          <div style="flex:1;">
+            <label class="small muted">To</label>
+            <select id="toC" class="select"></select>
+          </div>
+        </div>
+
+        <!-- Quick picks get injected right below each select by JS -->
+
+        <div style="display:flex;gap:10px;margin-top:12px;">
+          <button id="convertBtn" class="btn btn-primary">Convert</button>
+          <button id="fetchRateBtn" class="btn btn-ghost">Get rate only</button>
+          <button id="refreshSymbols" class="btn btn-ghost">Refresh currencies</button>
+        </div>
+
+        <div id="status" style="margin-top:12px;" class="small muted"></div>
+
+        <div id="resultBox" class="result" style="display:none;"></div>
+
+        <div id="rateInfo" class="small muted" style="margin-top:8px;"></div>
+        <div id="errorBox" class="error" style="display:none;"></div>
+
+     
+      </div>
+    </section>
+
+    <aside class="panel right-col">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="font-weight:700">Recent conversions</div>
+        <div><span id="clearHistory" class="clear-link">Clear</span></div>
+      </div>
+
+      <div id="historyList" style="max-height:420px;overflow:auto;padding-right:6px;"></div>
+
+      <div style="margin-top:12px;">
+        <div style="font-weight:700;margin-bottom:6px;">Quick examples</div>
+        <div class="small">Try: 1 USD → PKR, 1000 PKR → USD, 50 EUR → PKR</div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+/* ================= Config ================= */
+const PUBLIC_SYMBOLS = 'https://api.exchangerate.host/symbols';
+const PUBLIC_CONVERT = 'https://api.exchangerate.host/convert';
+const PUBLIC_LATEST  = 'https://api.exchangerate.host/latest';
+
+const EXRATEAPI_BASE = 'https://api.exchangerate-api.com/v4/latest/'; // extra fallback
+const PROXY_PATH = './proxy.php'; // local proxy fallback (same folder)
+
+/* ================= DOM ================= */
+const fromSel = document.getElementById('fromC');
+const toSel = document.getElementById('toC');
+const amountInp = document.getElementById('amount');
+const convertBtn = document.getElementById('convertBtn');
+const swapBtn = document.getElementById('swapBtn');
+const resultBox = document.getElementById('resultBox');
+const statusEl = document.getElementById('status');
+const rateInfo = document.getElementById('rateInfo');
+const historyList = document.getElementById('historyList');
+const clearHistory = document.getElementById('clearHistory');
+const refreshSymbols = document.getElementById('refreshSymbols');
+const fetchRateBtn = document.getElementById('fetchRateBtn');
+const errorBox = document.getElementById('errorBox');
+
+const rawUser = localStorage.getItem("wh_user");
+const currentUser = rawUser ? JSON.parse(rawUser) : null;
+const currentUserId = currentUser && currentUser.id ? currentUser.id : "guest";
+
+const HISTORY_KEY = `wanderhub_conv_history_v1_${currentUserId}`;
+
+const SYMBOLS_CACHE_KEY = 'wanderhub_symbols_v1';
+const SYMBOLS_TS_KEY = 'wanderhub_symbols_ts_v1';
+
+/* ================= Utils ================= */
+function setStatus(msg, isError=false){
+  statusEl.textContent = msg || '';
+  statusEl.style.color = isError ? 'crimson' : '#444';
+  if(isError){ errorBox.style.display='block'; errorBox.innerText = msg; } else { errorBox.style.display='none'; }
+}
+function formatNumber(n){
+  const num = Number(n);
+  if (!isFinite(num)) return String(n);
+  if (Math.abs(num) >= 1000) return num.toLocaleString();
+  return num.toFixed(6).replace(/\.?0+$/,'');
+}
+
+/* ================= History ================= */
+function loadHistory(){ try{ return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }catch(e){ return []; } }
+function saveHistory(h){ try{ localStorage.setItem(HISTORY_KEY, JSON.stringify(h.slice(0,40))); }catch(e){} }
+function addHistory(item){ const h = loadHistory(); h.unshift(item); saveHistory(h); renderHistory(); }
+function clearHist(){ localStorage.removeItem(HISTORY_KEY); renderHistory(); setStatus('History cleared.'); }
+clearHistory.addEventListener('click', ()=> { if(confirm('Clear recent conversions?')) clearHist(); });
+function renderHistory(){
+  const h = loadHistory(); historyList.innerHTML='';
+  if(!h.length){ historyList.innerHTML = '<div class="small muted">No recent conversions yet</div>'; return; }
+  h.forEach(it => {
+    const row = document.createElement('div'); row.className='history-item';
+    row.innerHTML = `<div>
+        <div style="font-weight:700">${it.amount} ${it.from} → ${formatNumber(it.result)} ${it.to}</div>
+        <div class="small-muted" style="margin-top:6px">${new Date(it.time).toLocaleString()}</div>
+      </div>
+      <div class="small">${formatNumber(it.rate)}</div>`;
+    row.addEventListener('click', ()=> { amountInp.value=it.amount; fromSel.value=it.from; toSel.value=it.to; doConvert(); });
+    historyList.appendChild(row);
+  });
+}
+
+/* ================= Fetch helpers ================= */
+async function fetchWithTimeout(url, opts={}, timeout=10000){
+  const ctl = new AbortController(); const id = setTimeout(()=> ctl.abort(), timeout);
+  try { const res = await fetch(url, {...opts, signal:ctl.signal, mode:'cors', cache:'no-store'}); clearTimeout(id); return res; }
+  catch (err) { clearTimeout(id); throw err; }
+}
+
+/* Generic JSON fetch with proxy fallback */
+async function apiFetchJSON(url, useProxyIfFail=true){
+  try {
+    const r = await fetchWithTimeout(url, {}, 10000);
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return { data: await r.json(), via: 'public' };
+  } catch (errPublic) {
+    if(!useProxyIfFail) throw errPublic;
+    try {
+      const proxyUrl = PROXY_PATH + '?url=' + encodeURIComponent(url);
+      const r2 = await fetchWithTimeout(proxyUrl, {}, 11000);
+      if(!r2.ok) throw new Error('Proxy HTTP '+r2.status);
+      return { data: await r2.json(), via: 'proxy' };
+    } catch (errProxy){
+      throw new Error('Both public API and local proxy failed: ' + (errProxy.message || errPublic.message));
+    }
+  }
+}
+
+/* ================= Symbols ================= */
+async function loadSymbols(force=false){
+  setStatus('Loading currencies...');
+  try {
+    const cached = JSON.parse(localStorage.getItem(SYMBOLS_CACHE_KEY) || 'null');
+    const ts = Number(localStorage.getItem(SYMBOLS_TS_KEY) || '0');
+    const now = Date.now();
+    if(cached && !force && (now - ts) < 24*3600*1000){
+      populateSymbols(cached); setStatus('Currencies loaded (cache).'); return;
+    }
+    const { data, via } = await apiFetchJSON(PUBLIC_SYMBOLS);
+    const symbols = data.symbols;
+    if(!symbols) throw new Error('Symbols missing');
+    localStorage.setItem(SYMBOLS_CACHE_KEY, JSON.stringify(symbols));
+    localStorage.setItem(SYMBOLS_TS_KEY, String(Date.now()));
+    populateSymbols(symbols); setStatus('Currencies loaded ('+via+').');
+  } catch (err){
+    console.error('loadSymbols error:', err);
+    // Expanded fallback (added CNY, JPY, SAR)
+    const fallback = {
+      USD:{description:'United States Dollar'},
+      EUR:{description:'Euro'},
+      PKR:{description:'Pakistani Rupee'},
+      GBP:{description:'British Pound'},
+      AED:{description:'UAE Dirham'},
+      CNY:{description:'Chinese Yuan'},
+      JPY:{description:'Japanese Yen'},
+      SAR:{description:'Saudi Riyal'}
+    };
+    populateSymbols(fallback);
+    setStatus('Cannot load full list — using fallback.', true);
+  }
+}
+function populateSymbols(symbolsObj){
+  const codes = Object.keys(symbolsObj).sort();
+  fromSel.innerHTML=''; toSel.innerHTML='';
+  codes.forEach(code => {
+    const desc = symbolsObj[code].description || '';
+    const o = document.createElement('option'); o.value = code; o.textContent = `${code} — ${desc}`;
+    fromSel.appendChild(o); toSel.appendChild(o.cloneNode(true));
+  });
+  if(codes.includes('USD')) fromSel.value='USD';
+  if(codes.includes('PKR')) toSel.value='PKR';
+}
+
+/* ===== Quick Picks (chips under selects) ===== */
+function addQuickPicks() {
+  const picks = ['USD','PKR','EUR','GBP','AED','CNY','JPY','SAR'];
+
+  function makeRow(forSelect) {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;';
+    picks.forEach(code=>{
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = code;
+      b.className = 'btn btn-ghost';
+      b.style.cssText = 'padding:6px 10px;border-radius:999px;font-weight:700;';
+      b.onclick = ()=> { forSelect.value = code; };
+      row.appendChild(b);
+    });
+    return row;
+  }
+
+  fromSel.insertAdjacentElement('afterend', makeRow(fromSel));
+  toSel.insertAdjacentElement('afterend', makeRow(toSel));
+}
+
+/* ================= ExchangeRate-API fallback ================= */
+async function getRateFromExRateAPI(from, to){
+  const url = EXRATEAPI_BASE + encodeURIComponent(String(from).toUpperCase());
+  const { data } = await apiFetchJSON(url, false);
+  if(!data || !data.rates || typeof data.rates[String(to).toUpperCase()] === 'undefined'){
+    throw new Error('exchangerate-api.com: rate not found');
+  }
+  const rate = Number(data.rates[String(to).toUpperCase()]);
+  const date = data.time_last_update_utc ? new Date(data.time_last_update_utc).toISOString().slice(0,10) : (data.date || new Date().toISOString().slice(0,10));
+  return { rate, date };
+}
+
+/* ================= Convert flow (multi-source) ================= */
+async function convertAPI(from, to, amount){
+  from = String(from).toUpperCase(); to = String(to).toUpperCase();
+  // 1) exchangerate.host /convert
+  try {
+    const url = new URL(PUBLIC_CONVERT);
+    url.search = new URLSearchParams({ from, to, amount, places:8 }).toString();
+    const { data } = await apiFetchJSON(url.toString());
+    if(data && typeof data.result !== 'undefined'){
+      const rate = data.info?.rate ?? (Number(data.result)/Number(amount));
+      return { result: Number(data.result), info: { rate }, date: data.date, query: { from, to, amount } };
+    }
+    throw new Error('convert invalid');
+  } catch (err1) {
+    console.warn('convert primary failed:', err1);
+  }
+
+  // 2) exchangerate.host /latest
+  try {
+    const url2 = new URL(PUBLIC_LATEST);
+    url2.search = new URLSearchParams({ base: from, symbols: to }).toString();
+    const { data } = await apiFetchJSON(url2.toString());
+    if(data?.rates && typeof data.rates[to] !== 'undefined'){
+      const rate = Number(data.rates[to]);
+      return { result: rate * Number(amount), info: { rate }, date: data.date, query: { from, to, amount } };
+    }
+    throw new Error('latest invalid');
+  } catch (err2) {
+    console.warn('latest fallback failed:', err2);
+  }
+
+  // 3) exchangerate-api.com /v4/latest/{from}
+  const { rate, date } = await getRateFromExRateAPI(from, to);
+  return { result: rate * Number(amount), info: { rate }, date, query: { from, to, amount } };
+}
+
+/* ================= Actions ================= */
+async function doConvert(){
+  const from = fromSel.value; const to = toSel.value; const amount = Number(amountInp.value || 0);
+  if(!from || !to){ setStatus('Select both currencies', true); return; }
+  if(!isFinite(amount) || amount < 0){ setStatus('Enter valid amount', true); return; }
+  setStatus('Converting...');
+  try {
+    const data = await convertAPI(from, to, amount);
+    const rate = data.info?.rate ?? (data.result / amount);
+    const result = Number(data.result);
+    resultBox.style.display='block';
+    resultBox.innerHTML = `${formatNumber(amount)} <span style="color:var(--accent-1)">${from.toUpperCase()}</span> = <span style="color:var(--accent-2)">${formatNumber(result)}</span> <span style="color:#333">${to.toUpperCase()}</span>`;
+    rateInfo.textContent = `1 ${from.toUpperCase()} = ${formatNumber(rate)} ${to.toUpperCase()} · Rate date: ${data.date || new Date().toISOString().slice(0,10)}`;
+    setStatus('Conversion successful.');
+    addHistory({ time: new Date().toISOString(), from: from.toUpperCase(), to: to.toUpperCase(), amount, result, rate });
+  } catch (err){
+    console.error('Conversion error:', err);
+    setStatus('Conversion failed: ' + (err.message||'unknown'), true);
+    resultBox.style.display='none'; rateInfo.textContent='';
+  }
+}
+
+async function doGetRate(){
+  const from = fromSel.value; const to = toSel.value;
+  if(!from || !to){ setStatus('Select both currencies', true); return; }
+  setStatus('Fetching rate...');
+  try {
+    const data = await convertAPI(from, to, 1);
+    const rate = data.info?.rate ?? data.result;
+    rateInfo.textContent = `1 ${from.toUpperCase()} = ${formatNumber(rate)} ${to.toUpperCase()} · Rate date: ${data.date || new Date().toISOString().slice(0,10)}`;
+    setStatus('Rate fetched.');
+  } catch (err){
+    console.error('Get rate error:', err);
+    setStatus('Failed to fetch rate: ' + (err.message||'unknown'), true);
+  }
+}
+
+/* ================= UI events & init ================= */
+swapBtn.addEventListener('click', ()=>{ const a=fromSel.value; fromSel.value=toSel.value; toSel.value=a; });
+convertBtn.addEventListener('click', doConvert);
+fetchRateBtn.addEventListener('click', doGetRate);
+refreshSymbols.addEventListener('click', ()=> loadSymbols(true));
+
+function init(){ renderHistory(); loadSymbols(false).then(()=>addQuickPicks()); setStatus(''); }
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Packages | Wander Hub Ai</title>
+ <link rel="icon" type="image/png" href="templates/logofinal.png">
+    <!-- Tailwind with forms plugin -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Noto+Sans:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root{
+        --accent-700: #c2410c; /* orange-700 */
+        --accent-500: #f97316; /* orange-500 */
+        --sky-400: #38bdf8;   /* sky-400 */
+      }
+      body { font-family: "Plus Jakarta Sans", "Noto Sans", sans-serif; }
+      .card-enter { transform: translateY(10px); opacity: 0; }
+      .card-enter.show { transform: translateY(0); opacity: 1; transition: all 400ms cubic-bezier(.22,.9,.28,1); }
+      .star { color: #f59e0b; }
+      .backdrop-fade { background: rgba(3,7,18,0.45); }
+      .glass { background: rgba(255,255,255,0.75); backdrop-filter: blur(6px); box-shadow: 0 6px 30px rgba(12,40,40,0.08); }
+      .toast { position: fixed; right: 20px; bottom: 24px; background: var(--accent-700); color: white; padding: 10px 14px; border-radius: 999px; box-shadow: 0 6px 30px rgba(12,40,40,0.12); z-index: 9999; }
+      .fav-anim { transform-origin: center; transition: transform 180ms ease; }
+      .fav-anim.scale { transform: scale(1.18); }
+      .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+      .pageBtn:focus { outline: 2px dashed var(--accent-700); outline-offset: 3px; }
+    </style>
+  </head>
+
+  <body class="min-h-screen bg-gradient-to-br from-orange-400 via-sky-200 to-orange-100">
+
+    <!-- NAV -->
+    <header class="sticky top-0 z-50">
+      <div class="flex items-center justify-between border-b border-solid border-b-[#fdebd6] px-8 py-3 glass">
+        <div class="flex items-center gap-4 text-orange-900">
+          <img src="templates/logofinal.png"
+            class="w-10 h-10 rounded-full object-contain bg-white shadow-lg"
+            alt="Wander Hub Logo">
+          <h2 class="text-orange-900 text-lg font-bold leading-tight tracking-[-0.015em]">Wander Hub Ai</h2>
+        </div>
+
+        <nav class="hidden md:flex items-center gap-8 text-orange-900 font-medium">
+          <a href="local-user.html" class="hover:text-orange-600 transition">Home</a>
+          <a href="packages.html" class="text-orange-600 font-semibold">All Packages</a>
+          <a href="packages-by-air.html" class="hover:text-orange-600 transition">Air Packages</a>
+          <a href="packages-by-road.html" class="hover:text-orange-600 transition">Road Packages</a>
+          <a href="travel-guide.html" class="hover:text-orange-600 transition">Travel Guide</a>
+          <a href="about-us.html" class="hover:text-orange-600 transition">About Us</a>
+          <a href="contact-us.html" class="hover:text-orange-600 transition">Contact</a>
+        </nav>
+
+        <div class="flex items-center gap-3">
+          <!-- Currency toggle -->
+          <div class="flex items-center gap-2 mr-2">
+            <label for="currencyToggle" class="text-sm text-slate-700">Currency</label>
+           <select id="currencyToggle" class="h-9 rounded-full px-3 border border-orange-200 bg-white">
+  <option value="PKR">₨ PKR</option>
+  <option value="USD">$ USD</option>
+  <option value="EUR">€ EUR</option>
+  <option value="GBP">£ GBP</option>
+  <option value="AED">د.إ AED</option>
+</select>
+          </div>
+
+          <button id="historyBtn" title="Booking history" class="px-3 py-1 rounded-full bg-white/70 hover:bg-white transition text-sm">History</button>
+
+          <button id="navProfileBtn" title="Profile" class="bg-orange-100 hover:bg-orange-200 text-orange-700 font-semibold rounded-full px-4 py-2 transition"" onclick="window.location.href='profile-user.html'">
+            <img id="navAvatar" src="" alt="avatar" class="w-9 h-9 rounded-full object-cover hidden" />
+        
+            <div class="hidden sm:flex flex-col text-left">
+              <span id="navName" class="text-sm font-semibold text-orange-900">User Name</span>
+              <span id="navSub" class="text-xs text-orange-700/70">View profile</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="max-w-7xl mx-auto px-6 py-8">
+
+      <!-- Hero / Controls -->
+      <section class="flex flex-col md:flex-row items-start md:items-center gap-6 justify-between mb-8">
+        <div>
+          <h1 class="text-3xl md:text-4xl font-bold text-orange-700">Explore Packages</h1>
+          <p class="text-sm text-slate-700 mt-1">Select a place and customize days, meals, extras & guide — price updates instantly.</p>
+        </div>
+
+        <div class="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
+          <!-- Search -->
+          <div class="relative w-full md:w-64">
+            <input id="searchInput" type="search" placeholder="Search places, e.g., Hunza" class="w-full h-11 rounded-full px-4 pr-28 border border-orange-200 bg-white focus:ring-2 focus:ring-orange-300 outline-none" aria-label="Search packages" />
+            <button id="clearSearch" class="absolute right-28 top-1/2 -translate-y-1/2 text-sm text-slate-500 px-3 py-1 hidden">Clear</button>
+            <div class="absolute right-2 top-1/2 -translate-y-1/2 flex gap-2">
+              <select id="perPage" class="h-9 rounded-full px-3 border border-orange-200 bg-white text-sm" title="Packages per page">
+                <option value="4">4 / page</option>
+                <option value="6">6 / page</option>
+                <option value="8">8 / page</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Sort -->
+          <div class="flex items-center gap-2">
+            <label class="text-sm text-slate-700">Sort</label>
+            <select id="sortSelect" class="h-11 rounded-full px-3 border border-orange-200 bg-white focus:ring-2 focus:ring-orange-300 outline-none" aria-label="Sort packages">
+              <option value="featured">Featured</option>
+              <option value="price-asc">Price (low → high)</option>
+              <option value="price-desc">Price (high → low)</option>
+              <option value="days-asc">Days (short → long)</option>
+              <option value="rating-desc">Rating (high → low)</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Filters + Packages -->
+      <section class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+        <!-- Sidebar Filters -->
+        <aside class="lg:col-span-1 glass rounded-2xl p-4">
+          <h3 class="text-lg font-semibold text-orange-700 mb-3">Filters</h3>
+
+          <div class="mb-4">
+            <label class="block text-sm text-slate-700 mb-2">Place Type</label>
+            <div class="flex gap-2 flex-wrap">
+              <button data-filter="all" class="filterBtn px-3 py-1 rounded-full bg-orange-50 text-orange-700 text-sm">All</button>
+              <button data-filter="mountain" class="filterBtn px-3 py-1 rounded-full bg-white text-orange-700 text-sm border border-orange-200">Mountain</button>
+              <button data-filter="desert" class="filterBtn px-3 py-1 rounded-full bg-white text-orange-700 text-sm border border-orange-200">Desert</button>
+              <button data-filter="beach" class="filterBtn px-3 py-1 rounded-full bg-white text-orange-700 text-sm border border-orange-200">Beach</button>
+              <button data-filter="city" class="filterBtn px-3 py-1 rounded-full bg-white text-orange-700 text-sm border border-orange-200">City</button>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm text-slate-700 mb-2">Max Price (₨)</label>
+            <input id="priceRange" type="range" min="5000" max="50000" step="1000" value="50000" class="w-full accent-orange-600" />
+            <div class="text-xs text-slate-600 mt-1">Up to <span id="priceVal" class="font-semibold">₨ 50,000</span></div>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm text-slate-700 mb-2">Minimum Rating</label>
+            <select id="minRating" class="w-full h-10 rounded-md border border-orange-200 focus:ring-orange-300">
+              <option value="0">Any</option>
+              <option value="4">4★+</option>
+              <option value="4.5">4.5★+</option>
+            </select>
+          </div>
+
+          <div class="mt-6">
+            <button id="resetFilters" class="w-full py-2 rounded-full bg-gradient-to-r from-orange-500 to-sky-400 text-white font-semibold">Reset Filters</button>
+          </div>
+
+          <!-- Custom Travel Package -->
+          <div class="mt-4">
+            <button id="customPackageBtn" class="w-full py-2 rounded-full bg-gradient-to-r from-orange-500 to-sky-400 text-white font-semibold" aria-label="Request a custom travel package">
+              Custom Travel Package
+            </button>
+          </div>
+
+          <!-- Currency Converter -->
+          <div class="mt-3">
+            <button
+              id="currencyConverterBtn"
+              class="w-full py-2 rounded-full bg-gradient-to-r from-orange-500 to-sky-400 text-white font-semibold"
+              aria-label="Open currency converter"
+            >
+              Currency Converter
+            </button>
+          </div>
+
+          <!-- Weather -->
+          <div class="mt-3">
+            <button id="weatherForecastBtn" 
+              class="w-full py-2 rounded-full bg-gradient-to-r from-orange-500 to-sky-400 text-white font-semibold">
+              Weather Forecasting
+            </button>
+          </div>
+        </aside>
+
+        <!-- Packages grid -->
+        <div class="lg:col-span-3">
+          <div id="packagesGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Cards inserted by JS -->
+          </div>
+
+          <div class="mt-6 flex items-center justify-between">
+            <div id="emptyState" class="hidden text-center p-10 text-slate-600">No packages match your filters.</div>
+            <div class="flex items-center gap-3">
+              <div id="pagination" class="flex gap-2"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Booking drawer -->
+    <div id="drawer" class="fixed right-0 top-0 h-full w-full md:w-[420px] transform translate-x-full transition-transform duration-300 z-50" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="h-full flex flex-col glass p-6 shadow-2xl">
+        <div class="flex items-center justify-between">
+          <h3 id="drawerTitle" class="text-lg font-bold text-orange-900">Book Package</h3>
+          <div class="flex items-center gap-2">
+            <button id="shareBtn" class="text-sm text-slate-700 px-3 py-1 rounded-full border border-orange-200" title="Copy share link">Share</button>
+            <button id="drawerClose" class="text-slate-700 hover:text-slate-900" aria-label="Close drawer">✕</button>
+          </div>
+        </div>
+
+        <div id="drawerContent" class="mt-4 overflow-auto">
+          <!-- Image & details -->
+          <div class="rounded-xl overflow-hidden mb-4">
+            <img id="drawerImg" src="" alt="" class="w-full h-40 object-cover" loading="lazy" />
+          </div>
+
+          <div class="mb-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <div id="drawerPlace" class="text-lg font-semibold text-orange-700"></div>
+                <div id="drawerMeta" class="text-xs text-slate-600 mt-1"></div>
+              </div>
+              <div class="text-right">
+                <div id="drawerBase" class="text-sm text-slate-700"></div>
+                <div class="text-xs text-slate-500">base price per day</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Booking inputs -->
+          <div class="space-y-3">
+            <label class="block text-sm text-slate-700">Number of days</label>
+            <input id="inputDays" type="number" min="1" value="3" class="w-full h-11 rounded-xl border border-orange-200 px-3 focus:ring-2 focus:ring-orange-300" />
+
+            <label class="block text-sm text-slate-700">People</label>
+            <input id="inputPeople" type="number" min="1" value="2" class="w-full h-11 rounded-xl border border-orange-200 px-3 focus:ring-2 focus:ring-orange-300" />
+
+            <!-- Meals -->
+            <div>
+              <div class="text-sm font-semibold text-orange-700 mb-2">Meals (per person / per day)</div>
+              <div class="grid grid-cols-3 gap-2">
+                <label class="flex flex-col items-center gap-1 p-2 rounded-lg border border-orange-200">
+                  <input id="chkBreakfast" type="checkbox" class="accent-orange-600" />
+                  <div class="text-xs">Breakfast</div>
+                  <div class="text-sm text-slate-700">₨ 400</div>
+                </label>
+                <label class="flex flex-col items-center gap-1 p-2 rounded-lg border border-orange-200">
+                  <input id="chkLunch" type="checkbox" class="accent-orange-600" />
+                  <div class="text-xs">Lunch</div>
+                  <div class="text-sm text-slate-700">₨ 700</div>
+                </label>
+                <label class="flex flex-col items-center gap-1 p-2 rounded-lg border border-orange-200">
+                  <input id="chkDinner" type="checkbox" class="accent-orange-600" />
+                  <div class="text-xs">Dinner</div>
+                  <div class="text-sm text-slate-700">₨ 800</div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Add-ons -->
+            <div>
+              <label class="block text-sm text-slate-700">Add-ons</label>
+              <div class="flex gap-2 mt-2 flex-wrap">
+                <label class="flex items-center gap-2 px-3 py-1 rounded-full border border-orange-200">
+                  <input id="addonGuide" type="checkbox" class="accent-orange-600" />
+                  <div class="text-sm">Private Transport (₨ 4000 total)</div>
+                </label>
+                <label class="flex items-center gap-2 px-3 py-1 rounded-full border border-orange-200">
+                  <input id="addonTransport" type="checkbox" class="accent-orange-600" />
+                  <div class="text-sm">Airport / City Transfers (₨ 2000 total)</div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Preferred Guide (new) -->
+            <div class="mt-3">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-sm font-semibold text-orange-700">Preferred Travel Guide (optional)</span>
+                <button id="openGuidePage" type="button" class="text-xs text-sky-700 underline">
+                  View all guides
+                </button>
+              </div>
+              <select id="guideSelect" class="w-full h-11 rounded-xl border border-orange-200 px-3 focus:ring-2 focus:ring-orange-300">
+                <option value="">No specific preference</option>
+              </select>
+              <p id="guideHint" class="mt-1 text-xs text-slate-500"></p>
+            </div>
+
+            <!-- Totals -->
+            <div class="pt-3 border-t border-orange-100">
+              <div class="flex justify-between text-sm text-slate-600">
+                <div>Subtotal</div>
+                <div id="calcSubtotal">₨ 0</div>
+              </div>
+              <div class="flex justify-between text-sm text-slate-600 mt-1">
+                <div>Taxes & fees (5%)</div>
+                <div id="calcTax">₨ 0</div>
+              </div>
+              <div class="flex justify-between text-lg font-bold text-orange-900 mt-3">
+                <div>Total</div>
+                <div id="calcTotal">₨ 0</div>
+              </div>
+            </div>
+
+            <div class="pt-4 grid grid-cols-2 gap-3">
+              <button id="confirmBooking" class="w-full py-3 rounded-full bg-gradient-to-r from-orange-500 to-sky-400 text-white font-semibold">Confirm Booking</button>
+              <button id="copySummary" class="w-full py-3 rounded-full border border-orange-200 text-sm">Copy Summary</button>
+            </div>
+
+            <div class="pt-1">
+              <button id="exportBooking" class="w-full py-2 rounded-full bg-white border border-orange-200 text-sm">Save & Export (JSON)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-auto text-center text-xs text-slate-600 pt-4">Easy booking • Secure payments • 24/7 support</div>
+      </div>
+    </div>
+
+    <!-- Booking confirmation modal -->
+    <div id="modalWrap" class="fixed inset-0 hidden items-center justify-center z-60" role="dialog" aria-modal="true">
+      <div class="backdrop-fade absolute inset-0"></div>
+      <div class="relative bg-white rounded-2xl p-6 max-w-md w-full glass z-60">
+        <h3 class="text-lg font-bold text-orange-700">Booking Confirmed</h3>
+        <p id="modalText" class="text-sm text-slate-700 mt-3"></p>
+        <div class="mt-4 flex justify-between gap-2">
+          <button id="modalClose" class="px-4 py-2 rounded-full border border-orange-200">Close</button>
+          <button id="modalDone" class="px-4 py-2 rounded-full bg-gradient-to-r from-orange-500 to-sky-400 text-white">Done</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- History modal -->
+    <div id="historyWrap" class="fixed inset-0 hidden items-center justify-center z-70" role="dialog" aria-modal="true">
+      <div class="backdrop-fade absolute inset-0"></div>
+      <div class="relative bg-white rounded-2xl p-6 max-w-3xl w-full glass z-70">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-orange-700">Booking History</h3>
+          <div class="flex gap-2">
+            <button id="exportAllBtn" class="px-3 py-1 rounded-full border border-orange-200 text-sm">Export All</button>
+            <button id="clearHistoryBtn" class="px-3 py-1 rounded-full border border-orange-200 text-sm">Clear</button>
+            <button id="historyClose" class="px-3 py-1 rounded-full border border-orange-200 text-sm">Close</button>
+          </div>
+        </div>
+        <div id="historyList" class="space-y-3 max-h-96 overflow-auto"></div>
+      </div>
+    </div>
+
+    <!-- toast -->
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+    <!-- JS -->
+    <script>
+      /* ------------------------------
+ * Currency configuration
+ * ------------------------------ */
+const CURRENCY_RATES = {
+  PKR: { symbol: "₨", rate: 1 },
+  USD: { symbol: "$", rate: 1 / 280 },
+  EUR: { symbol: "€", rate: 1 / 300 },
+  GBP: { symbol: "£", rate: 1 / 350 },
+  AED: { symbol: "د.إ", rate: 1 / 76 }
+};
+
+      (function openFromOtherPage(){
+  const raw = localStorage.getItem('wh_open_package');
+  if(!raw) return;
+
+  try {
+    const pkg = JSON.parse(raw);
+
+    // show detail modal automatically
+    showDetail(pkg.id);
+
+    // optional: highlight package
+    console.log('Opened from:', pkg.source);
+
+    // cleanup so it doesn’t reopen every time
+    localStorage.removeItem('wh_open_package');
+  } catch(e){
+    console.warn('Invalid open package data');
+  }
+})();
+
+      /* ------------------------------
+       * Small navigation helpers
+       * ------------------------------ */
+      const weatherForecastBtn = document.getElementById('weatherForecastBtn');
+      if (weatherForecastBtn) {
+        weatherForecastBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          window.location.href = 'weather.html';
+        });
+      }
+
+      const currencyConverterBtn = document.getElementById('currencyConverterBtn');
+      if (currencyConverterBtn) {
+        currencyConverterBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          window.location.href = 'currency-converter.html';
+        });
+      }
+
+      const customPackageBtn = document.getElementById('customPackageBtn');
+      if (customPackageBtn) {
+        customPackageBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          window.location.href = 'request-package.html';
+        });
+      }
+
+      /* ------------------------------
+       * Package data (clean, expanded)
+       * ------------------------------ */
+      const PACKAGES = [
+        {
+          id: 'p1',
+          place: 'Hunza Valley',
+          type: 'mountain',
+          days: 5,
+          basePerDay: 7000,
+          rating: 4.8,
+          img: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80',
+          desc: 'Scenic valley, glaciers, and local culture. Perfect for mountain lovers.'
+        },
+        {
+          id: 'p2',
+          place: 'Karachi Beach Escape',
+          type: 'beach',
+          days: 3,
+          basePerDay: 4000,
+          rating: 4.2,
+          img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+          desc: 'Relax on sunny beaches and enjoy fresh seafood.'
+        },
+        {
+          id: 'p3',
+          place: 'Thar Desert Adventure',
+          type: 'desert',
+          days: 4,
+          basePerDay: 5200,
+          rating: 4.6,
+          img: 'https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=1200&q=80',
+          desc: 'Camel rides, cultural nights, and dune safaris.'
+        },
+        {
+          id: 'p4',
+          place: 'Lahore City Heritage',
+          type: 'city',
+          days: 2,
+          basePerDay: 3500,
+          rating: 4.4,
+          img: 'templates/caption1.jpg',
+          desc: 'Food walks, historical sites, and lively bazaars.'
+        },
+        {
+          id: 'p5',
+          place: 'Naran Kaghan Retreat',
+          type: 'mountain',
+          days: 4,
+          basePerDay: 6500,
+          rating: 4.7,
+          img: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
+          desc: 'Lakes, trails and breathtaking vistas.'
+        },
+        {
+          id: 'p6',
+          place: 'Skardu Flight Special',
+          type: 'air',
+          days: 3,
+          basePerDay: 9500,
+          rating: 4.9,
+          img: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1200&auto=format&fit=crop',
+          desc: 'Quick flight to Skardu — short stay, high altitude lakes and easy access to Baltoro Valley.'
+        },
+        {
+  id: 'p7',
+  place: 'Islamabad → Karachi Flight Tour',
+  type: 'air',
+  days: 4,
+  basePerDay: 8200,
+  rating: 4.3,
+  img: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1200&q=80',
+  desc: 'Fly across the country — city tours, local cuisine tasting, and coastal sunset viewing.'
+},
+        {
+          id: 'p8',
+          place: 'Northern Road Trip (Gilgit)',
+          type: 'road',
+          days: 7,
+          basePerDay: 6000,
+          rating: 4.8,
+          img: 'https://images.unsplash.com/photo-1526772662000-3f88f10405ff?auto=format&fit=crop&w=1200&q=80',
+          desc: 'Epic road journey through mountain passes — ideal for long drives and photography.'
+        },
+        {
+          id: 'p9',
+          place: 'Lahore → Multan Cultural Drive',
+          type: 'road',
+          days: 3,
+          basePerDay: 3800,
+          rating: 4.1,
+          img: 'https://images.unsplash.com/photo-1526481280698-7b0c9ce3a7f0?auto=format&fit=crop&w=1200&q=80',
+          desc: 'Historic cities, Sufi shrines and famous Punjabi cuisine along the highway.'
+        },
+        {
+          id: 'p10',
+          place: 'Swat Valley Scenic Drive',
+          type: 'road',
+          days: 4,
+          basePerDay: 5400,
+          rating: 4.6,
+          img:  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200',
+          desc: 'Green valleys, river-side drives and local markets. Great short road holiday.'
+        },
+        {
+          id: 'p11',
+          place: 'Gilgit Road Expedition',
+          type: 'road',
+          days: 6,
+          basePerDay: 6800,
+          rating: 4.7,
+          img: 'templates/DSC_5404-EFFECTS-e1546177012938-934x934.jpg',
+          desc: 'Extended expedition by road with guided stops at lakes, viewpoints and local villages.'
+        },
+        {
+          id: 'p12',
+          place: 'Rural Punjab Cycling Escape',
+          type: 'adventure',
+          days: 2,
+          basePerDay: 2200,
+          rating: 4.0,
+          img: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
+          desc: 'Two-day cycle through rural lanes, farmstays and local food experiences.'
+        }
+      ];
+
+      /* ------------------------------
+       * Guides data (shared with travel-guide)
+       * ------------------------------ */
+      const GUIDES = [
+        { id: 'aisha',  name: 'Aisha Khan',  regions: ['northern'],    langs: ['English','Urdu'],        rating: 4.9 },
+        { id: 'zain',   name: 'Zain Malik',  regions: ['lahore'],      langs: ['English','Punjabi'],     rating: 4.8 },
+        { id: 'fatima', name: 'Fatima Ali',  regions: ['sindh'],       langs: ['English','Sindhi','Urdu'], rating: 4.9 },
+        { id: 'hassan', name: 'Hassan Raza', regions: ['northern'],    langs: ['English','Pashto'],      rating: 4.6 },
+        { id: 'sara',   name: 'Sara Khan',   regions: ['balochistan'], langs: ['English','Balochi'],     rating: 4.7 },
+        { id: 'ali',    name: 'Ali Ahmed',   regions: ['lahore','northern'], langs: ['English','Kashmiri'], rating: 4.5 }
+      ];
+      /* ------------------------------
+ * Open-in-All-Packages bridge
+ * (SAFE injection from Air/Road)
+ * ------------------------------ */
+const OPEN_PKG_KEY = 'wh_open_package';
+let injectedPkg = null;
+
+try {
+  injectedPkg = JSON.parse(localStorage.getItem(OPEN_PKG_KEY));
+} catch (e) {
+  injectedPkg = null;
+}
+
+if (injectedPkg && injectedPkg.title) {
+  const exists = PACKAGES.some(p => p.place === injectedPkg.title);
+
+  if (!exists) {
+    PACKAGES.unshift({
+      id: injectedPkg.id ? ('ext_' + injectedPkg.id) : ('ext_' + Date.now()),
+      place: injectedPkg.title,
+      type: injectedPkg.source || 'air',
+      days: injectedPkg.days || 2,
+      basePerDay: Math.round((injectedPkg.price || 0) / (injectedPkg.days || 2)),
+      rating: 4.8,
+      img: (injectedPkg.images && injectedPkg.images[0]) || injectedPkg.image || '',
+      desc: injectedPkg.desc || 'Special package imported from ' + injectedPkg.source + ' packages'
+    });
+  }
+}
+/* ------------------------------
+ * Auto-open injected package
+ * ------------------------------ */
+if (injectedPkg && injectedPkg.title) {
+  const match = PACKAGES.find(p => p.place === injectedPkg.title);
+  if (match) {
+    setTimeout(() => {
+      openDrawer(match.id, true);
+    }, 300);
+  }
+  localStorage.removeItem(OPEN_PKG_KEY);
+}
+
+
+
+      /* ------------------------------
+       * User / per-user keys
+       * ------------------------------ */
+      const rawUser = localStorage.getItem('wh_user');
+      let currentUser = null;
+      try { currentUser = rawUser ? JSON.parse(rawUser) : null; } catch(e) { currentUser = null; }
+      const currentUserId = currentUser && currentUser.id ? currentUser.id : null;
+      const USER_SUFFIX = currentUserId ? ('_' + currentUserId) : '';
+
+      const FAV_KEY = 'wh_favs' + USER_SUFFIX;
+      const HISTORY_KEY = 'wh_history' + USER_SUFFIX;
+
+      /* ------------------------------
+       * Utilities & DOM refs
+       * ------------------------------ */
+      const packagesGrid = document.getElementById('packagesGrid');
+      const emptyState = document.getElementById('emptyState');
+      const searchInput = document.getElementById('searchInput');
+      const clearSearch = document.getElementById('clearSearch');
+      const sortSelect = document.getElementById('sortSelect');
+      const perPage = document.getElementById('perPage');
+
+      const filterBtns = Array.from(document.querySelectorAll('.filterBtn'));
+      const priceRange = document.getElementById('priceRange');
+      const priceVal = document.getElementById('priceVal');
+      const minRating = document.getElementById('minRating');
+      const resetFilters = document.getElementById('resetFilters');
+
+      const drawer = document.getElementById('drawer');
+      const drawerClose = document.getElementById('drawerClose');
+      const drawerTitle = document.getElementById('drawerTitle');
+      const drawerPlace = document.getElementById('drawerPlace');
+      const drawerMeta = document.getElementById('drawerMeta');
+      const drawerImg = document.getElementById('drawerImg');
+      const drawerBase = document.getElementById('drawerBase');
+
+      const inputDays = document.getElementById('inputDays');
+      const inputPeople = document.getElementById('inputPeople');
+      const chkBreakfast = document.getElementById('chkBreakfast');
+      const chkLunch = document.getElementById('chkLunch');
+      const chkDinner = document.getElementById('chkDinner');
+      const addonGuide = document.getElementById('addonGuide');
+      const addonTransport = document.getElementById('addonTransport');
+
+      const guideSelect = document.getElementById('guideSelect');
+      const guideHint = document.getElementById('guideHint');
+      const openGuidePage = document.getElementById('openGuidePage');
+
+      const calcSubtotal = document.getElementById('calcSubtotal');
+      const calcTax = document.getElementById('calcTax');
+      const calcTotal = document.getElementById('calcTotal');
+      const confirmBooking = document.getElementById('confirmBooking');
+      const copySummary = document.getElementById('copySummary');
+      const exportBooking = document.getElementById('exportBooking');
+
+      const modalWrap = document.getElementById('modalWrap');
+      const modalText = document.getElementById('modalText');
+      const modalClose = document.getElementById('modalClose');
+      const modalDone = document.getElementById('modalDone');
+
+      const historyBtn = document.getElementById('historyBtn');
+      const historyWrap = document.getElementById('historyWrap');
+      const historyList = document.getElementById('historyList');
+      const historyClose = document.getElementById('historyClose');
+      const exportAllBtn = document.getElementById('exportAllBtn');
+      const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+      const shareBtn = document.getElementById('shareBtn');
+      const toast = document.getElementById('toast');
+      const currencyToggle = document.getElementById('currencyToggle');
+      const paginationEl = document.getElementById('pagination');
+
+      const navNameEl = document.getElementById('navName');
+      const navAvatarEl = document.getElementById('navAvatar');
+      const navEmojiEl = document.getElementById('navEmoji');
+
+      // state
+      let currentPackage = null;
+      let filters = { placeType: 'all', maxPrice: 50000, minRating: 0, q: '' };
+      let currency = localStorage.getItem('wh_currency') || 'PKR';
+      let favorites = JSON.parse(localStorage.getItem(FAV_KEY) || '[]');
+      let bookingHistory = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+      let currentPage = 1;
+      let itemsPerPage = parseInt(perPage.value,10) || 4;
+
+      /* ------------------------------
+       * Helpers
+       * ------------------------------ */
+      function formatNumber(n) { return n.toLocaleString('en-US'); }
+      function capitalize(s) { return s.charAt(0).toUpperCase()+s.slice(1); }
+
+      function showToast(msg, ms=2200) {
+        toast.textContent = msg;
+        toast.classList.remove('hidden');
+        setTimeout(()=> { toast.classList.add('hidden'); }, ms);
+      }
+
+     function toCurrency(amountPKR) {
+  const cfg = CURRENCY_RATES[currency] || CURRENCY_RATES.PKR;
+  const converted = amountPKR * cfg.rate;
+
+  if (currency === "PKR") {
+    return `${cfg.symbol} ${formatNumber(Math.round(converted))}`;
+  }
+  return `${cfg.symbol} ${converted.toFixed(2)}`;
+}
+
+      function saveState() {
+        localStorage.setItem('wh_currency', currency);
+        localStorage.setItem(FAV_KEY, JSON.stringify(favorites));
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(bookingHistory));
+      }
+
+      function inferRegionFromPlace(place) {
+        const p = (place || '').toLowerCase();
+        if (p.includes('hunza') || p.includes('skardu') || p.includes('gilgit') || p.includes('naran') || p.includes('swat') || p.includes('kaghan'))
+          return 'northern';
+        if (p.includes('lahore') || p.includes('punjab'))
+          return 'lahore';
+        if (p.includes('karachi') || p.includes('thar') || p.includes('sindh'))
+          return 'sindh';
+        if (p.includes('baloch') || p.includes('gwadar'))
+          return 'balochistan';
+        return 'all';
+      }
+
+      function humanRegionLabel(region) {
+        switch(region){
+          case 'northern': return 'Northern Areas';
+          case 'lahore': return 'Punjab / Lahore';
+          case 'sindh': return 'Sindh / Karachi';
+          case 'balochistan': return 'Balochistan';
+          default: return 'All Pakistan';
+        }
+      }
+
+      /* ------------------------------
+       * Render packages + pagination
+       * ------------------------------ */
+      function renderPackages(list) {
+        packagesGrid.innerHTML = '';
+        if (!list.length) {
+          emptyState.classList.remove('hidden');
+          paginationEl.innerHTML = '';
+          return;
+        }
+        emptyState.classList.add('hidden');
+
+        itemsPerPage = parseInt(perPage.value,10) || 4;
+        const total = list.length;
+        const totalPages = Math.max(1, Math.ceil(total / itemsPerPage));
+        if (currentPage > totalPages) currentPage = totalPages;
+        const start = (currentPage - 1) * itemsPerPage;
+        const pageItems = list.slice(start, start + itemsPerPage);
+
+        pageItems.forEach((p) => {
+          const el = document.createElement('div');
+          el.className = 'card-enter show bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition transform hover:-translate-y-1';
+          const favActive = favorites.includes(p.id) ? 'text-red-500' : 'text-slate-400';
+          el.innerHTML = `
+            <div class="h-44 overflow-hidden relative">
+              <img data-src="${p.img}" alt="${p.place}" class="w-full h-full object-cover brightness-90 lazy-img" loading="lazy" />
+              <div class="absolute left-3 top-3 px-2 py-1 rounded-full bg-gradient-to-r from-orange-500/90 to-sky-400/90 text-white text-xs font-semibold">${p.type.toUpperCase()}</div>
+              <div class="absolute right-3 top-3 px-2 py-1 rounded-full bg-white/80 text-orange-800 text-sm font-semibold">${p.rating} ★</div>
+            </div>
+            <div class="p-4">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <div class="text-lg font-semibold text-orange-700">${p.place}</div>
+                  <div class="text-sm text-slate-600 mt-1">${p.desc}</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm text-slate-600">from</div>
+                  <div class="text-xl font-bold text-orange-900 price-display">${toCurrency(p.basePerDay)}</div>
+                  <div class="text-xs text-slate-500">per day</div>
+                </div>
+              </div>
+
+              <div class="mt-4 flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                  <div class="text-sm text-slate-700">Days: <span class="font-semibold">${p.days}</span></div>
+                </div>
+                <div class="flex gap-2 items-center">
+                  <button data-id="${p.id}" class="openBtn px-3 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200">View</button>
+                  <button data-id="${p.id}" class="quickBook px-3 py-1 rounded-full bg-gradient-to-r from-orange-500 to-sky-400 text-white">Book</button>
+                  <button data-id="${p.id}" class="favBtn px-2 py-1 rounded-full border border-orange-200" aria-label="Add to favorites">
+                    <svg class="w-5 h-5 fav-anim ${favActive}" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 21s-7-4.35-9-7.5C1 9 4 5 7.5 5A4.5 4.5 0 0112 8.4 4.5 4.5 0 0116.5 5C20 5 23 9 21 13.5 19 16.65 12 21 12 21z"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+          packagesGrid.appendChild(el);
+        });
+
+        document.querySelectorAll('.lazy-img').forEach(img => {
+          const src = img.getAttribute('data-src');
+          if (src) img.src = src;
+        });
+
+        document.querySelectorAll('.openBtn').forEach(b => b.addEventListener('click', (e) => openDrawer(e.currentTarget.dataset.id)));
+        document.querySelectorAll('.quickBook').forEach(b => b.addEventListener('click', (e) => openDrawer(e.currentTarget.dataset.id, true)));
+        document.querySelectorAll('.favBtn').forEach(b => {
+          b.addEventListener('click', (e) => {
+            const id = e.currentTarget.dataset.id;
+            toggleFavorite(id);
+          });
+        });
+
+        renderPagination(totalPages);
+      }
+
+      function renderPagination(totalPages) {
+        paginationEl.innerHTML = '';
+        for (let i=1;i<=totalPages;i++) {
+          const btn = document.createElement('button');
+          btn.className = `pageBtn px-3 py-1 rounded-full ${i===currentPage ? 'bg-orange-500 text-white' : 'bg-white border border-orange-200 text-slate-700'}`;
+          btn.textContent = i;
+          btn.setAttribute('aria-label', `Go to page ${i}`);
+          btn.addEventListener('click', () => {
+            currentPage = i;
+            applyFilters();
+            window.scrollTo({ top: 220, behavior: 'smooth' });
+          });
+          paginationEl.appendChild(btn);
+        }
+      }
+
+      /* ------------------------------
+       * Filters & search
+       * ------------------------------ */
+      let searchTimer = null;
+      function debounce(fn, wait=300) {
+        return function(...args) {
+          clearTimeout(searchTimer);
+          searchTimer = setTimeout(()=> fn.apply(this, args), wait);
+        };
+      }
+
+      function applyFilters() {
+        const q = filters.q.trim().toLowerCase();
+        let list = PACKAGES.filter(p => {
+          if (filters.placeType !== 'all' && p.type !== filters.placeType) return false;
+          if (p.basePerDay > filters.maxPrice) return false;
+          if (p.rating < filters.minRating) return false;
+          if (q) {
+            return p.place.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q);
+          }
+          return true;
+        });
+
+        const sort = sortSelect.value;
+        if (sort === 'price-asc') list.sort((a,b)=> a.basePerDay - b.basePerDay);
+        else if (sort === 'price-desc') list.sort((a,b)=> b.basePerDay - a.basePerDay);
+        else if (sort === 'days-asc') list.sort((a,b)=> a.days - b.days);
+        else if (sort === 'rating-desc') list.sort((a,b)=> b.rating - a.rating);
+
+        renderPackages(list);
+      }
+
+      searchInput.addEventListener('input', debounce((e) => {
+        filters.q = e.target.value;
+        clearSearch.style.display = filters.q ? 'block' : 'none';
+        currentPage = 1;
+        applyFilters();
+      }, 260));
+      clearSearch.addEventListener('click', () => { searchInput.value=''; filters.q=''; clearSearch.style.display='none'; currentPage=1; applyFilters(); });
+
+      sortSelect.addEventListener('change', () => { currentPage=1; applyFilters(); });
+      perPage.addEventListener('change', () => { itemsPerPage = parseInt(perPage.value,10); currentPage=1; applyFilters(); });
+
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          filterBtns.forEach(b => b.classList.remove('bg-orange-50','text-orange-700'));
+          btn.classList.add('bg-orange-50','text-orange-700');
+          filters.placeType = btn.dataset.filter;
+          currentPage = 1;
+          applyFilters();
+        });
+      });
+
+      priceRange.addEventListener('input', (e) => {
+        filters.maxPrice = parseInt(e.target.value,10);
+        priceVal.textContent = '₨ ' + formatNumber(filters.maxPrice);
+        currentPage = 1;
+        applyFilters();
+      });
+
+      minRating.addEventListener('change', (e)=> {
+        filters.minRating = parseFloat(e.target.value);
+        currentPage = 1;
+        applyFilters();
+      });
+
+      resetFilters.addEventListener('click', () => {
+        filters = { placeType: 'all', maxPrice: 50000, minRating: 0, q: '' };
+        searchInput.value = '';
+        clearSearch.style.display = 'none';
+        sortSelect.value = 'featured';
+        priceRange.value = 50000;
+        priceVal.textContent = '₨ 50,000';
+        minRating.value = '0';
+        perPage.value = '4';
+        currentPage = 1;
+        filterBtns.forEach(b => b.classList.remove('bg-orange-50','text-orange-700'));
+        document.querySelector('.filterBtn[data-filter="all"]').classList.add('bg-orange-50','text-orange-700');
+        applyFilters();
+      });
+
+      /* ------------------------------
+       * Favorites
+       * ------------------------------ */
+      function toggleFavorite(id) {
+        const idx = favorites.indexOf(id);
+        if (idx === -1) favorites.push(id);
+        else favorites.splice(idx,1);
+        saveState();
+        applyFilters();
+        showToast(idx === -1 ? 'Added to favorites' : 'Removed from favorites');
+      }
+
+      /* ------------------------------
+       * Drawer + guide suggestions
+       * ------------------------------ */
+      function populateGuideOptions(pkg) {
+        const region = inferRegionFromPlace(pkg.place);
+        let list = GUIDES;
+        if (region !== 'all') {
+          const filtered = GUIDES.filter(g => g.regions.includes(region));
+          if (filtered.length) list = filtered;
+        }
+        guideSelect.innerHTML = `<option value="">No specific preference</option>`;
+        list.forEach(g => {
+          const opt = document.createElement('option');
+          opt.value = g.id;
+          opt.textContent = `${g.name} — ${humanRegionLabel(g.regions[0])} • ${g.rating.toFixed(1)}★`;
+          guideSelect.appendChild(opt);
+        });
+        if (region !== 'all') {
+          guideHint.textContent = `Showing guides for ${humanRegionLabel(region)}. You can still choose anyone or leave it to us.`;
+        } else {
+          guideHint.textContent = 'Showing all available guides. You may also let us auto-assign a guide.';
+        }
+      }
+
+      function openDrawer(id, quick=false) {
+        currentPackage = PACKAGES.find(p=>p.id === id);
+        if (!currentPackage) return;
+        drawerTitle.textContent = 'Book — ' + currentPackage.place;
+        drawerPlace.textContent = currentPackage.place;
+        drawerMeta.textContent = `${currentPackage.days} days • ${capitalize(currentPackage.type)} • ${currentPackage.rating} ★`;
+        drawerImg.src = currentPackage.img;
+        drawerImg.alt = currentPackage.place + ' image';
+        drawerBase.textContent = toCurrency(currentPackage.basePerDay);
+
+        inputDays.value = currentPackage.days;
+        inputPeople.value = 2;
+        chkBreakfast.checked = false; chkLunch.checked = false; chkDinner.checked = false;
+        addonGuide.checked = false; addonTransport.checked = false;
+        guideSelect.value = '';
+
+        populateGuideOptions(currentPackage);
+        computeTotals();
+
+        drawer.classList.remove('translate-x-full');
+        drawer.setAttribute('aria-hidden', 'false');
+        if (quick) {
+          setTimeout(()=> {
+            confirmBooking.scrollIntoView({ behavior:'smooth' });
+          }, 300);
+        }
+        history.replaceState(null, '', `#${currentPackage.id}`);
+      }
+
+      drawerClose.addEventListener('click', closeDrawer);
+      function closeDrawer() {
+        drawer.classList.add('translate-x-full');
+        drawer.setAttribute('aria-hidden', 'true');
+        if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+      }
+
+      /* ------------------------------
+       * Totals
+       * ------------------------------ */
+      function computeTotals() {
+        if (!currentPackage) return null;
+        const days = Math.max(1, parseInt(inputDays.value || 1,10));
+        const people = Math.max(1, parseInt(inputPeople.value || 1,10));
+        const base = currentPackage.basePerDay * days * people;
+
+        const mealBreakfast = chkBreakfast.checked ? 400 * people * days : 0;
+        const mealLunch = chkLunch.checked ? 700 * people * days : 0;
+        const mealDinner = chkDinner.checked ? 800 * people * days : 0;
+        const addons = (addonGuide.checked ? 4000 : 0) + (addonTransport.checked ? 2000 : 0);
+
+        const subtotal = base + mealBreakfast + mealLunch + mealDinner + addons;
+        const tax = Math.round(subtotal * 0.05);
+        const total = subtotal + tax;
+
+        calcSubtotal.textContent = toCurrency(subtotal);
+        calcTax.textContent = toCurrency(tax);
+        calcTotal.textContent = toCurrency(total);
+        return {
+          subtotal, tax, total, days, people,
+          meals: { breakfast: chkBreakfast.checked, lunch: chkLunch.checked, dinner: chkDinner.checked },
+          addons: { privateTransport: addonGuide.checked, transfers: addonTransport.checked }
+        };
+      }
+
+      [inputDays, inputPeople, chkBreakfast, chkLunch, chkDinner, addonGuide, addonTransport].forEach(el => {
+        el.addEventListener('input', computeTotals);
+        el.addEventListener('change', computeTotals);
+      });
+
+      /* ------------------------------
+       * Open guides page with region pre-filter
+       * ------------------------------ */
+      openGuidePage.addEventListener('click', () => {
+        if (!currentPackage) {
+          window.location.href = 'travel-guide.html';
+          return;
+        }
+        const region = inferRegionFromPlace(currentPackage.place);
+        if (region && region !== 'all') {
+          window.location.href = 'travel-guide.html?region=' + encodeURIComponent(region);
+        } else {
+          window.location.href = 'travel-guide.html';
+        }
+      });
+
+      /* ------------------------------
+       * Booking + payment backend flow
+       * ------------------------------ */
+      confirmBooking.addEventListener('click', () => {
+        const totals = computeTotals();
+        if (!totals) return;
+        if (!inputDays.value || inputDays.value < 1 || !inputPeople.value || inputPeople.value < 1) {
+          alert('Please enter valid days and people.');
+          return;
+        }
+
+        let emailDefault = (currentUser && currentUser.email) ? currentUser.email : '';
+        let email = prompt('Enter your email to receive receipt / booking updates (required):', emailDefault);
+        if (!email) { alert('Email required for payment'); return; }
+
+        const selectedGuideId = guideSelect.value || null;
+        const selectedGuide = selectedGuideId ? GUIDES.find(g => g.id === selectedGuideId) : null;
+
+        const booking = {
+          id: 'bk_' + Date.now(),
+          packageId: currentPackage.id,
+          packageName: currentPackage.place,
+          days: totals.days,
+          people: totals.people,
+          meals: totals.meals,
+          addons: totals.addons,
+          totals: { subtotal: totals.subtotal, tax: totals.tax, total: totals.total },
+          currency,
+          email,
+          userId: currentUserId || null,
+          guide: selectedGuide ? { id: selectedGuide.id, name: selectedGuide.name } : null,
+          createdAt: new Date().toISOString()
+        };
+
+        bookingHistory.unshift(booking);
+        if (bookingHistory.length > 80) bookingHistory.pop();
+        saveState();
+        localStorage.setItem('wh_history_last_update', Date.now().toString());
+updateProfileAfterBooking();
+
+        const payments = (() => { try { return JSON.parse(localStorage.getItem('payments') || '[]'); } catch(e){ return []; } })();
+        const paymentId = 'pay_' + Date.now();
+        const paymentRecord = {
+          id: paymentId,
+          bookingId: booking.id,
+          packageId: booking.packageId,
+          packageName: booking.packageName,
+          email: booking.email,
+          userId: booking.userId,
+          guideId: booking.guide ? booking.guide.id : null,
+          guideName: booking.guide ? booking.guide.name : null,
+          amount: booking.totals.total,
+          currency: booking.currency,
+          status: 'Pending',
+          createdAt: new Date().toISOString(),
+          notes: 'Created from packages page'
+        };
+        payments.unshift(paymentRecord);
+        localStorage.setItem('payments', JSON.stringify(payments));
+        localStorage.setItem('payments_last_update', Date.now().toString());
+        localStorage.setItem('payments_new', Date.now().toString());
+
+        window.location.href = 'payment.html?pid=' + encodeURIComponent(paymentId);
+      });
+
+      /* simple share link */
+      shareBtn.addEventListener('click', () => {
+        if (!currentPackage) return showToast('Open a package first');
+        const url = location.origin + location.pathname + location.search + `#${currentPackage.id}`;
+        navigator.clipboard?.writeText(url).then(()=> showToast('Package link copied')).catch(()=> showToast('Cannot copy'));
+      });
+
+      /* ------------------------------
+       * History UI
+       * ------------------------------ */
+      historyBtn.addEventListener('click', () => {
+        renderHistory();
+        historyWrap.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      });
+      historyClose.addEventListener('click', () => {
+        historyWrap.classList.add('hidden');
+        document.body.style.overflow = '';
+      });
+
+      exportAllBtn.addEventListener('click', () => {
+        const blob = new Blob([JSON.stringify(bookingHistory, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `booking_history_${Date.now()}.json`;
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+        showToast('Exported history');
+      });
+
+      clearHistoryBtn.addEventListener('click', () => {
+        if (!confirm('Clear booking history?')) return;
+        bookingHistory = [];
+        saveState();
+        renderHistory();
+        showToast('History cleared');
+      });
+
+      function renderHistory() {
+        historyList.innerHTML = '';
+        if (!bookingHistory.length) {
+          historyList.innerHTML = `<div class="text-slate-600 p-6">No bookings yet.</div>`;
+          return;
+        }
+        bookingHistory.forEach(b => {
+          const el = document.createElement('div');
+          el.className = 'p-3 rounded-lg border border-orange-100 flex items-start justify-between gap-3';
+          const guideText = b.guide && b.guide.name ? b.guide.name : 'Auto-assign';
+          el.innerHTML = `
+            <div>
+              <div class="font-semibold text-orange-700">${b.packageName || 'Unknown package'}</div>
+              <div class="text-xs text-slate-600">${new Date(b.createdAt || Date.now()).toLocaleString()}</div>
+              <div class="text-sm text-slate-700 mt-2">
+                Days: ${b.days} • People: ${b.people}<br>
+                Guide: <span class="font-medium">${guideText}</span><br>
+                Total: ${toCurrency(b.totals?.total ?? b.totals)}
+              </div>
+            </div>
+            <div class="text-right flex flex-col gap-2">
+              <button class="openFromHistory px-3 py-1 rounded-full border border-orange-200" data-id="${b.packageId || ''}">Open</button>
+              <button class="removeHistory px-3 py-1 rounded-full border border-orange-200" data-id="${b.id}">Remove</button>
+            </div>
+          `;
+          historyList.appendChild(el);
+        });
+
+        document.querySelectorAll('.openFromHistory').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const pid = e.currentTarget.dataset.id;
+            if (!pid) return showToast('Original package not available');
+            openDrawer(pid);
+            historyWrap.classList.add('hidden');
+            document.body.style.overflow = '';
+          });
+        });
+        document.querySelectorAll('.removeHistory').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.dataset.id;
+            bookingHistory = bookingHistory.filter(b => b.id !== id);
+            saveState();
+            renderHistory();
+            showToast('Entry removed');
+          });
+        });
+      }
+
+      /* ------------------------------
+       * Keyboard & misc
+       * ------------------------------ */
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          if (!drawer.classList.contains('translate-x-full')) closeDrawer();
+          else if (!historyWrap.classList.contains('hidden')) { historyWrap.classList.add('hidden'); document.body.style.overflow=''; }
+        }
+      });
+
+      window.addEventListener('click', (ev) => {
+        if (!drawer.classList.contains('translate-x-full') && ev.target === drawer) closeDrawer();
+      });
+
+      currencyToggle.value = currency;
+      currencyToggle.addEventListener('change', (e) => {
+        currency = e.target.value;
+        saveState();
+        applyFilters();
+      });
+
+      function tryOpenFromHash() {
+        const hash = location.hash.replace('#','');
+        if (!hash) return;
+        const p = PACKAGES.find(x => x.id === hash);
+        if (p) setTimeout(()=> openDrawer(hash), 200);
+      }
+
+      /* ------------------------------
+       * Nav user info from wh_user
+       * ------------------------------ */
+      if (currentUser && currentUser.name) {
+        navNameEl.textContent = currentUser.name;
+      }
+      if (currentUser && currentUser.avatarUrl) {
+        navAvatarEl.src = currentUser.avatarUrl;
+        navAvatarEl.classList.remove('hidden');
+        navEmojiEl.classList.add('hidden');
+      }
+
+      /* ------------------------------
+       * Init
+       * ------------------------------ */
+      document.querySelector('.filterBtn[data-filter="all"]').classList.add('bg-orange-50','text-orange-700');
+      
+      /* ------------------------------
+ * Auto-open package coming from Air / Road
+ * ------------------------------ */
+if (injectedPkg && injectedPkg.title) {
+  const match = PACKAGES.find(p => p.place === injectedPkg.title);
+  if (match) {
+    setTimeout(() => {
+      openDrawer(match.id, true);
+    }, 300);
+  }
+  localStorage.removeItem('wh_open_package');
+}
+
+      applyFilters();
+      tryOpenFromHash();
+      function updateProfileAfterBooking() {
+  const rawUser = localStorage.getItem("wh_user");
+  if (!rawUser) return;
+
+  const user = JSON.parse(rawUser);
+  const profileKey = `wanderhub_profile_v1_${user.id}`;
+
+  let profile = {};
+  try {
+    profile = JSON.parse(localStorage.getItem(profileKey)) || {};
+  } catch {}
+
+  // ✅ update trips & points
+  profile.trips = (profile.trips || 0) + 1;
+  profile.points = (profile.points || 0) + 5;
+
+  localStorage.setItem(profileKey, JSON.stringify(profile));
+}
+currencyToggle.value = currency;
+currencyToggle.addEventListener('change', (e) => {
+  currency = e.target.value;
+  saveState();
+  applyFilters();
+});
+
+
+    </script>
+  </body>
+</html>

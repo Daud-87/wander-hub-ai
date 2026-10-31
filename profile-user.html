@@ -1,0 +1,1178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Profile | Wander Hub Ai</title>
+   <link rel="icon" type="image/png" href="templates/logofinal.png">
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* Base / fonts */
+  body { font-family: "Plus Jakarta Sans", sans-serif; margin:0; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+
+  /* small helpers */
+  .card-hover { transition: transform .22s cubic-bezier(.22,.9,.28,1), box-shadow .22s cubic-bezier(.22,.9,.28,1); }
+  .card-hover:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(13,40,70,.08); }
+  .fade { transition: all .22s ease; }
+  .tiny-btn { padding:.35rem .5rem; border-radius:.5rem; font-size:.8rem; }
+  .emoji-grid { display:grid; grid-template-columns: repeat(6, 1fr); gap:6px; }
+  .modal-backdrop { background: rgba(0,0,0,.6); }
+
+  /* Profile layout containers */
+  main.container { width: 100%; box-sizing: border-box; }
+  .max-w-6xl { max-width: 1100px; margin-left: auto; margin-right: auto; padding-left: 1rem; padding-right: 1rem; box-sizing: border-box; }
+
+  /* Grid (default mobile -> tablet -> desktop) */
+  .profile-grid { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
+  @media (min-width: 768px) {
+    .profile-grid { grid-template-columns: 360px 1fr; } /* sidebar + main */
+  }
+  @media (min-width: 1200px) {
+    /* wider layout for large screens (space for negative margins and breathing room) */
+    .max-w-6xl { max-width: 1400px; padding-left: 2rem; padding-right: 2rem; }
+    .profile-grid { grid-template-columns: 360px minmax(760px, 1fr); gap: 28px; }
+  }
+  @media (min-width: 1600px) {
+    .max-w-6xl { max-width: 1700px; }
+    .profile-grid { grid-template-columns: 400px minmax(900px, 1fr); gap: 36px; }
+  }
+
+  /* Sidebar behavior - sticky on larger screens */
+  aside { width: 100%; }
+  @media (min-width: 768px) {
+    aside > .card-hover { position: sticky; top: 92px; } /* keeps sidebar visible while scrolling */
+  }
+
+  /* Card content spacing adjustments */
+  .card-body { padding: 1rem; box-sizing: border-box; }
+  .card-head { display:flex; justify-content:space-between; align-items:flex-start; gap:.6rem; }
+  .guide-avatar { width:56px; height:56px; border-radius:12px; background-size:cover; background-position:center; flex-shrink:0; }
+
+  /* Form column adjustments */
+  #profileForm { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  @media (min-width: 768px) { #profileForm { grid-template-columns: 1fr 360px; } }
+  @media (min-width: 1200px) { #profileForm { grid-template-columns: 1fr 420px; } }
+
+  /* Tours / trips grid */
+  #tripGrid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  @media (min-width: 640px) { #tripGrid { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 1200px) { #tripGrid { grid-template-columns: repeat(4, 1fr); gap: 16px; } }
+  @media (min-width: 1600px) { #tripGrid { grid-template-columns: repeat(5, 1fr); gap: 18px; } }
+
+  .tour-card { position: relative; overflow: hidden; border-radius: 0.75rem; background-size: cover; background-position: center; height: 0; padding-bottom: 56%; } /* aspect video */
+  .tour-overlay { position: absolute; inset: 0; display:flex; align-items:flex-end; padding:0.75rem; background: linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(0,0,0,0.45) 100%); color: #fff; box-sizing:border-box; }
+
+  /* Buttons and inputs scale on large screens */
+  button, input, select, textarea { font-family: inherit; }
+  .px-6 { padding-left: 1.2rem; padding-right: 1.2rem; }
+  @media (min-width: 1200px) {
+    .px-6 { padding-left: 1.4rem; padding-right: 1.4rem; }
+    .rounded-2xl { border-radius: 1rem; }
+  }
+
+  /* Responsive header tweaks on very large screens */
+  header { padding-left: 2rem; padding-right: 2rem; }
+  @media (min-width: 1400px) { header { padding-left: 3rem; padding-right: 3rem; } }
+
+  /* Left details list spacing */
+  #leftTours, #toursList { margin: 0; padding: 0; list-style: none; }
+  #leftTours li { margin-bottom: 6px; }
+
+  /* Modal sizing on large screens */
+  #imgModal .modal-backdrop { opacity: .6; }
+  @media (min-width: 1200px) {
+    #imgModal .modal-backdrop { opacity: .65; }
+    #imgModal .modal-card { max-width: 1100px; }
+    #modalImg { height: 520px; object-fit: cover; }
+  }
+
+  /* Footer spacing for wide screens */
+  footer { padding: 1.1rem 1rem; }
+  @media (min-width: 1200px) { footer { padding: 1.4rem 1rem; } }
+
+  /* Utility tweaks to keep elements comfortable on widescreen */
+  .text-center { text-align: center; }
+  .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; max-width: 100%; }
+
+  /* Accessibility: increase hit area on very large screens */
+  @media (min-width: 1600px) {
+    .tiny-btn, .btn, .card-actions button { padding: .6rem .9rem; }
+  }
+
+  /* === NEW: small badges for bookings & chats (matches existing look) === */
+  .badge {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:999px;
+    padding:0.15rem 0.55rem;
+    font-size:0.72rem;
+    font-weight:600;
+    background-color:rgba(249, 115, 22, 0.07); /* soft orange */
+    color:#9a4b14;
+  }
+  .badge-unread {
+    background:#fee2e2;
+    color:#b91c1c;
+  }
+  .status-pill {
+    border-radius:999px;
+    padding:0.18rem 0.7rem;
+    font-size:0.78rem;
+    font-weight:600;
+  }
+  .status-pill.pending { background:#fef3c7; color:#92400e; }
+  .status-pill.confirmed { background:#dcfce7; color:#166534; }
+  .status-pill.cancelled { background:#fee2e2; color:#991b1b; }
+</style>
+
+</head>
+<body class="min-h-screen bg-gradient-to-br from-orange-400 via-sky-200 to-orange-100 flex flex-col">
+
+  <header class="flex items-center justify-between px-8 py-4 bg-white/80 backdrop-blur-md shadow-md sticky top-0 z-40">
+    <div class="flex items-center gap-3 text-orange-700 font-bold text-lg">
+      <img src="templates/logofinal.png"
+          class="w-10 h-10 rounded-full object-contain bg-white shadow-lg"
+          alt="Wander Hub Logo">
+      <span>Wander Hub Ai</span>
+    </div>
+    <nav class="hidden md:flex gap-10 text-gray-700 font-medium">
+      <a href="local-user.html" class="hover:text-orange-600 transition">Home</a>
+      <a href="packages.html" class="hover:text-orange-600 transition">All Packages</a>
+      <a href="packages-by-air.html" class="hover:text-orange-600 transition">Air Packages</a>
+      <a href="packages-by-road.html" class="hover:text-orange-600 transition">Road Packages</a>
+      <a href="about-us.html" class="hover:text-orange-600 transition">About Us</a>
+      <a href="contact-us.html" class="hover:text-orange-600 transition">Contact</a>
+      <a href="#" class="text-orange-600 font-semibold">Profile</a>
+    </nav>
+    <div class="flex items-center gap-4">
+      <button id="logoutHeaderBtn" class="hidden sm:inline px-3 py-2 rounded-full bg-white border border-gray-200 text-[#181410]">Logout</button>
+      <img id="navProfile" src="" alt="profile" class="w-10 h-10 rounded-full border-2 border-orange-400 object-cover" title="Profile" />
+    </div>
+  </header>
+
+  <main class="flex-1 container mx-auto px-6 py-8">
+    <div class="max-w-6xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- LEFT SIDEBAR -->
+        <aside class="col-span-1">
+          <div class="bg-white/95 rounded-2xl p-5 card-hover fade">
+            <div class="flex flex-col items-center gap-3 pb-4 border-b border-gray-100">
+              <div id="avatarWrap" class="relative w-32 h-32 rounded-full overflow-hidden bg-orange-50 flex items-center justify-center text-5xl text-orange-600">
+                <img id="avatarImg" class="w-full h-full object-cover hidden" alt="avatar" />
+                <div id="avatarSvgWrap" class="w-full h-full flex items-center justify-center"></div>
+                <span id="avatarEmoji" class="hidden text-5xl"></span>
+              </div>
+              <div class="text-center">
+                <h3 id="displayName" class="text-xl font-bold text-[#181410]">User Name</h3>
+                <p class="text-sm text-[#8d755e]" id="joinedInfo">Joined: —</p>
+                <p class="text-sm text-[#8d755e] mt-1"><span id="followers">0</span> followers · <span id="following">0</span> following</p>
+              </div>
+              <div class="flex gap-2 mt-3">
+                <button id="changeAvatarBtn" class="px-3 py-2 bg-orange-600 text-white rounded-full text-sm">Change</button>
+                <button id="removeAvatarBtn" class="px-3 py-2 bg-gray-100 text-gray-700 rounded-full text-sm">Remove</button>
+              </div>
+            </div>
+            <div class="mt-5 space-y-3">
+              <div>
+                <p class="text-xs text-gray-500">Email</p>
+                <p id="leftEmail" class="text-sm text-[#181410]">—</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500">Phone</p>
+                <p id="leftPhone" class="text-sm text-[#181410]">—</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500">DOB</p>
+                <p id="leftDob" class="text-sm text-[#181410]">—</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500">Joining Date</p>
+                <p id="leftJoin" class="text-sm text-[#181410]">—</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500">Address</p>
+                <p id="leftAddress" class="text-sm text-[#181410]">—</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500">Languages</p>
+                <p id="leftLangs" class="text-sm text-[#181410]">—</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500">Previous Tours</p>
+                <ul id="leftTours" class="mt-2 space-y-1 text-sm text-[#181410]"></ul>
+              </div>
+            </div>
+            <div class="mt-5 grid grid-cols-2 gap-3">
+              <div class="bg-orange-50 border border-orange-100 rounded-lg p-3 text-center">
+                <p id="points" class="text-2xl font-bold text-[#181410]">0</p>
+                <p class="text-xs text-[#8d755e]">Points</p>
+              </div>
+              <div class="bg-orange-50 border border-orange-100 rounded-lg p-3 text-center">
+                <p id="trips" class="text-2xl font-bold text-[#181410]">0</p>
+                <p class="text-xs text-[#8d755e]">Trips</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 bg-white/95 rounded-2xl p-4 card-hover fade">
+            <h4 class="text-sm font-semibold text-[#181410] mb-3">Quick actions</h4>
+            <div class="flex flex-col gap-2">
+              <button id="editOpenBtn" class="w-full text-left px-3 py-2 rounded-lg bg-gray-100 text-[#181410]">Edit Profile</button>
+              <button id="logoutBtn" class="w-full text-left px-3 py-2 rounded-lg bg-white border border-gray-200 text-[#181410]">Logout</button>
+            </div>
+          </div>
+        </aside>
+
+        <!-- MAIN -->
+        <section class="col-span-2 space-y-6">
+          <!-- Profile form -->
+          <div class="bg-white/95 rounded-2xl p-6 card-hover fade">
+            <div class="flex items-center justify-between">
+              <h2 class="text-2xl font-bold text-[#181410]">Profile</h2>
+              <div class="flex items-center gap-3">
+                <button id="saveBtn" class="px-4 py-2 bg-gradient-to-r from-orange-500 to-sky-400 text-white rounded-full font-semibold shadow">Save</button>
+                <button id="resetBtn" class="px-4 py-2 bg-gray-100 text-[#181410] rounded-full">Reset</button>
+              </div>
+            </div>
+
+            <form id="profileForm" class="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-4">
+                <label>
+                  <span class="text-sm text-gray-600">Full name</span>
+                  <input id="inputName" class="mt-1 w-full rounded-xl border border-gray-200 p-3" placeholder="Your full name" />
+                </label>
+                <label>
+                  <span class="text-sm text-gray-600">Email</span>
+                  <input id="inputEmail" type="email" class="mt-1 w-full rounded-xl border border-gray-200 p-3" placeholder="you@example.com" />
+                </label>
+                <label>
+                  <span class="text-sm text-gray-600">Phone</span>
+                  <input id="inputPhone" class="mt-1 w-full rounded-xl border border-gray-200 p-3" placeholder="+92 3xx xxxx xxx" />
+                </label>
+                <label>
+                  <span class="text-sm text-gray-600">Date of Birth</span>
+                  <input id="inputDob" type="date" class="mt-1 w-full rounded-xl border border-gray-200 p-3" />
+                </label>
+                <label>
+                  <span class="text-sm text-gray-600">Address</span>
+                  <input id="inputAddress" class="mt-1 w-full rounded-xl border border-gray-200 p-3" placeholder="City, Country" />
+                </label>
+              </div>
+
+              <div class="space-y-4">
+                <div>
+                  <span class="text-sm text-gray-600">Profile Picture</span>
+                  <div class="mt-2 flex items-center gap-3">
+                    <label class="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg cursor-pointer">
+                      <input id="fileInput" type="file" accept="image/*" class="hidden" />
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7M8 7l4-4 4 4M12 3v13"/></svg>
+                      <span class="text-sm text-gray-700">Upload image</span>
+                    </label>
+                    <button id="emojiBtn" type="button" class="px-3 py-2 bg-orange-50 border border-orange-100 rounded-lg">Choose emoji</button>
+                  </div>
+                  <p class="text-xs text-gray-400 mt-1">Upload JPG/PNG or choose an emoji avatar. Navbar avatar updates too.</p>
+                </div>
+
+                <div id="emojiPicker" class="mt-3 p-3 bg-gray-50 rounded-lg hidden">
+                  <div class="emoji-grid">
+                    <button class="emojiBtn text-2xl p-2 rounded hover:bg-gray-100">🧭</button>
+                    <button class="emojiBtn text-2xl p-2 rounded hover:bg-gray-100">🌄</button>
+                    <button class="emojiBtn text-2xl p-2 rounded hover:bg-gray-100">🏔️</button>
+                    <button class="emojiBtn text-2xl p-2 rounded hover:bg-gray-100">✈️</button>
+                    <button class="emojiBtn text-2xl p-2 rounded hover:bg-gray-100">🧳</button>
+                    <button class="emojiBtn text-2xl p-2 rounded hover:bg-gray-100">🌍</button>
+                    <button class="emojiBtn text-2xl p-2 rounded hover:bg-gray-100">📸</button>
+                    <button class="emojiBtn text-2xl p-2 rounded hover:bg_gray-100">🙂</button>
+                    <button class="emojiBtn text-2xl p-2 rounded hover:bg_gray-100">😎</button>
+                    <button class="emojiBtn text-2xl p-2 rounded hover:bg_gray-100">👨‍💼</button>
+                    <button class="emojiBtn text-2xl p-2 rounded hover:bg_gray-100">🤝</button>
+                    <button class="emojiBtn text-2xl p-2 rounded hover:bg_gray-100">🏖️</button>
+                  </div>
+                </div>
+
+                <label>
+                  <span class="text-sm text-gray-600">Languages (select multiple — hold Ctrl/Cmd)</span>
+                  <select id="inputLangs" multiple class="mt-1 w-full rounded-xl border border-gray-200 p-3 h-28">
+                    <option>English</option>
+                    <option>Urdu</option>
+                    <option>Punjabi</option>
+                    <option>Pashto</option>
+                    <option>Sindhi</option>
+                    <option>Balochi</option>
+                    <option>Arabic</option>
+                    <option>Other</option>
+                  </select>
+                </label>
+
+                <div>
+                  <span class="text-sm text-gray-600">Previous Tours</span>
+                  <div class="mt-2 flex gap-2">
+                    <input id="tourInput" placeholder="Add tour (e.g. Hunza Valley)" class="flex-1 rounded-xl border border-gray-200 p-3" />
+                    <label class="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-xl cursor-pointer">
+                      <input id="tourFileInput" type="file" accept="image/*" class="hidden" />
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7M8 7l4-4 4 4M12 3v13"/></svg>
+                      <span class="text-sm text-gray-700">Image (optional)</span>
+                    </label>
+                  </div>
+                  <div class="flex justify-center mt-6">
+                    <button 
+                      id="addTourBtn" 
+                      type="button" 
+                      class="px-6 py-3 bg-gradient-to-r from-orange-500 to-sky-400 hover:from-orange-600 hover:to-sky-500 text-white font-semibold rounded-full shadow-md transition-transform hover:scale-[1.05]"
+                    >
+                      + Add Tour
+                    </button>
+                  </div>
+                  <ul id="toursList" class="mt-3 space-y-2 text-sm"></ul>
+                </div>
+              </div>
+
+              <div class="md:col-span-2">
+                <label>
+                  <span class="text-sm text-gray-600">Bio</span>
+                  <textarea id="inputBio" rows="3" class="mt-1 w-full rounded-xl border border-gray-200 p-3" placeholder="A short bio about your travels..."></textarea>
+                </label>
+              </div>
+
+              <div>
+                <label>
+                  <span class="text-sm text-gray-600">Joining Date</span>
+                  <input id="inputJoinDate" type="date" class="mt-1 w-full rounded-xl border border-gray-200 p-3" />
+                </label>
+              </div>
+            </form>
+          </div>
+<input
+  id="profileSearch"
+  placeholder="Search tours, bookings..."
+  class="w-full mb-4 px-4 py-2 rounded-full border bg-sky-50 focus:ring-2 focus:ring-orange-300 outline-none"
+/>
+
+          <!-- Past Trips gallery -->
+          <div class="bg-white/95 rounded-2xl p-6 card-hover fade">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-semibold text-[#181410]">Past Trips</h3>
+              <p class="text-sm text-[#8d755e]">Click to enlarge</p>
+            </div>
+            <div id="tripGrid" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+          </div>
+
+          <!-- === NEW: My Bookings (packages + guides) === -->
+          <div class="bg-white/95 rounded-2xl p-6 card-hover fade">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-lg font-semibold text-[#181410]">My Bookings</h3>
+              <span class="text-xs text-[#8d755e]">Package & guide bookings stored in this browser</span>
+            </div>
+<div id="bookingList"></div>
+            <!-- Trip bookings -->
+            <div class="mt-3">
+              <div class="flex items-center justify-between mb-1">
+                <h4 class="text-sm font-semibold text-[#181410] flex items-center gap-2">
+                  <span>Trip bookings (packages)</span>
+                  <span id="tripBookingsCount" class="badge">0 trips</span>
+                </h4>
+              </div>
+              <div id="tripBookingsList" class="space-y-2 text-sm"></div>
+              <p id="tripBookingsEmpty" class="text-xs text-[#8d755e] mt-1">
+                No trip bookings found yet. Confirm a package to see it here.
+              </p>
+            </div>
+          </div>
+
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="text-center py-4 text-sm text-gray-700 bg-white/60 backdrop-blur-md">
+    © 2025 Wander Hub Ai — All Rights Reserved
+  </footer>
+
+  <div id="imgModal" class="fixed inset-0 hidden items-center justify-center z-50">
+    <div class="modal-backdrop absolute inset-0"></div>
+    <div class="relative z-60 max-w-3xl w-full mx-4">
+      <div class="bg-white rounded-2xl overflow-hidden shadow-2xl">
+        <div class="flex items-center justify-between px-4 py-3 border-b">
+          <h4 id="modalTitle" class="font-semibold text-lg">Trip</h4>
+          <button id="modalClose" class="px-3 py-1 rounded bg-gray-100">Close</button>
+        </div>
+        <div class="p-4">
+          <img id="modalImg" src="" alt="preview" class="w-full h-80 object-cover rounded" />
+          <p id="modalCaption" class="mt-3 text-sm text-gray-600"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function renderBookings() {
+  const rawUser = localStorage.getItem("wh_user");
+  if (!rawUser) return;
+
+  const user = JSON.parse(rawUser);
+  const key = `wh_bookings_${user.id}`;
+  const bookings = JSON.parse(localStorage.getItem(key) || '[]');
+
+  const list = document.getElementById('bookingList');
+  if (!list) return;
+
+  list.innerHTML = '';
+
+  bookings.forEach(b => {
+    const div = document.createElement('div');
+    div.className = 'border rounded-xl p-4 flex justify-between';
+
+    div.innerHTML = `
+      <div>
+        <div class="font-semibold">${b.title}</div>
+        <div class="text-xs text-gray-500">
+          ${b.days} days · ${b.people} people<br>
+          Booked: ${new Date(b.bookedAt).toLocaleString()}
+        </div>
+      </div>
+      <div class="text-orange-600 font-semibold">${b.total}</div>
+    `;
+
+    list.appendChild(div);
+  });
+}
+renderBookings();
+    let currentSearchQuery = '';
+    // ========= LOGIN + PER-USER STORAGE =========
+    const rawUser = localStorage.getItem("wh_user");
+    let currentUser = null;
+    try {
+      currentUser = rawUser ? JSON.parse(rawUser) : null;
+    } catch (e) {
+      currentUser = null;
+    }
+
+    const currentRole = (localStorage.getItem("wh_role") || (currentUser && currentUser.role) || "user").toLowerCase();
+    const currentUserId = currentUser && currentUser.id ? currentUser.id : null;
+
+    // Only allow logged-in user-role users
+    if (!currentUserId || currentRole !== "user") {
+      alert("Please login as a User to access your profile.");
+      window.location.href = "login.html";
+    }
+
+    const STORAGE_BASE_KEY = 'wanderhub_profile_v1';
+
+    // === NEW: keys for bookings + chats (must match other pages) ===
+   const MSG_KEY = `wanderhub_messages_v1_${currentUserId}`;
+const LASTREAD_KEY = `wanderhub_lastread_v1_${currentUserId}`;
+  const GUIDE_BOOKING_KEY = `wanderhub_bookings_v1_${currentUserId}`;
+
+    function getProfileStorageKey() {
+      if (!currentUserId) return STORAGE_BASE_KEY;
+      return `${STORAGE_BASE_KEY}_${currentUserId}`;
+    }
+
+    // trip history from packages: wh_history_<userId>
+    function getTripHistoryKey() {
+      return currentUserId ? `wh_history_${currentUserId}` : 'wh_history';
+    }
+
+    function loadJSON(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : (fallback !== undefined ? fallback : null);
+      } catch (e) {
+        return fallback !== undefined ? fallback : null;
+      }
+    }
+    function saveJSON(key, val) {
+      try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){}
+    }
+
+    const defaultProfile = {
+      name: 'User Name',
+      email: '',
+      phone: '',
+      dob: '',
+      joinDate: '',
+      address: '',
+      langs: ['English'],
+      bio: '',
+      followers: 0,
+      following: 0,
+      points: 0,
+      trips: 0,
+      avatarType: 'emoji',
+      avatarEmoji: '🧭',
+      avatarDataUrl: '',
+      tours: []
+    };
+
+    // DOM refs
+    const navProfile = document.getElementById('navProfile');
+    const avatarImg = document.getElementById('avatarImg');
+    const avatarSvgWrap = document.getElementById('avatarSvgWrap');
+    const avatarEmoji = document.getElementById('avatarEmoji');
+    const inputName = document.getElementById('inputName');
+    const inputEmail = document.getElementById('inputEmail');
+    const inputPhone = document.getElementById('inputPhone');
+    const inputDob = document.getElementById('inputDob');
+    const inputAddress = document.getElementById('inputAddress');
+    const inputLangs = document.getElementById('inputLangs');
+    const inputBio = document.getElementById('inputBio');
+    const fileInput = document.getElementById('fileInput');
+    const emojiBtn = document.getElementById('emojiBtn');
+    const emojiPicker = document.getElementById('emojiPicker');
+    const emojiButtons = document.querySelectorAll('.emojiBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const changeAvatarBtn = document.getElementById('changeAvatarBtn');
+    const removeAvatarBtn = document.getElementById('removeAvatarBtn');
+    const toursList = document.getElementById('toursList');
+    const leftTours = document.getElementById('leftTours');
+    const addTourBtn = document.getElementById('addTourBtn');
+    const tourInput = document.getElementById('tourInput');
+    const tourFileInput = document.getElementById('tourFileInput');
+    const displayName = document.getElementById('displayName');
+    const leftEmail = document.getElementById('leftEmail');
+    const leftPhone = document.getElementById('leftPhone');
+    const leftDob = document.getElementById('leftDob');
+    const leftAddress = document.getElementById('leftAddress');
+    const leftLangs = document.getElementById('leftLangs');
+    const leftJoin = document.getElementById('leftJoin');
+    const joinedInfo = document.getElementById('joinedInfo');
+    const pointsEl = document.getElementById('points');
+    const tripsEl = document.getElementById('trips');
+    const followersEl = document.getElementById('followers');
+    const followingEl = document.getElementById('following');
+    const inputJoinDate = document.getElementById('inputJoinDate');
+    const tripGrid = document.getElementById('tripGrid');
+    const imgModal = document.getElementById('imgModal');
+    const modalImg = document.getElementById('modalImg');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalCaption = document.getElementById('modalCaption');
+    const modalClose = document.getElementById('modalClose');
+    const editOpenBtn = document.getElementById('editOpenBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const logoutHeaderBtn = document.getElementById('logoutHeaderBtn');
+
+    // NEW DOM refs for bookings + chats
+    const tripBookingsList = document.getElementById('tripBookingsList');
+    const tripBookingsEmpty = document.getElementById('tripBookingsEmpty');
+    const tripBookingsCount = document.getElementById('tripBookingsCount');
+  
+
+    function maleSvgDataUrl(bg = '#ffffff') {
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><rect width='100%' height='100%' fill='${bg}' rx='60'/><g transform='translate(20,18)' fill='none' stroke='#2b2b2b' stroke-width='2'><circle cx='40' cy='20' r='14' fill='#2b2b2b'/><path d='M6 86c6-18 34-18 34-18s28 0 34 18' fill='#2b2b2b'/></g></svg>`;
+      return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+    }
+    function emojiSvgDataUrl(emoji, bg = '#ffffff') {
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><rect width='100%' height='100%' rx='60' fill='${bg}'/><text x='50%' y='57%' font-size='60' text-anchor='middle' dominant-baseline='middle'>${emoji}</text></svg>`;
+      return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+    }
+    function toast(msg) {
+      const t = document.createElement('div');
+      t.textContent = msg;
+      t.className = 'fixed right-6 bottom-6 bg-[#181410] text-white px-4 py-2 rounded shadow';
+      document.body.appendChild(t);
+      setTimeout(() => t.classList.add('opacity-90'), 10);
+      setTimeout(() => t.remove(), 2200);
+    }
+
+    function getStoredProfile() {
+      const key = getProfileStorageKey();
+      const raw = localStorage.getItem(key);
+      if (!raw) {
+        const p = { ...defaultProfile };
+        if (currentUser) {
+          p.name = currentUser.name || defaultProfile.name;
+          p.email = currentUser.email || '';
+          if (!p.joinDate) {
+            p.joinDate = new Date().toISOString().slice(0,10);
+          }
+        }
+        return p;
+      }
+      return JSON.parse(raw);
+    }
+
+    function loadProfile() {
+      const profile = getStoredProfile();
+
+      inputName.value = profile.name || defaultProfile.name;
+      inputEmail.value = profile.email || '';
+      inputPhone.value = profile.phone || '';
+      inputDob.value = profile.dob || '';
+      inputAddress.value = profile.address || '';
+      inputBio.value = profile.bio || '';
+      inputJoinDate.value = profile.joinDate || '';
+
+      for (let i = 0; i < inputLangs.options.length; i++) {
+        const opt = inputLangs.options[i];
+        opt.selected = (profile.langs || []).includes(opt.text);
+      }
+      leftLangs.textContent = (profile.langs || []).join(', ') || '—';
+
+      avatarImg.classList.add('hidden');
+      avatarSvgWrap.innerHTML = '';
+      avatarEmoji.classList.add('hidden');
+
+      if (profile.avatarType === 'image' && profile.avatarDataUrl) {
+        avatarImg.src = profile.avatarDataUrl;
+        avatarImg.classList.remove('hidden');
+        navProfile.src = profile.avatarDataUrl;
+      } else if (profile.avatarType === 'emoji') {
+        avatarEmoji.textContent = profile.avatarEmoji || defaultProfile.avatarEmoji;
+        avatarEmoji.classList.remove('hidden');
+        navProfile.src = emojiSvgDataUrl(profile.avatarEmoji || defaultProfile.avatarEmoji, '#ffffff');
+      } else {
+        avatarSvgWrap.innerHTML = `<img src="${maleSvgDataUrl('#ffffff')}" class="w-full h-full object-cover" />`;
+        navProfile.src = maleSvgDataUrl('#ffffff');
+      }
+
+      displayName.textContent = profile.name || defaultProfile.name;
+      leftEmail.textContent = profile.email || '—';
+      leftPhone.textContent = profile.phone || '—';
+      leftDob.textContent = profile.dob || '—';
+      leftAddress.textContent = profile.address || '—';
+      leftJoin.textContent = profile.joinDate || '—';
+      joinedInfo.textContent = profile.joinDate ? `Joined: ${profile.joinDate}` : 'Joined: —';
+      pointsEl.textContent = profile.points ?? defaultProfile.points;
+      tripsEl.textContent = profile.trips ?? defaultProfile.trips;
+      followersEl.textContent = profile.followers ?? defaultProfile.followers;
+      followingEl.textContent = profile.following ?? defaultProfile.following;
+
+      renderToursList(profile.tours || []);
+      renderTripsGrid(profile.tours || []);
+    }
+
+    function saveProfile() {
+      const langs = Array.from(inputLangs.selectedOptions).map(o => o.text);
+      const avatarType = !avatarImg.classList.contains('hidden') ? 'image' : (!avatarEmoji.classList.contains('hidden') ? 'emoji' : 'svg');
+      const profile = {
+        name: inputName.value.trim() || defaultProfile.name,
+        email: inputEmail.value.trim(),
+        phone: inputPhone.value.trim(),
+        dob: inputDob.value || '',
+        joinDate: inputJoinDate.value || '',
+        address: inputAddress.value.trim(),
+        langs,
+        bio: inputBio.value.trim(),
+        followers: Number(followersEl.textContent) || defaultProfile.followers,
+        following: Number(followingEl.textContent) || defaultProfile.following,
+        points: Number(pointsEl.textContent) || defaultProfile.points,
+        trips: Number(tripsEl.textContent) || defaultProfile.trips,
+        avatarType,
+        avatarEmoji: avatarEmoji.textContent || defaultProfile.avatarEmoji,
+        avatarDataUrl: avatarImg.src && !avatarImg.classList.contains('hidden') ? avatarImg.src : '',
+        tours: getCurrentTours().map(t => ({
+          title: t.name || t.title,
+          desc: t.desc || '',
+          img: t.img || ''
+        }))
+      };
+      const key = getProfileStorageKey();
+      localStorage.setItem(key, JSON.stringify(profile));
+      window.dispatchEvent(new Event('profile-updated'));
+      loadProfile();
+      toast('Profile saved');
+    }
+
+    function resetProfile() {
+      if (!confirm('Reset profile to default values?')) return;
+      const key = getProfileStorageKey();
+      localStorage.removeItem(key);
+      loadProfile();
+      toast('Profile reset');
+    }
+
+    function getCurrentTours() {
+      return Array.from(document.querySelectorAll('.tour-item')).map(li => {
+        return { name: li.dataset.tour, img: li.dataset.img || '', desc: '' };
+      });
+    }
+
+    function renderToursList(tours) {
+      leftTours.innerHTML = '';
+      tours.forEach(t => {
+        const liL = document.createElement('li');
+        liL.textContent = t.name || t.title || '';
+        leftTours.appendChild(liL);
+      });
+
+      toursList.innerHTML = '';
+      tours.forEach(t => {
+        const li = document.createElement('li');
+        li.className = 'tour-item flex items-center justify-between gap-2 bg-gray-50 p-2 rounded-lg';
+        li.dataset.tour = t.name || t.title || '';
+        li.dataset.img = t.img || '';
+        li.innerHTML = `<span class="truncate">${t.name || t.title || ''}</span><div class="flex gap-2">
+          <button class="upload-tour tiny-btn bg-sky-50 text-sky-700 border border-sky-100">Upload Pic</button>
+          <button class="remove-tour tiny-btn bg-red-50 text-red-600">Remove</button>
+        </div>`;
+        toursList.appendChild(li);
+      });
+      renderToursListActions();
+    }
+
+    function renderToursListActions() {
+      document.querySelectorAll('.tour-item').forEach(li => {
+        const uploadBtn = li.querySelector('.upload-tour');
+        const removeBtn = li.querySelector('.remove-tour');
+        uploadBtn.onclick = null;
+        removeBtn.onclick = null;
+
+        uploadBtn.addEventListener('click', () => {
+          const file = document.createElement('input');
+          file.type = 'file'; file.accept = 'image/*';
+          file.onchange = e => {
+            const f = e.target.files && e.target.files[0];
+            if (!f) return;
+            const form = new FormData();
+form.append("image", f);
+
+fetch("http://localhost:5000/api/upload/image", {
+  method: "POST",
+  body: form
+})
+.then(res => res.json())
+.then(data => {
+  if (!data.success) return alert("Upload failed");
+  li.dataset.img = data.url;
+  saveTourDataFromDom();
+  renderTripsGrid(getCurrentTours());
+  toast("Tour image updated");
+});
+
+          };
+          file.click();
+        });
+
+        removeBtn.addEventListener('click', () => {
+          if (!confirm(`Remove tour "${li.dataset.tour}"?`)) return;
+          li.remove();
+          saveTourDataFromDom();
+          renderTripsGrid(getCurrentTours());
+          updateLeftToursFromList();
+          toast('Tour removed');
+        });
+      });
+    }
+
+    function updateLeftToursFromList() {
+      const tours = getCurrentTours();
+      leftTours.innerHTML = '';
+      tours.forEach(t => {
+        const el = document.createElement('li');
+        el.textContent = t.name;
+        leftTours.appendChild(el);
+      });
+      saveTourDataFromDom();
+    }
+
+    function saveTourDataFromDom() {
+      const key = getProfileStorageKey();
+      const profile = getStoredProfile();
+      profile.tours = getCurrentTours();
+      localStorage.setItem(key, JSON.stringify(profile));
+    }
+
+    addTourBtn.addEventListener('click', () => {
+      const name = tourInput.value.trim();
+      if (!name) {
+        toast('Enter a tour name');
+        return;
+      }
+      const f = tourFileInput.files && tourFileInput.files[0];
+      if (f) {
+  const form = new FormData();
+  form.append("image", f);
+
+  fetch("http://localhost:5000/api/upload/image", {
+    method: "POST",
+    body: form
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (!data.success) return alert("Upload failed");
+    addTourObject({ name, img: data.url });
+    tourInput.value = '';
+    tourFileInput.value = '';
+  });
+}
+ else {
+        const fallback = [
+          'https://images.unsplash.com/photo-1506947414948-2b3a57c0d6f8?q=80&w=1400&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1526772662000-3f88f10405ff?q=80&w=1400&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1541855494-0c2d8e3b1aa2?q=80&w=1400&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1400&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1482192596544-9eb780fc7f66?q=80&w=1400&auto=format&fit=crop'
+        ];
+        const idx = Math.floor(Math.random() * fallback.length);
+        addTourObject({ name, img: fallback[idx] });
+        tourInput.value = ''; tourFileInput.value = '';
+      }
+    });
+
+    function addTourObject(obj) {
+      const key = getProfileStorageKey();
+      const profile = getStoredProfile();
+      profile.tours = profile.tours || [];
+      if (profile.tours.some(t => (t.name || t.title || '').toLowerCase() === obj.name.toLowerCase())) {
+        toast('Tour already exists');
+        return;
+      }
+      profile.tours.unshift(obj);
+      localStorage.setItem(key, JSON.stringify(profile));
+      renderToursList(profile.tours);
+      renderTripsGrid(profile.tours);
+      toast('Tour added');
+    }
+
+    function renderTripsGrid(tours) {
+      const list = tours && tours.length ? tours : defaultProfile.tours;
+      tripGrid.innerHTML = '';
+      list.forEach(t => {
+        const src = t.img.startsWith('http')
+  ? t.img
+: 'http://localhost:5000' + t.img;
+        const name = t.name || t.title || '';
+        const card = document.createElement('div');
+        card.className = 'tour-card bg-cover bg-center aspect-video cursor-pointer transform hover:scale-[1.02] transition';
+        card.style.backgroundImage = `url('${src}')`;
+        const overlay = document.createElement('div');
+        overlay.className = 'tour-overlay';
+        overlay.innerHTML = `<div class="flex items-center justify-between w-full">
+          <div class="font-semibold">${name}</div>
+          <div class="flex gap-2">
+            <button class="view-btn tiny-btn bg-white/20">View</button>
+            <button class="upload-btn tiny-btn bg-white/20">Upload</button>
+            <button class="del-btn tiny-btn bg-red-50 text-red-600">Delete</button>
+          </div>
+        </div>`;
+        card.appendChild(overlay);
+
+        overlay.querySelector('.view-btn').addEventListener('click', e => {
+          e.stopPropagation();
+          openModal({ name, src });
+        });
+        overlay.querySelector('.del-btn').addEventListener('click', e => {
+          e.stopPropagation();
+          if (!confirm(`Delete tour "${name}"?`)) return;
+          removeTourByName(name);
+        });
+        overlay.querySelector('.upload-btn').addEventListener('click', e => {
+          e.stopPropagation();
+          const input = document.createElement('input');
+          input.type = 'file'; input.accept = 'image/*';
+          input.onchange = ev => {
+            const f = ev.target.files && ev.target.files[0];
+            if (!f) return;
+            const form = new FormData();
+form.append("image", f);
+
+fetch("http://localhost:5000/api/upload/image", {
+  method: "POST",
+  body: form
+})
+.then(res => res.json())
+.then(data => {
+  if (!data.success) return alert("Upload failed");
+  updateTourImage(name, data.url);
+});
+          };
+          input.click();
+        });
+
+        card.addEventListener('click', () => openModal({ name, src }));
+        tripGrid.appendChild(card);
+      });
+      applyProfileSearch();
+    }
+
+    function openModal(t) {
+      modalImg.src = t.src;
+      modalTitle.textContent = t.name;
+      modalCaption.textContent = t.caption || '';
+      imgModal.classList.remove('hidden');
+      imgModal.classList.add('flex');
+    }
+
+    modalClose.addEventListener('click', () => {
+      imgModal.classList.add('hidden');
+      imgModal.classList.remove('flex');
+    });
+    imgModal.addEventListener('click', e => {
+      if (e.target === imgModal) {
+        imgModal.classList.add('hidden');
+        imgModal.classList.remove('flex');
+      }
+    });
+
+    function removeTourByName(name) {
+      const key = getProfileStorageKey();
+      const profile = getStoredProfile();
+      profile.tours = (profile.tours || []).filter(t => (t.name || t.title || '') !== name);
+      localStorage.setItem(key, JSON.stringify(profile));
+      renderToursList(profile.tours);
+      renderTripsGrid(profile.tours);
+      updateLeftToursFromList();
+      toast('Tour deleted');
+    }
+
+    function updateTourImage(name, dataUrl) {
+      const key = getProfileStorageKey();
+      const profile = getStoredProfile();
+      profile.tours = (profile.tours || []).map(t => {
+        if ((t.name || t.title) === name) return { ...t, img: dataUrl };
+        return t;
+      });
+      localStorage.setItem(key, JSON.stringify(profile));
+      renderTripsGrid(profile.tours);
+      renderToursList(profile.tours);
+      toast('Tour image updated');
+    }
+fileInput.addEventListener("change", async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const form = new FormData();
+  form.append("image", file);
+
+  const res = await fetch("http://localhost:5000/api/upload/image", {
+    method: "POST",
+    body: form
+  });
+
+  const data = await res.json();
+  if (!data.success) return alert("Image upload failed");
+
+  // 🔴 IMPORTANT: make URL absolute
+  const fullUrl = "http://localhost:5000" + data.url;
+
+  // 🔵 show image immediately
+  avatarImg.src = fullUrl;
+  avatarImg.classList.remove("hidden");
+  avatarSvgWrap.innerHTML = "";
+  avatarEmoji.classList.add("hidden");
+  navProfile.src = fullUrl;
+
+  // ✅ FIX-2 STARTS HERE (THIS WAS MISSING)
+  const key = getProfileStorageKey();
+  const profile = getStoredProfile();
+
+  profile.avatarType = "image";
+  profile.avatarDataUrl = fullUrl;
+
+  localStorage.setItem(key, JSON.stringify(profile));
+  // ✅ FIX-2 ENDS HERE
+});
+
+    changeAvatarBtn.addEventListener('click', () => fileInput.click());
+    removeAvatarBtn.addEventListener('click', () => {
+      avatarImg.src = '';
+      avatarImg.classList.add('hidden');
+      avatarEmoji.classList.add('hidden');
+      avatarSvgWrap.innerHTML = `<img src="${maleSvgDataUrl('#ffffff')}" class="w-full h-full object-cover" />`;
+      navProfile.src = maleSvgDataUrl('#ffffff');
+      toast('Avatar removed (default set)');
+    });
+    emojiBtn.addEventListener('click', () => emojiPicker.classList.toggle('hidden'));
+    emojiButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = btn.textContent.trim();
+        avatarImg.classList.add('hidden');
+        avatarSvgWrap.innerHTML = '';
+        avatarEmoji.textContent = val;
+        avatarEmoji.classList.remove('hidden');
+        navProfile.src = emojiSvgDataUrl(val, '#ffffff');
+        emojiPicker.classList.add('hidden');
+      });
+    });
+
+    saveBtn.addEventListener('click', saveProfile);
+    resetBtn.addEventListener('click', resetProfile);
+    editOpenBtn.addEventListener('click', () => window.scrollTo({ top: document.querySelector('#profileForm').offsetTop - 80, behavior:'smooth' }));
+    logoutBtn.addEventListener('click', doLogout);
+    logoutHeaderBtn.addEventListener('click', doLogout);
+    function doLogout() {
+      if (!confirm('Sign out?')) return;
+      const key = getProfileStorageKey();
+      localStorage.removeItem(key);
+      localStorage.removeItem("wh_user");
+      localStorage.removeItem("wh_token");
+      localStorage.removeItem("wh_role");
+      location.href = 'login.html';
+    }
+
+    function ensureNavProfilePlaceholder() {
+      const key = getProfileStorageKey();
+      const raw = localStorage.getItem(key);
+      if (!raw) {
+        navProfile.src = maleSvgDataUrl('#ffffff');
+        return;
+      }
+      const p = JSON.parse(raw);
+      if (p.avatarType === 'image' && p.avatarDataUrl) navProfile.src = p.avatarDataUrl;
+      else if (p.avatarType === 'emoji') navProfile.src = emojiSvgDataUrl(p.avatarEmoji || '🧭', '#ffffff');
+      else navProfile.src = maleSvgDataUrl('#ffffff');
+    }
+
+    window.addEventListener('beforeunload', () => {
+      try { saveProfile(); } catch (e) {}
+    });
+   window.addEventListener('storage', e => {
+  if (!e.key) return;
+
+  // Profile changed
+  if (e.key.startsWith(STORAGE_BASE_KEY)) {
+    loadProfile();
+  }
+
+  // NEW booking added
+  if (e.key === getTripHistoryKey()) {
+    syncProfileWithBookings();
+    loadProfile();
+    renderTripBookings();
+  }
+});
+
+    window.addEventListener('profile-updated', () => loadProfile());
+
+    /* ===========================
+       NEW: BOOKINGS + CHATS LOGIC
+       =========================== */
+function syncProfileWithBookings() {
+  const profile = getStoredProfile();
+  const trips = getTripBookings(); // from wh_history_<userId>
+
+  const bookingCount = trips.length;
+
+  // Trips = total bookings
+  profile.trips = bookingCount;
+
+  // Points = 5 points per booking
+  profile.points = bookingCount * 5;
+
+  // Save updated profile
+  localStorage.setItem(getProfileStorageKey(), JSON.stringify(profile));
+}
+
+    // Trip bookings (packages)
+    function getTripBookings() {
+  const key = getTripHistoryKey();
+  const data = loadJSON(key, []);
+
+  if (Array.isArray(data)) return data;
+  if (data && typeof data === 'object') return Object.values(data);
+
+  return [];
+}
+
+    // Guide bookings (from travel-guide page)
+    function getGuideBookings() {
+      return loadJSON(GUIDE_BOOKING_KEY, []) || [];
+    }
+
+    function renderTripBookings() {
+      const trips = getTripBookings();
+      tripBookingsList.innerHTML = '';
+      tripBookingsCount.textContent = `${trips.length} trip${trips.length === 1 ? '' : 's'}`;
+
+      if (!trips.length) {
+        tripBookingsEmpty.classList.remove('hidden');
+        return;
+      }
+      tripBookingsEmpty.classList.add('hidden');
+
+      trips.forEach(b => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'flex items-start justify-between gap-3 rounded-xl bg-white/60 border border-gray-200 px-3 py-2';
+
+        const left = document.createElement('div');
+        left.className = 'flex-1';
+        const title = b.packageName || b.package || b.title || 'Package';
+        const days = b.days || b.duration || '?';
+        const people = b.people || b.guests || '?';
+        const created = b.createdAt || b.created;
+
+        left.innerHTML = `
+          <div class="font-semibold text-sm text-[#181410]">${title}</div>
+          <div class="text-xs text-[#8d755e] mt-0.5">${days} days · ${people} people</div>
+          <div class="text-[0.7rem] text-gray-400 mt-0.5">Booked: ${created ? new Date(created).toLocaleString() : '—'}</div>
+        `;
+
+        const right = document.createElement('div');
+        right.className = 'text-right text-xs text-[#181410]';
+        let total = 0;
+        if (b.totals && typeof b.totals === 'object' && b.totals.total != null) total = b.totals.total;
+        else if (typeof b.totals === 'number') total = b.totals;
+        const currency = b.currency || 'PKR';
+        right.innerHTML = `
+          <div class="font-semibold">${total ? `${currency} ${total}` : ''}</div>
+          <div class="text-[0.7rem] text-[#8d755e] mt-0.5">
+            ${(b.addons && (b.addons.guide || b.addons.transport)) ? 'With add-ons' : 'Base package'}
+          </div>
+        `;
+
+        wrapper.appendChild(left);
+        wrapper.appendChild(right);
+        tripBookingsList.appendChild(wrapper);
+      });
+      applyProfileSearch();
+    }
+
+    // Guide bookings
+    
+
+    // initialize
+    syncProfileWithBookings();
+loadProfile();
+ensureNavProfilePlaceholder();
+renderTripBookings();
+    (function loadUserProfile(){
+  const user = JSON.parse(localStorage.getItem('wh_user') || 'null');
+  if(!user) return;
+
+  // Name
+  const nameEls = document.querySelectorAll('[data-user-name]');
+  nameEls.forEach(el => el.textContent = user.name);
+
+  // Avatar
+  const avatarImgs = document.querySelectorAll('[data-user-avatar]');
+  avatarImgs.forEach(img => {
+    if(user.avatar){
+      img.src = user.avatar;
+      img.classList.remove('hidden');
+    }
+  });
+
+  // Fallback emoji
+  const emojiEls = document.querySelectorAll('[data-user-emoji]');
+  if(user.avatar){
+    emojiEls.forEach(e => e.style.display = 'none');
+  }
+})();
+function applyProfileSearch() {
+  const q = currentSearchQuery;
+
+  // --- Filter Tours ---
+  document.querySelectorAll('.tour-card').forEach(card => {
+    const text =
+      card.querySelector('.tour-overlay')?.innerText.toLowerCase() || '';
+    card.style.display = text.includes(q) ? '' : 'none';
+  });
+
+  // --- Filter Trip Bookings ---
+  document.querySelectorAll('#tripBookingsList > div').forEach(item => {
+    item.style.display = item.innerText.toLowerCase().includes(q)
+      ? ''
+      : 'none';
+  });
+}
+document.getElementById('profileSearch')?.addEventListener('input', e => {
+  currentSearchQuery = e.target.value.toLowerCase();
+  applyProfileSearch();
+});
+
+  </script>
+</body>
+</html>

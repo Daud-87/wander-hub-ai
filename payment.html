@@ -1,0 +1,830 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Make Payment | Wander Hub Ai</title>
+   <link rel="icon" type="image/png" href="templates/logofinal.png">
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body{font-family:"Plus Jakarta Sans",sans-serif;background:linear-gradient(180deg,#fb923c,#7dd3fc);}
+    .card{backdrop-filter: blur(6px); background: rgba(255,255,255,0.95);}
+    .thumb{width:100%;max-height:220px;object-fit:cover;border-radius:.5rem;border:1px solid rgba(0,0,0,0.06)}
+    .small-muted{font-size:.85rem;color:#6b7280}
+  </style>
+</head>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+
+
+
+<body class="min-h-screen flex items-center justify-center p-6">
+
+  <div class="w-full max-w-2xl card rounded-2xl p-8 shadow-2xl">
+    <div class="flex items-start gap-4">
+      <div class="flex-1">
+        <h1 class="text-2xl font-bold text-orange-600 mb-1">Complete Payment</h1>
+      </div>
+      <div>
+        <a href="local-user.html" class="text-sm text-slate-700 underline">← Back</a>
+      </div>
+    </div>
+
+    <form id="payForm" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-medium">Full name</label>
+          <input id="payerName" required class="w-full rounded-xl border p-3" placeholder="Full name" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium">Email</label>
+          <input id="payerEmail" type="email" required class="w-full rounded-xl border p-3" placeholder="you@example.com" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-sm font-medium">Booking ID</label>
+          <input id="bookingId" class="w-full rounded-xl border p-3" placeholder="#12345 (if paying for booking)" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Amount (Rs)</label>
+          <input id="amount" type="number" min="1" required class="w-full rounded-xl border p-3" placeholder="e.g. 12000" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Payment Method</label>
+          <select id="method" class="w-full rounded-xl border p-3">
+            <option>Card</option>
+            <option>Bank Transfer</option>
+            <option>Mobile Wallet</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-sm font-medium">Transaction Ref</label>
+          <input id="txRef" class="w-full rounded-xl border p-3" placeholder="e.g. TXN12345678" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Bank / Provider</label>
+          <input id="bankName" class="w-full rounded-xl border p-3" placeholder="e.g. HBL / JazzCash" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Transaction Date</label>
+          <input id="txDate" type="date" class="w-full rounded-xl border p-3" />
+        </div>
+      </div>
+
+      <div id="cardFields" class="space-y-2">
+        <div>
+          <label class="block text-sm font-medium">Card Number (demo)</label>
+          <input id="cardNo" maxlength="19" placeholder="4242 4242 4242 4242" class="w-full rounded-xl border p-3" />
+        </div>
+        <div class="flex gap-2">
+          <input id="cardExp" placeholder="MM/YY" class="w-1/2 rounded-xl border p-3" />
+          <input id="cardCvv" placeholder="CVV" class="w-1/2 rounded-xl border p-3" />
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="block text-sm font-medium">Upload transaction screenshot</label>
+        <div class="flex items-center gap-2">
+          <input id="txFile" type="file" accept="image/*" class="rounded p-2" />
+          <button id="clearFile" type="button" class="px-3 py-2 rounded bg-white/80">Clear</button>
+          <div id="fileInfo" class="small-muted ml-auto"></div>
+        </div>
+        <div id="previewWrap" class="mt-2 hidden">
+          <img id="previewImg" class="thumb" alt="screenshot preview" />
+          <div class="flex gap-2 mt-2">
+            <button id="openImgBtn" type="button" class="px-3 py-2 rounded bg-white/80 text-sm">Open image</button>
+            <button id="downloadImgBtn" type="button" class="px-3 py-2 rounded bg-gradient-to-r from-orange-500 to-sky-400 text-white text-sm">Download image</button>
+            <div id="imgSize" class="small-muted ml-auto"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button id="payBtn" type="submit" class="px-6 py-3 rounded-full bg-gradient-to-r from-orange-500 to-sky-400 text-white font-bold">Submit Payment</button>
+        <button id="clearBtn" type="button" class="px-4 py-2 rounded-full bg-white/80">Clear Form</button>
+        <div id="progress" class="small-muted ml-auto"></div>
+      </div>
+
+      <div id="payMessage" class="text-sm mt-2"></div>
+    </form>
+
+    <hr class="my-4" />
+
+    <div id="receiptWrap" class="hidden p-3 rounded-lg bg-white/50">
+      <div class="flex items-start gap-4">
+        <div>
+          <div class="text-sm small-muted">Receipt</div>
+          <div id="receiptId" class="font-semibold text-orange-700"></div>
+          <div id="receiptInfo" class="small-muted"></div>
+        </div>
+        <div class="ml-auto flex gap-2">
+          <button id="downloadReceiptBtn" class="px-3 py-1 rounded bg-gradient-to-r from-orange-500 to-sky-400 text-white text-sm">Download Receipt</button>
+          <button id="viewPaymentsBtn" class="px-3 py-1 rounded bg-white/80 text-sm">View Payments</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  // ======= utilities =======
+  function loadPayments(){ try{ return JSON.parse(localStorage.getItem('payments')||'[]'); }catch(e){ return []; } }
+function savePayments(arr){
+  const MAX_RECORDS = 100; // keep last 100 only
+  const trimmed = arr.slice(0, MAX_RECORDS);
+  localStorage.setItem('payments', JSON.stringify(trimmed));
+  localStorage.setItem('payments_last_update', Date.now().toString());
+}
+
+  function formatRs(n){ return 'Rs ' + Number(n||0).toLocaleString(); }
+  function downloadBlob(filename, content, mime='application/json'){ const blob = new Blob([content], {type:mime}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
+// ===== IndexedDB for payment images =====
+const IMG_DB = 'paymentImagesDB';
+const IMG_STORE = 'images';
+
+function openImgDB(){
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IMG_DB, 1);
+    req.onupgradeneeded = () => {
+      req.result.createObjectStore(IMG_STORE);
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function savePaymentImage(id, dataUrl){
+  const db = await openImgDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IMG_STORE, 'readwrite');
+    tx.objectStore(IMG_STORE).put(dataUrl, id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function loadPaymentImage(id){
+  const db = await openImgDB();
+  return new Promise((resolve) => {
+    const tx = db.transaction(IMG_STORE, 'readonly');
+    const req = tx.objectStore(IMG_STORE).get(id);
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = () => resolve(null);
+  });
+}
+
+  // ======= DOM refs =======
+  const form = document.getElementById('payForm');
+  const payMsg = document.getElementById('payMessage');
+  const payBtn = document.getElementById('payBtn');
+  const progress = document.getElementById('progress');
+  const txFile = document.getElementById('txFile');
+  const previewWrap = document.getElementById('previewWrap');
+  const previewImg = document.getElementById('previewImg');
+  const openImgBtn = document.getElementById('openImgBtn');
+  const downloadImgBtn = document.getElementById('downloadImgBtn');
+  const fileInfo = document.getElementById('fileInfo');
+  const imgSize = document.getElementById('imgSize');
+  const clearFileBtn = document.getElementById('clearFile');
+
+  const receiptWrap = document.getElementById('receiptWrap');
+  const receiptId = document.getElementById('receiptId');
+  const receiptInfo = document.getElementById('receiptInfo');
+  const downloadReceiptBtn = document.getElementById('downloadReceiptBtn');
+  const viewPaymentsBtn = document.getElementById('viewPaymentsBtn');
+
+  // image buffer (base64)
+  let uploadedDataUrl = null;
+  let uploadedFileName = null;
+
+  // max file size allowed (in bytes) before rejecting raw file (we still compress/rescale)
+  const MAX_RAW_BYTES = 6 * 1024 * 1024; // 6MB raw input
+
+  // helper: read file -> dataURL and optionally resize
+  function readAndResizeImage(file, maxWidth = 1200){
+    return new Promise((resolve, reject) => {
+      if(!file) return resolve(null);
+      if(file.size > MAX_RAW_BYTES) return reject(new Error('File too large (max 6MB)'));
+      const fr = new FileReader();
+      fr.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          // if small enough, keep as-is; otherwise scale down
+          const w = img.width, h = img.height;
+          if(w <= maxWidth){
+            resolve({ dataUrl: ev.target.result, width: w, height: h, size: file.size });
+            return;
+          }
+          const ratio = maxWidth / w;
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(w * ratio);
+          canvas.height = Math.round(h * ratio);
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img,0,0,canvas.width,canvas.height);
+          // reduce quality to 0.82 to shrink size
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+          // estimate size
+          let sizeBytes = Math.ceil((dataUrl.length - 'data:image/jpeg;base64,'.length) * 3/4);
+          resolve({ dataUrl, width: canvas.width, height: canvas.height, size: sizeBytes });
+        };
+        img.onerror = ()=> reject(new Error('Unable to load image'));
+        img.src = ev.target.result;
+      };
+      fr.onerror = ()=> reject(new Error('Failed to read file'));
+      fr.readAsDataURL(file);
+    });
+  }
+
+  // file input handling
+  txFile.addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if(!file){ clearPreview(); return; }
+    fileInfo.textContent = `${file.name} • ${(file.size/1024/1024).toFixed(2)} MB`;
+    uploadedFileName = file.name;
+    progress.textContent = 'Preparing image...';
+    try {
+      const res = await readAndResizeImage(file, 1200);
+      uploadedDataUrl = res.dataUrl;
+      previewImg.src = uploadedDataUrl;
+      previewWrap.classList.remove('hidden');
+      imgSize.textContent = `${Math.round(res.width)}×${Math.round(res.height)} • ${(res.size/1024).toFixed(1)} KB`;
+      progress.textContent = '';
+    } catch(err){
+      progress.textContent = '';
+      payMsg.textContent = 'Image error: ' + (err.message || 'unknown');
+      payMsg.style.color = 'crimson';
+      uploadedDataUrl = null;
+      previewWrap.classList.add('hidden');
+    }
+  });
+
+  clearFileBtn.addEventListener('click', clearPreview);
+  function clearPreview(){
+    txFile.value = '';
+    previewWrap.classList.add('hidden');
+    previewImg.src = '';
+    fileInfo.textContent = '';
+    imgSize.textContent = '';
+    uploadedDataUrl = null;
+    uploadedFileName = null;
+  }
+
+  openImgBtn.addEventListener('click', ()=> {
+    if(!uploadedDataUrl) return;
+    const w = window.open();
+    w.document.write(`<img src="${uploadedDataUrl}" style="max-width:100%"/>`);
+  });
+
+  downloadImgBtn.addEventListener('click', ()=> {
+    if(!uploadedDataUrl) return;
+    const a = document.createElement('a');
+    a.href = uploadedDataUrl;
+    // prefer original filename if available
+    a.download = uploadedFileName || `payment-screenshot-${Date.now()}.jpg`;
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  // toggle card fields visibility depending on method
+  const methodSel = document.getElementById('method');
+  const cardFields = document.getElementById('cardFields');
+  methodSel.addEventListener('change', ()=> {
+    if(methodSel.value === 'Card') cardFields.style.display = 'block';
+    else cardFields.style.display = 'none';
+  });
+  methodSel.dispatchEvent(new Event('change'));
+
+  // submit handling
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    payMsg.textContent = '';
+    progress.textContent = '';
+    payBtn.disabled = true;
+    const name = document.getElementById('payerName').value.trim();
+    const email = document.getElementById('payerEmail').value.trim().toLowerCase();
+    const bookingId = document.getElementById('bookingId').value.trim();
+    const amount = Number(document.getElementById('amount').value || 0);
+    const method = methodSel.value;
+    const txRef = document.getElementById('txRef').value.trim();
+    const bankName = document.getElementById('bankName').value.trim();
+    const txDate = document.getElementById('txDate').value || new Date().toISOString().slice(0,10);
+
+    if(!name || !email || !amount){
+      payMsg.textContent = 'Please fill required fields (name, email, amount).';
+      payMsg.style.color = 'crimson';
+      payBtn.disabled = false;
+      return;
+    }
+
+    try {
+      progress.textContent = 'Simulating payment...';
+      // simulate server processing for card or bank
+      await new Promise(r => setTimeout(r, 900));
+
+      // if no screenshot but method is transfer/wallet, encourage to upload:
+      if((method !== 'Card') && !uploadedDataUrl && !txRef){
+        // show persistent note but allow submission
+        payMsg.textContent = 'For bank/mobile payments we recommend uploading a screenshot or entering transaction ref for faster confirmation.';
+        payMsg.style.color = '#b45309';
+      } else {
+        payMsg.textContent = '';
+      }
+// store screenshot separately to avoid localStorage quota error
+// Build payment ID FIRST
+const qs = new URLSearchParams(location.search);
+const incomingPid = qs.get('pid') || qs.get('paymentId');
+
+const id = incomingPid || ('P' + Math.floor(Math.random()*9000000 + 1000));
+
+
+if (uploadedDataUrl) {
+  await savePaymentImage(id, uploadedDataUrl);
+}
+
+
+      const record = {
+        id,
+        name,
+        email,
+        bookingId: bookingId || null,
+        amount,
+        method,
+        txRef: txRef || null,
+        bankName: bankName || null,
+        txDate,
+        status: 'Pending',    // admin will confirm
+        createdAt: new Date().toISOString(),
+        notes: '',
+      };
+
+      // Save
+      const arr = loadPayments();
+      const idx = arr.findIndex(p => String(p.id) === String(id));
+if (idx !== -1) {
+  arr[idx] = { ...arr[idx], ...record };
+} else {
+  arr.unshift(record);
+}
+      savePayments(arr);
+
+      // user notification item for demo (admin side will pick this up)
+      const notifs = JSON.parse(localStorage.getItem('userNotifications')||'[]');
+      notifs.unshift({ id:'n'+Date.now(), email, text:`Payment ${id} of Rs ${amount.toLocaleString()} recorded (Pending).`, ts:new Date().toISOString(), read:false, meta:{paymentId:id} });
+      localStorage.setItem('userNotifications', JSON.stringify(notifs));
+      localStorage.setItem('user_notif_last_update', Date.now().toString());
+
+      // mark payments_new to notify admin tabs
+      localStorage.setItem('payments_new', Date.now().toString());
+
+      // show receipt summary
+      showReceipt(record);
+
+      // reset form lightly (keep user name/email for convenience)
+      document.getElementById('bookingId').value = '';
+      document.getElementById('amount').value = '';
+      document.getElementById('txRef').value = '';
+      document.getElementById('bankName').value = '';
+      document.getElementById('txDate').value = '';
+      clearPreview();
+
+      progress.textContent = '';
+      payMsg.textContent = `Payment recorded (ID: ${id}). Admin will confirm soon.`;
+      payMsg.style.color = 'green';
+    } catch(err){
+      payMsg.textContent = 'Error: ' + (err.message || 'unknown');
+      payMsg.style.color = 'crimson';
+    } finally {
+      payBtn.disabled = false;
+    }
+  });
+
+  // show receipt area and wire download
+  function showReceipt(rec){
+    receiptWrap.classList.remove('hidden');
+    receiptId.textContent = rec.id;
+    const parts = [
+      `Name: ${rec.name}`,
+      `Email: ${rec.email}`,
+      `Payment ID: ${rec.id}`,
+      `Booking: ${rec.bookingId || '—'}`,
+      `Amount: ${formatRs(rec.amount)}`,
+      `Method: ${rec.method}`,
+      `Txn Ref: ${rec.txRef || '—'}`,
+      `Bank: ${rec.bankName || '—'}`,
+      `Txn Date: ${rec.txDate || '—'}`,
+      `Status: ${rec.status}`,
+      `Created: ${new Date(rec.createdAt).toLocaleString()}`
+    ];
+    receiptInfo.innerHTML = parts.join('<br/>');
+/* Structured PDF receipt generator using jsPDF (text + optional images)
+   Drop this into your existing script (after jsPDF is loaded).
+*/
+const { jsPDF } = window.jspdf || {};
+
+// helper: fetch image URL -> dataURL (returns null on failure)
+async function fetchImageDataUrl(url){
+  if(!url) return null;
+  try {
+    const resp = await fetch(url, { cache: 'no-store' });
+    if(!resp.ok) return null;
+    const blob = await resp.blob();
+    return await new Promise((resolve,reject)=>{
+      const fr = new FileReader();
+      fr.onload = ()=> resolve(fr.result);
+      fr.onerror = ()=> resolve(null);
+      fr.readAsDataURL(blob);
+    });
+  } catch(e){ return null; }
+}
+
+// main: generates a structured receipt PDF for record `rec`
+async function generateStructuredPDF(rec){
+
+
+  // page setup (points)
+  const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
+  const W = pdf.internal.pageSize.getWidth();
+  const H = pdf.internal.pageSize.getHeight();
+  const margin = 36;
+  const contentW = W - margin*2;
+
+  // try to fetch logo (local path)
+  const logoUrlCandidates = [
+    'templates/logofinal.png', // your local path
+    '/templates/logofinal.png',
+    window.location.origin + '/templates/logofinal.png'
+  ];
+  let logoData = null;
+  for(const u of logoUrlCandidates){
+    if(!u) continue;
+    logoData = await fetchImageDataUrl(u);
+    if(logoData) break;
+  }
+
+  // Header
+  const titleY = margin + 8;
+  if(logoData){
+    // draw logo at left
+    const logoW = 64;
+    const logoH = 64;
+    pdf.addImage(logoData, 'PNG', margin, margin, logoW, logoH);
+    pdf.setFontSize(18);
+    pdf.setFont('helvetica','bold');
+    pdf.text('Wander Hub Ai', margin + logoW + 12, margin + 20);
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica','normal');
+    pdf.text('Payment Receipt', margin + logoW + 12, margin + 38);
+  } else {
+    pdf.setFontSize(20);
+    pdf.setFont('helvetica','bold');
+    pdf.text('Wander Hub Ai', margin, titleY);
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica','normal');
+    pdf.text('Payment Receipt', margin, titleY + 18);
+  }
+
+  // receipt meta at right: date & receipt id
+  const metaX = W - margin;
+  pdf.setFontSize(10);
+  pdf.text(`Date: ${new Date(rec.createdAt).toLocaleString()}`, metaX, margin + 12, { align: 'right' });
+  pdf.text(`Receipt ID: ${rec.id}`, metaX, margin + 30, { align: 'right' });
+
+  // horizontal rule
+  pdf.setDrawColor(220,220,220);
+  pdf.setLineWidth(0.5);
+  pdf.line(margin, margin + 78, W - margin, margin + 78);
+
+  // body start Y
+  let y = margin + 94;
+  const labelW = 130;
+  const gap = 8;
+  const valueX = margin + labelW + gap;
+
+  pdf.setFontSize(11);
+  pdf.setTextColor(40,40,40);
+
+  // helper to draw label/value rows
+  function drawRow(label, value){
+    // label
+    pdf.setFont('helvetica','bold');
+    pdf.text(label, margin, y);
+    // value (wrap if needed)
+    pdf.setFont('helvetica','normal');
+    const lines = pdf.splitTextToSize(String(value||'—'), contentW - labelW - gap);
+    pdf.text(lines, valueX, y);
+    // advance y by number of lines * lineHeight (~12pt)
+    y += (lines.length * 14) + 8;
+  }
+
+  // rows: left column of fields
+  drawRow('Payer name:', rec.name || '—');
+  drawRow('Email:', rec.email || '—');
+  drawRow('Booking ID:', rec.bookingId || '—');
+  drawRow('Amount:', (typeof rec.amount !== 'undefined') ? `Rs ${Number(rec.amount).toLocaleString()}` : '—');
+  drawRow('Payment method:', rec.method || '—');
+  drawRow('Transaction ref:', rec.txRef || '—');
+  drawRow('Bank / Provider:', rec.bankName || '—');
+  drawRow('Transaction date:', rec.txDate || '—');
+  drawRow('Status:', rec.status || 'Pending');
+
+  // add notes if exist
+  if(rec.notes){
+    pdf.setFont('helvetica','bold');
+    pdf.text('Notes:', margin, y);
+    pdf.setFont('helvetica','normal');
+    const noteLines = pdf.splitTextToSize(String(rec.notes), contentW);
+    y += 12;
+    pdf.text(noteLines, margin, y);
+    y += noteLines.length * 12 + 8;
+  }
+
+  // If screenshot exists, try to include it centered and scaled.
+  // load screenshot separately from localStorage
+// === Load payment screenshot from IndexedDB ===
+const paymentId = rec.id;
+const img = await loadPaymentImage(paymentId);
+
+if (img) {
+  const image = new Image();
+  image.src = img;
+  await new Promise(res => image.onload = res);
+
+  let imgW = image.naturalWidth * 0.75;
+  let imgH = image.naturalHeight * 0.75;
+
+  if (imgW > contentW) {
+    const scale = contentW / imgW;
+    imgW *= scale;
+    imgH *= scale;
+  }
+
+  if (y + imgH > H - margin) {
+    pdf.addPage();
+    y = margin;
+  }
+
+  pdf.setDrawColor(200,200,200);
+  pdf.rect(margin, y - 6, contentW, imgH + 12, 'S');
+  pdf.addImage(img, 'JPEG', margin + 8, y, imgW - 16, imgH);
+  y += imgH + 18;
+}
+
+
+  // Footer: note + page number
+  const footerY = H - margin + 8;
+  const pageCount = pdf.getNumberOfPages();
+  for(let i = 1; i <= pageCount; i++){
+    pdf.setPage(i);
+    pdf.setFontSize(9);
+    pdf.setTextColor(120,120,120);
+    pdf.text('This is a system-generated receipt for Wander Hub Ai — keep for your records.', margin, H - margin + 4);
+    pdf.text(`Page ${i} of ${pageCount}`, W - margin, H - margin + 4, { align: 'right' });
+  }
+
+  pdf.save(`WanderHub_receipt_${rec.id}.pdf`);
+}
+
+// Wire to download button (replace previous handler)
+downloadReceiptBtn.addEventListener('click', async () => {
+  const recId = receiptId.textContent || null;
+  if(!recId){
+    alert('No receipt available to download.');
+    return;
+  }
+  const payments = loadPayments();
+  const rec = payments.find(p => String(p.id) === String(recId)) || payments[0];
+  if(!rec){
+    alert('Receipt record not found.');
+    return;
+  }
+  try {
+    // small UI hint
+    downloadReceiptBtn.disabled = true;
+    downloadReceiptBtn.textContent = 'Generating PDF...';
+    await generateStructuredPDF(rec);
+  } catch (err){
+    console.error(err);
+    alert('Failed to create PDF: ' + (err && err.message ? err.message : err));
+  } finally {
+    downloadReceiptBtn.disabled = false;
+    downloadReceiptBtn.textContent = 'Download Receipt';
+  }
+});
+
+
+
+
+    viewPaymentsBtn.onclick = () => {
+      // open admin payments page if exists
+      const adminUrlCandidates = ['admin.html','admin-panel.html','admin/index.html','admin-panel/index.html'];
+      // try to open admin.html first
+      const attempt = adminUrlCandidates.find(u => true) || 'admin.html';
+      window.open(attempt, '_blank');
+    };
+  }
+
+  // quick view of existing payments (for convenience)
+  document.getElementById('viewPaymentsBtn').addEventListener('click', ()=> {
+    const arr = loadPayments();
+    if(!arr.length){ alert('No payments yet.'); return; }
+    const last = arr[0];
+    showReceipt(last);
+    window.scrollTo({top: document.body.scrollHeight, behavior:'smooth'});
+  });
+
+  document.getElementById('clearBtn').addEventListener('click', ()=> {
+    form.reset();
+    clearPreview();
+    payMsg.textContent = '';
+    receiptWrap.classList.add('hidden');
+  });
+
+  // keyboard accessibility: allow paste of image into file input preview area
+  window.addEventListener('paste', (ev) => {
+    const items = (ev.clipboardData || ev.originalEvent.clipboardData).items || [];
+    for(const it of items){
+      if(it.kind === 'file' && it.type.startsWith('image/')){
+        const f = it.getAsFile();
+        txFile.files = createFileListFromFile(f);
+        txFile.dispatchEvent(new Event('change'));
+        ev.preventDefault();
+      }
+    }
+  });
+
+  // small helper to set FileList programmatically (works in modern browsers)
+  function createFileListFromFile(file){
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    return dt.files;
+  }
+
+  // Sanity: keep preview cleared when navigating away
+  window.addEventListener('beforeunload', ()=> {
+    // nothing critical
+  });
+(function(){
+  // get pid from querystring (supported param names: pid or paymentId)
+  const qs = new URLSearchParams(location.search);
+  const incomingPid = qs.get('pid') || qs.get('paymentId') || null;
+  if(!incomingPid) return; // nothing to do if no pid
+
+  // try to locate existing payment record
+  const paymentsArr = loadPayments();
+  const existing = paymentsArr.find(p => String(p.id) === String(incomingPid));
+  if(!existing){
+    // optionally inform user
+    console.warn('payment id in url not found:', incomingPid);
+    return;
+  }
+
+  // prefill form fields from incoming record (do not overwrite user's later edits)
+  try {
+    if(existing.name) document.getElementById('payerName').value = existing.name;
+    if(existing.email) document.getElementById('payerEmail').value = existing.email;
+    if(existing.bookingId) document.getElementById('bookingId').value = existing.bookingId;
+    if(existing.amount) document.getElementById('amount').value = existing.amount;
+    if(existing.method) document.getElementById('method').value = existing.method;
+    if(existing.txRef) document.getElementById('txRef').value = existing.txRef;
+    if(existing.bankName) document.getElementById('bankName').value = existing.bankName;
+    if(existing.txDate) {
+      // make sure date input receives YYYY-MM-DD
+      const d = existing.txDate.slice(0,10);
+      document.getElementById('txDate').value = d;
+    }
+    // screenshot (dataURL) -> show preview
+    if(existing.screenshot){
+      uploadedDataUrl = existing.screenshot;
+      uploadedFileName = existing.screenshotName || `payment-${existing.id}.jpg`;
+      previewImg.src = uploadedDataUrl;
+      previewWrap.classList.remove('hidden');
+      imgSize.textContent = ''; // unknown exact px here
+      fileInfo.textContent = uploadedFileName + ' (loaded)';
+    }
+    // reflect method visibility
+    methodSel.dispatchEvent(new Event('change'));
+    // show small message to user
+    payMsg.textContent = `Loaded payment record ${existing.id}. Edit details and Submit to attach info to this payment.`;
+    payMsg.style.color = '#065f46';
+  } catch(e){ console.error(e); }
+
+  // Intercept the existing submit handler for this specific flow:
+  // We add a submit listener that prevents subsequent handlers from firing via stopImmediatePropagation
+  form.addEventListener('submit', async function interceptAndUpdate(e){
+    // only handle when incomingPid present (so normal flow still runs when user opened page without pid)
+    if(!incomingPid) return;
+
+    // stop other submit handlers (including the original one) from running
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    // gather latest form values
+    const name = document.getElementById('payerName').value.trim();
+    const email = document.getElementById('payerEmail').value.trim().toLowerCase();
+    const bookingId = document.getElementById('bookingId').value.trim() || null;
+    const amount = Number(document.getElementById('amount').value || 0);
+    const method = document.getElementById('method').value;
+    const txRef = document.getElementById('txRef').value.trim() || null;
+    const bankName = document.getElementById('bankName').value.trim() || null;
+    const txDate = document.getElementById('txDate').value || new Date().toISOString().slice(0,10);
+
+    // simple validation (same as your form)
+    if(!name || !email || !amount){
+      payMsg.textContent = 'Please fill required fields (name, email, amount).';
+      payMsg.style.color = 'crimson';
+      return;
+    }
+
+    try {
+      progress.textContent = 'Saving payment...';
+      // load the array fresh (in case other tab changed)
+      const arr = loadPayments();
+      const idx = arr.findIndex(p => String(p.id) === String(incomingPid));
+      const now = new Date().toISOString();
+
+      // if found, update; otherwise insert new record (fallback)
+      if(idx !== -1){
+        const rec = arr[idx];
+        rec.name = name;
+        rec.email = email;
+        rec.bookingId = bookingId || rec.bookingId || null;
+        rec.amount = amount;
+        rec.method = method;
+        rec.txRef = txRef || rec.txRef || null;
+        rec.bankName = bankName || rec.bankName || null;
+        rec.txDate = txDate;
+        rec.screenshot = uploadedDataUrl || rec.screenshot || null;
+        rec.screenshotName = uploadedFileName || rec.screenshotName || null;
+        // keep admin-confirmation model: leave status as-is or set to Pending if missing
+        rec.status = rec.status || 'Pending';
+        rec.updatedAt = now;
+        arr[idx] = rec;
+        savePayments(arr);
+        payMsg.textContent = `Payment updated (ID: ${rec.id}). Admin will confirm soon.`;
+        payMsg.style.color = 'green';
+
+        // also update booking record in wh_history (if exists) to include a paid field or record a partial payment
+        try {
+          const history = JSON.parse(localStorage.getItem('wh_history') || '[]');
+          const bIdx = history.findIndex(b => b.id === rec.bookingId);
+          if(bIdx !== -1){
+            history[bIdx].paid = (Number(history[bIdx].paid) || 0) + Number(rec.amount || 0);
+            // optionally mark confirmed if paid >= total (best-effort, non-destructive)
+            if(history[bIdx].totals && Number(history[bIdx].paid) >= Number(history[bIdx].totals.total || 0)){
+              history[bIdx].status = 'Confirmed';
+            }
+            localStorage.setItem('wh_history', JSON.stringify(history));
+          }
+        } catch(err){ console.warn('failed to update wh_history', err); }
+
+        // create user notification for the booking owner
+        try {
+          const notifs = JSON.parse(localStorage.getItem('userNotifications') || '[]');
+          notifs.unshift({ id:'n'+Date.now(), email, text:`Payment ${rec.id} of Rs ${Number(rec.amount).toLocaleString()} recorded (Pending).`, ts: now, read:false, meta:{paymentId:rec.id} });
+          localStorage.setItem('userNotifications', JSON.stringify(notifs));
+          localStorage.setItem('user_notif_last_update', Date.now().toString());
+        } catch(e){ /* ignore */ }
+
+        // ping admin / other tabs
+        localStorage.setItem('payments_last_update', Date.now().toString());
+        localStorage.setItem('payments_new', Date.now().toString());
+
+        // show receipt area (reuse your existing showReceipt function)
+        showReceipt(arr[idx]);
+
+      } else {
+        // fallback: insert as new record (shouldn't normally happen)
+        const newRec = {
+          id: incomingPid,
+          name, email, bookingId, amount, method, txRef, bankName, txDate,
+          status: 'Pending', screenshot: uploadedDataUrl || null, createdAt: now, updatedAt: now
+        };
+        arr.unshift(newRec);
+        savePayments(arr);
+        payMsg.textContent = `Payment created (ID: ${newRec.id}). Admin will confirm soon.`;
+        payMsg.style.color = 'green';
+        showReceipt(newRec);
+        localStorage.setItem('payments_last_update', Date.now().toString());
+        localStorage.setItem('payments_new', Date.now().toString());
+      }
+    } catch(err){
+      console.error(err);
+      payMsg.textContent = 'Save failed: ' + (err.message || err);
+      payMsg.style.color = 'crimson';
+    } finally {
+      progress.textContent = '';
+    }
+  }, { once: false }); // not once — we want the interceptor to be present while pid exists
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1555 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Wander Hub Ai — Smart Travel Recommender</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+ <link rel="icon" type="image/png" href="static/images/logofinal.png">
+  <style>
+    :root {
+      --accent1: #fb923c;
+      --accent2: #06b6d4;
+      --muted: #6b7280;
+      --card-bg: rgba(255,255,255,0.96);
+    }
+
+    body {
+      font-family: "Plus Jakarta Sans", sans-serif;
+      background: linear-gradient(180deg,#fb923c 0%, #7dd3fc 45%, #fef3c7 100%);
+      color: #1f2937;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 14px 0;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(15,23,42,0.06);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .brand-title {
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+      font-size: 26px;
+    }
+
+    .nav-link-wh {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #4b5563;
+      text-decoration: none;
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+    .nav-link-wh:hover {
+      color: #ea580c;
+      background: rgba(251,146,60,0.08);
+    }
+
+    .nav-link-wh.active {
+      color: #ea580c;
+      background: rgba(251,146,60,0.12);
+    }
+
+    .profile-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      background-size: cover;
+      background-position: center;
+      border: 2px solid rgba(249,115,22,0.8);
+      box-shadow: 0 10px 20px rgba(15,23,42,0.18);
+    }
+
+    .search-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 26px 26px 20px;
+      box-shadow: 0 22px 60px rgba(15,23,42,0.16);
+      border: 1px solid rgba(148,163,184,0.25);
+    }
+
+    .btn-gradient {
+      background: linear-gradient(90deg, var(--accent1), var(--accent2));
+      color: white;
+      border: none;
+      border-radius: 999px;
+      padding: 12px 24px;
+      font-weight: 600;
+      transition: all 0.25s ease;
+    }
+
+    .btn-gradient:hover {
+      transform: translateY(-1px) scale(1.01);
+      box-shadow: 0 12px 28px rgba(249,115,22,0.35);
+      color: #fff;
+    }
+
+    .card-package {
+      border-radius: 18px;
+      background: rgba(255,255,255,0.98);
+      box-shadow: 0 14px 42px rgba(15,23,42,0.14);
+      padding: 18px;
+      border: 1px solid rgba(148,163,184,0.3);
+      transition: all 0.25s ease;
+      height: 100%;
+    }
+
+    .card-package:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 60px rgba(15,23,42,0.24);
+    }
+
+    .model-btn {
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background: rgba(248,250,252,0.9);
+      padding: 5px 12px;
+      font-size: 0.8rem;
+    }
+
+    .model-btn.active {
+      border-color: var(--accent1);
+      background: linear-gradient(135deg,#fffbeb,#ecfeff);
+      color: #b45309;
+    }
+
+    .detail-section {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(148,163,184,0.4);
+    }
+
+    .price-tag {
+      background: linear-gradient(135deg,#10b981,#059669);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .feature-badge {
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      margin: 2px;
+    }
+
+    .booking-form-card {
+      background: linear-gradient(135deg,#f0fdf4,#ecfdf5);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid rgba(16,185,129,0.25);
+    }
+
+    .relevance-badge {
+      background: #fef3c7;
+      color: #92400e;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .rating-stars { color:#f59e0b; }
+
+    .booking-modal {
+      border-radius: 22px;
+      border: none;
+    }
+
+    .booking-modal .modal-header {
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      color: white;
+      border-radius: 22px 22px 0 0;
+    }
+
+    .small-muted {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    /* payment modal tweaks */
+    .thumb{width:100%;max-height:220px;object-fit:cover;border-radius:.5rem;border:1px solid rgba(0,0,0,0.06)}
+    .card-pay{backdrop-filter: blur(6px); background: rgba(255,255,255,0.95);}
+  </style>
+
+</head>
+<body>
+  <!-- HEADER matched with rest of site -->
+  <header>
+    <div class="container">
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-3">
+  <img src="static/images/logofinal.png"
+       alt="Wander Hub Logo"
+       style="width:48px;height:48px;object-fit:contain;" />
+
+  <div class="d-flex flex-column">
+    <div class="brand-title">Wander Hub Ai</div>
+    <span class="small-muted">Smart Pakistan travel recommender</span>
+  </div>
+</div>
+
+        <div class="d-flex align-items-center gap-3">
+          <button id="viewBookings" class="btn btn-sm btn-outline-secondary rounded-pill">
+            <i class="bi bi-journal-text"></i> My Bookings
+          </button>
+          <button id="exportFavorites" class="btn btn-sm btn-outline-secondary rounded-pill">
+  <i class="bi bi-heart"></i> Favorites
+</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container my-5">
+    <!-- Search Section -->
+     
+    <div class="search-card">
+      <h3 style="color:#0c564f;font-weight:800;margin-bottom:6px;">
+        Find Your Perfect Pakistan Adventure
+      </h3>
+      <p class="small-muted mb-4">
+        Discover amazing travel packages tailored to your budget, days and transport preference.
+      </p>
+
+
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-md-3">
+          <input id="inputPlace" class="form-control form-control-lg"
+                 placeholder="Where to? (e.g. Hunza)" value="Hunza">
+        </div>
+        <div class="col-12 col-md-2">
+          <input id="inputBudget" class="form-control form-control-lg"
+                 placeholder="Budget PKR" value="15000">
+        </div>
+        <div class="col-12 col-md-2">
+          <input id="inputDays" class="form-control form-control-lg"
+                 placeholder="Days" value="2">
+        </div>
+        <div class="col-12 col-md-2">
+          <select id="inputTransport" class="form-select form-select-lg">
+            <option value="">Any Transport</option>
+            <option selected>Air</option>
+            <option>Road</option>
+            <option>Train</option>
+            <option>Hike</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-3 d-flex gap-2 align-items-center">
+          <button id="btnSearch" class="btn-gradient btn-lg flex-grow-1">
+            <i class="bi bi-search"></i> Search
+          </button>
+        </div>
+      </div>
+
+      <!-- Model Selection -->
+      <div class="row align-items-center mb-3">
+        <div class="col-12">
+          <div class="d-flex gap-2 flex-wrap align-items-center">
+            <small class="fw-bold me-1">Search Model:</small>
+            <button class="btn btn-sm model-btn active" data-model="hybrid">
+              <i class="bi bi-cpu"></i> Hybrid AI
+            </button>
+            <button class="btn btn-sm model-btn" data-model="content_knn">
+              <i class="bi bi-text-paragraph"></i> Content Based
+            </button>
+            <button class="btn btn-sm model-btn" data-model="price_knn">
+              <i class="bi bi-currency-dollar"></i> Price Based
+            </button>
+            <span class="small-muted ms-2">
+              Drag sliders to balance content vs price matching.
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row align-items-center">
+        <div class="col-12 col-md-8">
+          <div id="statusBox" class="d-flex align-items-center gap-2 small-muted">
+            <i class="bi bi-info-circle"></i>
+            Ready to search. Found <span id="totalCount">{{ total }}</span> packages available.
+          </div>
+        </div>
+        <div class="col-12 col-md-4 d-flex align-items-center justify-content-end gap-3 mt-3 mt-md-0">
+          <div class="small-muted">Content</div>
+          <input id="weightText" type="range" min="0" max="1" step="0.05" value="0.7" style="width:100px;">
+          <div class="small-muted">Price</div>
+          <input id="weightPrice" type="range" min="0" max="1" step="0.05" value="0.3" style="width:100px;">
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <section class="mt-5 mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 style="color:#0c564f;font-weight:700">
+          <i class="bi bi-compass"></i> Recommended Packages
+        </h4>
+        <div class="badge rounded-pill bg-white border text-muted">
+          <i class="bi bi-stars text-warning"></i> Smart AI Recommender
+        </div>
+      </div>
+      <div id="resultsGrid" class="row g-4">
+        <div class="col-12 text-center">
+          <div class="text-muted">
+            <i class="bi bi-hourglass-split"></i> Loading amazing packages...
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Package Detail Modal -->
+  <div class="modal fade" id="packageDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content booking-modal">
+        <div class="modal-header">
+          <h5 class="modal-title" id="packageDetailTitle">
+            <i class="bi bi-geo-alt"></i> Package Details
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div id="packageDetailContent"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Booking Modal -->
+  <div class="modal fade" id="bookingModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content booking-modal">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-calendar-check"></i> Book Your Trip
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div id="bookingFormContent"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Embedded Payment Modal (new) -->
+  <div class="modal fade" id="paymentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content card-pay">
+        <div class="modal-header" style="background:linear-gradient(135deg,var(--accent1),var(--accent2)); color:white;">
+          <h5 class="modal-title"><i class="bi bi-credit-card"></i> Complete Payment</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <!-- Payment form content -->
+          <form id="embeddedPayForm" class="space-y-4">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Full name</label>
+                <input id="ep_payerName" required class="form-control" placeholder="Full name" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Email</label>
+                <input id="ep_payerEmail" type="email" required class="form-control" placeholder="you@example.com" />
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Booking ID (optional)</label>
+                <input id="ep_bookingId" class="form-control" placeholder="#12345 (if paying for booking)" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Amount (Rs)</label>
+                <input id="ep_amount" type="number" min="1" required class="form-control" placeholder="e.g. 12000" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Payment Method</label>
+                <select id="ep_method" class="form-select">
+                  <option>Card</option>
+                  <option>Bank Transfer</option>
+                  <option>Mobile Wallet</option>
+                </select>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Transaction Ref</label>
+                <input id="ep_txRef" class="form-control" placeholder="e.g. TXN12345678" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Bank / Provider</label>
+                <input id="ep_bankName" class="form-control" placeholder="e.g. HBL / JazzCash" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Transaction Date</label>
+                <input id="ep_txDate" type="date" class="form-control" />
+              </div>
+
+              <div id="ep_cardFields" class="col-12">
+                <label class="form-label">Card Number (demo)</label>
+                <input id="ep_cardNo" maxlength="19" placeholder="4242 4242 4242 4242" class="form-control" />
+                <div class="d-flex gap-2 mt-2">
+                  <input id="ep_cardExp" placeholder="MM/YY" class="form-control" />
+                  <input id="ep_cardCvv" placeholder="CVV" class="form-control" />
+                </div>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">Upload transaction screenshot</label>
+                <div class="d-flex gap-2 align-items-center">
+                  <input id="ep_txFile" type="file" accept="image/*" class="form-control-file" />
+                  <button id="ep_clearFile" type="button" class="btn btn-light">Clear</button>
+                  <div id="ep_fileInfo" class="small-muted ms-auto"></div>
+                </div>
+                <div id="ep_previewWrap" class="mt-2 d-none">
+                  <img id="ep_previewImg" class="thumb" alt="screenshot preview" />
+                  <div class="d-flex gap-2 mt-2">
+                    <button id="ep_openImgBtn" type="button" class="btn btn-sm btn-outline-secondary">Open</button>
+                    <button id="ep_downloadImgBtn" type="button" class="btn btn-sm btn-gradient text-white">Download</button>
+                    <div id="ep_imgSize" class="small-muted ms-auto"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 d-flex gap-2 align-items-center mt-2">
+                <button id="ep_payBtn" type="submit" class="btn btn-gradient">Submit Payment</button>
+                <button id="ep_clearBtn" type="button" class="btn btn-light">Clear Form</button>
+                <div id="ep_progress" class="small-muted ms-auto"></div>
+              </div>
+            </div>
+          </form>
+
+          <hr class="my-3" />
+          <div id="ep_receiptWrap" class="d-none p-3 rounded-lg bg-white/50">
+            <div class="d-flex align-items-start gap-3">
+              <div>
+                <div class="small-muted">Receipt</div>
+                <div id="ep_receiptId" class="fw-bold text-orange-700"></div>
+                <div id="ep_receiptInfo" class="small-muted"></div>
+              </div>
+              <div class="ms-auto d-flex gap-2">
+                <button id="ep_downloadReceiptBtn" class="btn btn-gradient btn-sm">Download Receipt</button>
+                <button id="ep_viewPaymentsBtn" class="btn btn-light btn-sm">View Payments</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="small text-muted mt-3">Note: client-side demo. For production integrate a secure payment gateway and server-side storage.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- My Bookings Modal -->
+  <div class="modal fade" id="bookingsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-journal-text"></i> My Bookings
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="bookingsContent"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- External libs for receipt generation (same as payment.html) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // === core data ===
+  let favorites = JSON.parse(localStorage.getItem('wh_favorites') || '[]');
+  let currentModel = 'hybrid';
+  let currentPackageDetails = null;
+
+  let currentUser = {
+    name: localStorage.getItem('wh_user_name') || null,
+    email: localStorage.getItem('wh_user_email') || null
+  };
+
+  const ADMIN_STORAGE_KEY = 'wh_admin_data_v1';
+  const LAST_BOOKING_KEY = 'wh_last_admin_booking';
+
+  // payments helpers (shared with embedded payment flow)
+  function loadPayments(){ try{ return JSON.parse(localStorage.getItem('payments')||'[]'); }catch(e){ return []; } }
+  function savePayments(arr){ localStorage.setItem('payments', JSON.stringify(arr)); localStorage.setItem('payments_last_update', Date.now().toString()); }
+localStorage.setItem('admin_payments_update', Date.now().toString());
+
+  function updateUserStatusUI() {
+    const el = document.getElementById('userStatus');
+    if (!el) return;
+    if (currentUser && currentUser.email) {
+      el.innerHTML = `
+        <span class="badge bg-white text-success border">
+          <i class="bi bi-person-check"></i>
+          Signed in as ${currentUser.name || currentUser.email}
+        </span>`;
+    } else {
+      el.textContent = 'Not signed in';
+    }
+  }
+
+  function requireLogin() {
+    if (!currentUser || !currentUser.email) {
+      console.log('Booking without Google sign-in (demo mode).');
+      return true;
+    }
+    return true;
+  }
+
+  function formatPKR(n) {
+    if (n === null || n === undefined || n === 0) return '—';
+    return 'Rs ' + Math.round(n).toLocaleString();
+  }
+
+  function getRelevanceBadge(score) {
+    if (score >= 0.8) return '<span class="relevance-badge"><i class="bi bi-star-fill"></i> Perfect Match</span>';
+    if (score >= 0.6) return '<span class="relevance-badge"><i class="bi bi-star-half"></i> Great Match</span>';
+    if (score >= 0.4) return '<span class="relevance-badge"><i class="bi bi-star"></i> Good Match</span>';
+    return '<span class="relevance-badge">Fair Match</span>';
+  }
+
+  function getRatingStars(rating) {
+    if (!rating || rating === 0) return 'No ratings';
+    const fullStars = Math.floor(rating);
+    const halfStar = rating % 1 >= 0.5;
+    let stars = '';
+    for (let i = 0; i < fullStars; i++) stars += '<i class="bi bi-star-fill rating-stars"></i>';
+    if (halfStar) stars += '<i class="bi bi-star-half rating-stars"></i>';
+    for (let i = fullStars + (halfStar ? 1 : 0); i < 5; i++) stars += '<i class="bi bi-star rating-stars"></i>';
+    return stars + ` ${rating}/5`;
+  }
+function showFavorites() {
+  if (favorites.length === 0) {
+    document.getElementById('resultsGrid').innerHTML = `
+      <div class="col-12 text-center">
+        <div class="card-package">
+          <i class="bi bi-heart text-muted fs-1"></i>
+          <h5 class="text-muted">No favorites yet</h5>
+          <p class="text-muted">Add packages to favorites to see them here</p>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const favResults = window.lastSearchResults?.filter(pkg =>
+    favorites.includes(pkg.id)
+  ) || [];
+
+  if (favResults.length === 0) {
+    alert('Favorite packages not loaded yet. Please search first.');
+    return;
+  }
+
+  displayResults(favResults);
+}
+
+  // ==== sync new booking into admin.html storage ====
+  function syncBookingToAdmin(bookingData) {
+    try {
+      let raw = localStorage.getItem(ADMIN_STORAGE_KEY);
+      let adminStore = raw ? JSON.parse(raw) : { bookings: [], users: [], guiders: [] };
+
+      if (!Array.isArray(adminStore.bookings)) adminStore.bookings = [];
+      if (!Array.isArray(adminStore.users)) adminStore.users = [];
+      if (!Array.isArray(adminStore.guiders)) adminStore.guiders = [];
+
+      const email = (bookingData.email || '').toLowerCase();
+      let user = adminStore.users.find(
+        u => u.contact && u.contact.toLowerCase() === email
+      );
+
+      if (!user) {
+        const uid = 'u' + (Math.floor(Math.random() * 90000) + 1000);
+        user = {
+          id: uid,
+          name: bookingData.customerName || bookingData.email || 'Guest',
+          contact: bookingData.email || ''
+        };
+        adminStore.users.push(user);
+      }
+
+      const bookingId = '#' + (Math.floor(Math.random() * 900000) + 10000);
+
+      const newBooking = {
+        id: bookingId,
+        userId: user.id,
+        userName: user.name,
+        guiderId: null,
+        guiderName: null,
+        dest: bookingData.packageName || bookingData.packageId || 'Package',
+        loc: null,
+        start: bookingData.startDate || '',
+        end: '',
+        amount: bookingData.totalPrice || 0,
+        paid: 0,
+        status: 'Confirmed',
+        notes: bookingData.specialRequests || '',
+        createdAt: new Date().toISOString()
+      };
+
+      adminStore.bookings.unshift(newBooking);
+      localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(adminStore));
+      console.log('Synced booking to admin store', newBooking);
+
+      localStorage.setItem(
+        LAST_BOOKING_KEY,
+        JSON.stringify({
+          bookingId: newBooking.id,
+          userEmail: bookingData.email || '',
+          createdAt: newBooking.createdAt
+        })
+      );
+
+      return newBooking;
+    } catch (e) {
+      console.error('Failed to sync booking to admin panel store:', e);
+      return null;
+    }
+  }
+
+  // ===== search =====
+  async function doSearch() {
+    console.log('Starting search with model:', currentModel);
+    const q = document.getElementById('inputPlace').value;
+    const budget = document.getElementById('inputBudget').value;
+    const days = document.getElementById('inputDays').value;
+    const weightContent = parseFloat(document.getElementById('weightText').value);
+const weightPrice = parseFloat(document.getElementById('weightPrice').value);
+    const transport = document.getElementById('inputTransport').value;
+
+    const statusBox = document.getElementById('statusBox');
+    const totalCount = document.getElementById('totalCount');
+
+    if (statusBox) {
+      statusBox.innerHTML = '<i class="bi bi-hourglass-split"></i> Searching for perfect packages...';
+    }
+
+    try {
+      const response = await fetch('/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify({
+  q,
+  budget,
+  days,
+  transport,
+  model_type: currentModel,
+  k: 12,
+  weight_content: weightContent,
+  weight_price: weightPrice
+})
+
+      });
+
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      console.log('Search results:', data);
+window.lastSearchResults = data.results || [];
+displayResults(window.lastSearchResults);
+
+
+      if (statusBox) {
+        statusBox.innerHTML =
+          `<i class="bi bi-check-circle"></i> Found ${data.results.length} packages matching your criteria`;
+      }
+      if (totalCount) totalCount.textContent = data.results.length;
+
+    } catch (error) {
+      console.error('Search failed:', error);
+      if (statusBox) {
+        statusBox.innerHTML = `<i class="bi bi-exclamation-triangle"></i> Search failed: ${error.message}`;
+      }
+      document.getElementById('resultsGrid').innerHTML = `
+        <div class="col-12 text-center text-danger">
+          <i class="bi bi-emoji-frown fs-1"></i>
+          <h5>Error loading packages</h5>
+          <p>Please try again or check your connection</p>
+        </div>`;
+    }
+  }
+
+  function displayResults(results) {
+    const grid = document.getElementById('resultsGrid');
+
+    if (!results || results.length === 0) {
+      grid.innerHTML = `
+        <div class="col-12 text-center">
+          <div class="card-package">
+            <i class="bi bi-search fs-1 text-muted"></i>
+            <h5 class="text-muted">No packages found</h5>
+            <p class="text-muted">Try adjusting your search criteria or budget</p>
+          </div>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = results.map(pkg => `
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card-package">
+          <div class="d-flex align-items-start gap-3 mb-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center"
+                 style="width:50px;height:50px;background:linear-gradient(135deg,#fb923c,#06b6d4);color:white;font-weight:bold;">
+              ${pkg.place ? pkg.place.charAt(0).toUpperCase() : 'P'}
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="fw-bold mb-1" style="color:#0c564f;">${pkg.place || 'Unknown Destination'}</h6>
+              <div class="small text-muted">${pkg.id} • ${pkg.transport || 'Any'}</div>
+              ${pkg.score ? getRelevanceBadge(pkg.score) : ''}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="price fw-bold">${formatPKR(pkg.price)}</span>
+              <span class="badge bg-light text-dark">
+                <i class="bi bi-calendar"></i> ${pkg.days || 1} days
+              </span>
+            </div>
+          </div>
+
+          ${pkg.rating ? `<div class="mb-2"><small>${getRatingStars(pkg.rating)}</small></div>` : ''}
+
+          <p class="small text-muted mb-3">
+            <i class="bi bi-tags"></i>
+            ${pkg.description || 'Explore this beautiful destination with our curated package.'}
+          </p>
+
+          ${pkg.category ? `<div class="mb-2"><span class="feature-badge">${pkg.category}</span></div>` : ''}
+
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary btn-sm flex-grow-1" onclick="viewPackageDetails('${pkg.id}')">
+              <i class="bi bi-eye"></i> Details
+            </button>
+            <button class="btn btn-outline-success btn-sm"
+                    onclick="startBooking('${pkg.id}', '${pkg.place}', ${pkg.price})">
+              <i class="bi bi-calendar-plus"></i> Book
+            </button>
+            <button class="btn btn-outline-secondary btn-sm"
+                    onclick="toggleFavorite('${pkg.id}', this)">
+              ${favorites.includes(pkg.id) ? '<i class="bi bi-heart-fill"></i>' : '<i class="bi bi-heart"></i>'}
+            </button>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  // ===== package detail =====
+  async function viewPackageDetails(pkgId) {
+    try {
+      const response = await fetch(`/package/${pkgId}`);
+      if (!response.ok) throw new Error('Package not found');
+
+      const packageData = await response.json();
+      currentPackageDetails = packageData;
+
+      const modalContent = `
+        <div class="package-detail-card p-3">
+          <div class="row g-3">
+            <div class="col-md-8">
+              <h4 class="fw-bold mb-2">${packageData.place}</h4>
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="price-tag">${formatPKR(packageData.price)}</span>
+                <span class="badge bg-primary"><i class="bi bi-calendar"></i> ${packageData.days} Days</span>
+                <span class="badge bg-info text-dark"><i class="bi bi-bus-front"></i> ${packageData.transport}</span>
+                ${packageData.rating ? `<span class="badge bg-warning text-dark">${getRatingStars(packageData.rating)}</span>` : ''}
+              </div>
+
+              <div class="detail-section">
+                <h6><i class="bi bi-info-circle"></i> About This Package</h6>
+                <p class="mb-0">${packageData.description || 'No description available.'}</p>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="detail-section">
+                    <h6><i class="bi bi-geo-alt"></i> Location Details</h6>
+                    <p class="mb-1"><strong>Province:</strong> ${packageData.province || 'N/A'}</p>
+                    <p class="mb-1"><strong>Category:</strong> ${packageData.category || 'N/A'}</p>
+                    <p class="mb-1"><strong>Nearby City:</strong> ${packageData.nearby_city || 'N/A'}</p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="detail-section">
+                    <h6><i class="bi bi-building"></i> Accommodation</h6>
+                    <p class="mb-1"><strong>Type:</strong> ${packageData.accommodation || 'N/A'}</p>
+                    <p class="mb-1"><strong>Best Season:</strong> ${packageData.best_season || 'All Year'}</p>
+                    <p class="mb-1"><strong>Difficulty:</strong> ${packageData.difficulty || 'Moderate'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="booking-form-card">
+                <h6 class="fw-bold mb-2">Quick Booking</h6>
+                <p class="small-muted mb-2">
+                  Fill your details to confirm booking. Our team will share payment instructions.
+                </p>
+                <div class="text-center mb-3">
+                  <div class="price-tag fs-6">${formatPKR(packageData.price)}</div>
+                  <small class="text-muted">per person</small>
+                </div>
+                <button class="btn btn-gradient w-100 mb-2"
+                        onclick="startBooking('${packageData.id}', '${packageData.place}', ${packageData.price})">
+                  <i class="bi bi-calendar-check"></i> Book Now
+                </button>
+                <button class="btn btn-outline-secondary w-100"
+                        onclick="toggleFavorite('${packageData.id}')">
+                  ${favorites.includes(packageData.id)
+                    ? '<i class="bi bi-heart-fill"></i> Remove from Favorites'
+                    : '<i class="bi bi-heart"></i> Add to Favorites'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+
+      document.getElementById('packageDetailContent').innerHTML = modalContent;
+      const modal = new bootstrap.Modal(document.getElementById('packageDetailModal'));
+      modal.show();
+    } catch (error) {
+      alert('Error loading package details: ' + error.message);
+    }
+  }
+
+  // ===== booking (opens booking modal) =====
+  function startBooking(pkgId, packageName, price) {
+    if (!requireLogin()) return;
+
+    const bookingForm = `
+      <div class="booking-form-card">
+        <h6 class="fw-bold mb-2">Booking: ${packageName}</h6>
+        <p class="small-muted mb-3">
+          Fill your details and confirm booking. You will be asked to provide payment details next.
+        </p>
+        <form id="bookingForm">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Full Name</label>
+              <input type="text" class="form-control" name="customerName"
+                     value="${currentUser.name || ''}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" name="email"
+                     value="${currentUser.email || ''}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Phone</label>
+              <input type="tel" class="form-control" name="phone">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Number of People</label>
+              <input type="number" class="form-control" name="people" min="1" value="1" required>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Enter Your Address</label>
+              <textarea class="form-control" name="specialRequests" rows="2"
+                        placeholder="Enter Your Address...."></textarea>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Start Date</label>
+              <input type="date" class="form-control" name="startDate" required>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Special Requests</label>
+              <textarea class="form-control" name="specialRequests" rows="3"
+                        placeholder="Any special requirements..."></textarea>
+            </div>
+            <div class="col-12">
+              <div class="d-flex justify-content-between align-items-center p-3 bg-white rounded border">
+                <strong>Total Price:</strong>
+                <span class="price-tag" id="totalPriceDisplay">${formatPKR(price)}</span>
+              </div>
+            </div>
+            <div class="col-12">
+              <button type="submit" class="btn btn-gradient w-100">
+                <i class="bi bi-credit-card"></i> Confirm Booking & Proceed to Payment
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>`;
+
+    document.getElementById('bookingFormContent').innerHTML = bookingForm;
+
+    document.getElementById('bookingForm').addEventListener('input', function (e) {
+      if (e.target.name === 'people') {
+        const people = parseInt(e.target.value) || 1;
+        const totalPrice = price * people;
+        document.getElementById('totalPriceDisplay').textContent = formatPKR(totalPrice);
+      }
+    });
+
+    document.getElementById('bookingForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      await submitBooking(pkgId, packageName, price);
+    });
+
+    const modal = new bootstrap.Modal(document.getElementById('bookingModal'));
+    modal.show();
+  }
+
+  // ===== submit booking, sync, then open embedded payment modal prefilled =====
+  async function submitBooking(pkgId, packageName, basePrice) {
+    const formEl = document.getElementById('bookingForm');
+    const formData = new FormData(formEl);
+    const people = parseInt(formData.get('people')) || 1;
+    const totalPrice = basePrice * people;
+
+    const bookingData = {
+      packageId: pkgId,
+      packageName: packageName,
+      customerName: formData.get('customerName'),
+      email: formData.get('email'),
+      phone: formData.get('phone'),
+      people: people,
+      totalPrice: totalPrice,
+      startDate: formData.get('startDate'),
+      specialRequests: formData.get('specialRequests')
+    };
+
+    try {
+      const response = await fetch('/book-package', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bookingData)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert('✅ ' + (result.message || 'Booking saved successfully!'));
+
+        const modal = bootstrap.Modal.getInstance(
+          document.getElementById('bookingModal')
+        );
+        if (modal) modal.hide();
+
+        const adminBooking = syncBookingToAdmin(bookingData);
+
+        if (adminBooking && adminBooking.id) {
+          showNotification(
+            `Booking confirmed and sent to admin. Booking ID: ${adminBooking.id}`
+          );
+        } else {
+          showNotification('Booking saved. Admin will contact you for payment.');
+        }
+
+        // create payment record and open the embedded payment modal pre-filled
+        try {
+          const pid = 'P' + (Math.floor(Math.random() * 9000000) + 1000);
+          const paymentRecord = {
+            id: pid,
+            name: bookingData.customerName || '',
+            email: bookingData.email || '',
+            bookingId: adminBooking ? adminBooking.id : null,
+            amount: bookingData.totalPrice || 0,
+            method: '',
+            txRef: null,
+            bankName: null,
+            txDate: new Date().toISOString().slice(0,10),
+            status: 'Pending',
+            createdAt: new Date().toISOString(),
+            notes: '',
+            screenshot: null
+          };
+
+          const paymentsArr = loadPayments();
+          paymentsArr.unshift(paymentRecord);
+          savePayments(paymentsArr);
+
+          localStorage.setItem('payments_new', Date.now().toString());
+
+          // open embedded payment modal and prefill values
+          openEmbeddedPayment(paymentRecord);
+        } catch(err){
+          console.error('Failed to create payment record:', err);
+          showNotification('Booking saved but failed to initialize payment');
+        }
+
+      } else {
+        alert('❌ ' + (result.error || 'Booking failed'));
+      }
+    } catch (error) {
+      alert('❌ Booking error: ' + error.message);
+    }
+  }
+
+  // ===== embedded payment logic (mirrors payment.html) =====
+
+  // DOM refs
+  const ep_form = document.getElementById('embeddedPayForm');
+  const ep_payBtn = document.getElementById('ep_payBtn');
+  const ep_progress = document.getElementById('ep_progress');
+  const ep_txFile = document.getElementById('ep_txFile');
+  const ep_previewWrap = document.getElementById('ep_previewWrap');
+  const ep_previewImg = document.getElementById('ep_previewImg');
+  const ep_openImgBtn = document.getElementById('ep_openImgBtn');
+  const ep_downloadImgBtn = document.getElementById('ep_downloadImgBtn');
+  const ep_fileInfo = document.getElementById('ep_fileInfo');
+  const ep_imgSize = document.getElementById('ep_imgSize');
+  const ep_clearFile = document.getElementById('ep_clearFile');
+  const ep_receiptWrap = document.getElementById('ep_receiptWrap');
+  const ep_receiptId = document.getElementById('ep_receiptId');
+  const ep_receiptInfo = document.getElementById('ep_receiptInfo');
+  const ep_downloadReceiptBtn = document.getElementById('ep_downloadReceiptBtn');
+  const ep_viewPaymentsBtn = document.getElementById('ep_viewPaymentsBtn');
+
+  // form fields
+  const ep_payerName = document.getElementById('ep_payerName');
+  const ep_payerEmail = document.getElementById('ep_payerEmail');
+  const ep_bookingId = document.getElementById('ep_bookingId');
+  const ep_amount = document.getElementById('ep_amount');
+  const ep_method = document.getElementById('ep_method');
+  const ep_txRef = document.getElementById('ep_txRef');
+  const ep_bankName = document.getElementById('ep_bankName');
+  const ep_txDate = document.getElementById('ep_txDate');
+  const ep_cardFields = document.getElementById('ep_cardFields');
+
+  let ep_uploadedDataUrl = null;
+  let ep_uploadedFileName = null;
+  const EP_MAX_RAW_BYTES = 6 * 1024 * 1024;
+
+  // read & resize (same utility logic)
+  function readAndResizeImage(file, maxWidth = 1200){
+    return new Promise((resolve, reject) => {
+      if(!file) return resolve(null);
+      if(file.size > EP_MAX_RAW_BYTES) return reject(new Error('File too large (max 6MB)'));
+      const fr = new FileReader();
+      fr.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          const w = img.width, h = img.height;
+          if(w <= maxWidth){
+            resolve({ dataUrl: ev.target.result, width: w, height: h, size: file.size });
+            return;
+          }
+          const ratio = maxWidth / w;
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(w * ratio);
+          canvas.height = Math.round(h * ratio);
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img,0,0,canvas.width,canvas.height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+          let sizeBytes = Math.ceil((dataUrl.length - 'data:image/jpeg;base64,'.length) * 3/4);
+          resolve({ dataUrl, width: canvas.width, height: canvas.height, size: sizeBytes });
+        };
+        img.onerror = ()=> reject(new Error('Unable to load image'));
+        img.src = ev.target.result;
+      };
+      fr.onerror = ()=> reject(new Error('Failed to read file'));
+      fr.readAsDataURL(file);
+    });
+  }
+
+  ep_txFile.addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if(!file){ epClearPreview(); return; }
+    ep_fileInfo.textContent = `${file.name} • ${(file.size/1024/1024).toFixed(2)} MB`;
+    ep_uploadedFileName = file.name;
+    ep_progress.textContent = 'Preparing image...';
+    try {
+      const res = await readAndResizeImage(file, 1200);
+      ep_uploadedDataUrl = res.dataUrl;
+      ep_previewImg.src = ep_uploadedDataUrl;
+      ep_previewWrap.classList.remove('d-none');
+      ep_imgSize.textContent = `${Math.round(res.width)}×${Math.round(res.height)} • ${(res.size/1024).toFixed(1)} KB`;
+      ep_progress.textContent = '';
+    } catch(err){
+      ep_progress.textContent = '';
+      ep_fileInfo.textContent = 'Image error: ' + (err.message || 'unknown');
+      ep_uploadedDataUrl = null;
+      ep_previewWrap.classList.add('d-none');
+    }
+  });
+
+  function epClearPreview(){
+    ep_txFile.value = '';
+    ep_previewWrap.classList.add('d-none');
+    ep_previewImg.src = '';
+    ep_fileInfo.textContent = '';
+    ep_imgSize.textContent = '';
+    ep_uploadedDataUrl = null;
+    ep_uploadedFileName = null;
+  }
+  ep_clearFile.addEventListener('click', epClearPreview);
+
+  ep_openImgBtn.addEventListener('click', ()=> {
+    if(!ep_uploadedDataUrl) return;
+    const w = window.open();
+    w.document.write(`<img src="${ep_uploadedDataUrl}" style="max-width:100%"/>`);
+  });
+
+  ep_downloadImgBtn.addEventListener('click', ()=> {
+    if(!ep_uploadedDataUrl) return;
+    const a = document.createElement('a');
+    a.href = ep_uploadedDataUrl;
+    a.download = ep_uploadedFileName || `payment-screenshot-${Date.now()}.jpg`;
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  ep_method.addEventListener('change', ()=> {
+    if(ep_method.value === 'Card') ep_cardFields.style.display = 'block';
+    else ep_cardFields.style.display = 'none';
+  });
+  ep_method.dispatchEvent(new Event('change'));
+
+  // show embedded payment modal pre-filled by record
+  function openEmbeddedPayment(paymentRecord){
+    try {
+      // prefill fields
+      ep_payerName.value = paymentRecord.name || '';
+      ep_payerEmail.value = paymentRecord.email || '';
+      ep_bookingId.value = paymentRecord.bookingId || '';
+      ep_amount.value = paymentRecord.amount || '';
+      ep_method.value = paymentRecord.method || 'Card';
+      ep_txRef.value = paymentRecord.txRef || '';
+      ep_bankName.value = paymentRecord.bankName || '';
+      if(paymentRecord.txDate) ep_txDate.value = paymentRecord.txDate.slice(0,10);
+      ep_uploadedDataUrl = paymentRecord.screenshot || null;
+      ep_uploadedFileName = paymentRecord.screenshotName || null;
+      if(ep_uploadedDataUrl){
+        ep_previewImg.src = ep_uploadedDataUrl;
+        ep_previewWrap.classList.remove('d-none');
+        ep_fileInfo.textContent = (ep_uploadedFileName || 'screenshot.jpg') + ' (loaded)';
+      } else {
+        epClearPreview();
+      }
+
+      // show modal
+      const m = new bootstrap.Modal(document.getElementById('paymentModal'));
+      m.show();
+
+      // store currently editing payment id on the modal element for later use
+      document.getElementById('paymentModal').dataset.editingPid = paymentRecord.id;
+      ep_receiptWrap.classList.add('d-none');
+      ep_progress.textContent = '';
+    } catch(e){ console.error('openEmbeddedPayment err', e); }
+  }
+
+  // submit handler for embedded form: create/update payment record
+  ep_form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    ep_progress.textContent = '';
+    ep_payBtn.disabled = true;
+    const name = ep_payerName.value.trim();
+    const email = ep_payerEmail.value.trim().toLowerCase();
+    const bookingId = ep_bookingId.value.trim() || null;
+    const amount = Number(ep_amount.value || 0);
+    const method = ep_method.value;
+    const txRef = ep_txRef.value.trim() || null;
+    const bankName = ep_bankName.value.trim() || null;
+    const txDate = ep_txDate.value || new Date().toISOString().slice(0,10);
+
+    if(!name || !email || !amount){
+      ep_progress.textContent = 'Please fill required fields (name, email, amount).';
+      ep_progress.style.color = 'crimson';
+      ep_payBtn.disabled = false;
+      return;
+    }
+
+    try {
+      ep_progress.textContent = 'Saving payment...';
+      // build record
+      const pid = document.getElementById('paymentModal').dataset.editingPid || ('P'+(Math.floor(Math.random()*9000000)+1000));
+      const payments = loadPayments();
+      const idx = payments.findIndex(p => String(p.id) === String(pid));
+      const rec = {
+        id: pid,
+        name,
+        email,
+        bookingId,
+        amount,
+        method,
+        txRef,
+        bankName,
+        txDate,
+        status: 'Pending',
+        createdAt: (idx !== -1 && payments[idx].createdAt) ? payments[idx].createdAt : new Date().toISOString(),
+        notes: '',
+        screenshot: ep_uploadedDataUrl || (idx !== -1 ? payments[idx].screenshot : null),
+        screenshotName: ep_uploadedFileName || (idx !== -1 ? payments[idx].screenshotName : null)
+      };
+
+      if(idx !== -1) payments[idx] = rec;
+      else payments.unshift(rec);
+      savePayments(payments);
+
+      // user notifications
+      const notifs = JSON.parse(localStorage.getItem('userNotifications')||'[]');
+      notifs.unshift({ id:'n'+Date.now(), email, text:`Payment ${rec.id} of Rs ${Number(rec.amount).toLocaleString()} recorded (Pending).`, ts:new Date().toISOString(), read:false, meta:{paymentId:rec.id} });
+      localStorage.setItem('userNotifications', JSON.stringify(notifs));
+      localStorage.setItem('user_notif_last_update', Date.now().toString());
+
+      localStorage.setItem('payments_new', Date.now().toString());
+
+      // show receipt
+      showEmbeddedReceipt(rec);
+
+      ep_progress.textContent = `Payment recorded (ID: ${rec.id}). Admin will confirm soon.`;
+      ep_progress.style.color = 'green';
+    } catch(err){
+      console.error(err);
+      ep_progress.textContent = 'Error saving payment: ' + (err.message || err);
+      ep_progress.style.color = 'crimson';
+    } finally {
+      ep_payBtn.disabled = false;
+    }
+  });
+
+  function showEmbeddedReceipt(rec){
+    ep_receiptWrap.classList.remove('d-none');
+    ep_receiptId.textContent = rec.id;
+    const parts = [
+      `Name: ${rec.name}`,
+      `Email: ${rec.email}`,
+      `Payment ID: ${rec.id}`,
+      `Booking: ${rec.bookingId || '—'}`,
+      `Amount: Rs ${Number(rec.amount).toLocaleString()}`,
+      `Method: ${rec.method || '—'}`,
+      `Txn Ref: ${rec.txRef || '—'}`,
+      `Bank: ${rec.bankName || '—'}`,
+      `Txn Date: ${rec.txDate || '—'}`,
+      `Status: ${rec.status}`,
+      `Created: ${new Date(rec.createdAt).toLocaleString()}`
+    ];
+    ep_receiptInfo.innerHTML = parts.join('<br/>');
+
+    // wire download button to generate pdf for this record
+    ep_downloadReceiptBtn.onclick = async () => {
+      try {
+        ep_downloadReceiptBtn.disabled = true;
+        ep_downloadReceiptBtn.textContent = 'Generating PDF...';
+        await generateStructuredPDF(rec);
+      } catch(err){
+        console.error(err);
+        alert('Failed to create PDF: ' + (err && err.message ? err.message : err));
+      } finally {
+        ep_downloadReceiptBtn.disabled = false;
+        ep_downloadReceiptBtn.textContent = 'Download Receipt';
+      }
+    };
+
+    ep_viewPaymentsBtn.onclick = () => {
+      const payments = loadPayments();
+      if(!payments.length) return alert('No payments recorded yet.');
+      // show the latest in receipt area
+      showEmbeddedReceipt(payments[0]);
+      window.scrollTo({ top: document.getElementById('paymentModal').offsetTop, behavior:'smooth' });
+    };
+  }
+
+  // jsPDF helper (replicated from payment.html, adapted to be embedded)
+  const { jsPDF } = window.jspdf || {};
+
+ async function fetchImageDataUrl(url) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = url;
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL("image/png"));
+    };
+
+    img.onerror = () => resolve(null);
+  });
+}
+
+
+  async function generateStructuredPDF(rec){
+    if(typeof jsPDF === 'undefined'){
+      alert('PDF library missing.');
+      return;
+    }
+let logoData = null;
+const logoCandidates = [
+  '/static/images/logofinal.png',
+  window.location.origin + '/static/images/logofinal.png'
+];
+
+for(const u of logoCandidates){
+  logoData = await fetchImageDataUrl(u);
+  if(logoData) break;
+}
+
+    const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
+    const W = pdf.internal.pageSize.getWidth();
+    const H = pdf.internal.pageSize.getHeight();
+    const margin = 36;
+    const contentW = W - margin*2;
+
+    const titleY = margin + 8;
+    if(logoData){
+      const logoW = 64, logoH = 64;
+      pdf.addImage(logoData, 'PNG', margin, margin, logoW, logoH);
+      pdf.setFontSize(18);
+      pdf.setFont('helvetica','bold');
+      pdf.text('Wander Hub Ai', margin + logoW + 12, margin + 20);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica','normal');
+      pdf.text('Payment Receipt', margin + logoW + 12, margin + 38);
+    } else {
+      pdf.setFontSize(20);
+      pdf.setFont('helvetica','bold');
+      pdf.text('Wander Hub Ai', margin, titleY);
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica','normal');
+      pdf.text('Payment Receipt', margin, titleY + 18);
+    }
+
+    const metaX = W - margin;
+    pdf.setFontSize(10);
+    pdf.text(`Date: ${new Date(rec.createdAt).toLocaleString()}`, metaX, margin + 12, { align: 'right' });
+    pdf.text(`Receipt ID: ${rec.id}`, metaX, margin + 30, { align: 'right' });
+
+    pdf.setDrawColor(220,220,220);
+    pdf.setLineWidth(0.5);
+    pdf.line(margin, margin + 78, W - margin, margin + 78);
+
+    let y = margin + 94;
+    const labelW = 130;
+    const gap = 8;
+    const valueX = margin + labelW + gap;
+    pdf.setFontSize(11);
+    pdf.setTextColor(40,40,40);
+
+    function drawRow(label, value){
+      pdf.setFont('helvetica','bold');
+      pdf.text(label, margin, y);
+      pdf.setFont('helvetica','normal');
+      const lines = pdf.splitTextToSize(String(value||'—'), contentW - labelW - gap);
+      pdf.text(lines, valueX, y);
+      y += (lines.length * 14) + 8;
+    }
+
+    drawRow('Payer name:', rec.name || '—');
+    drawRow('Email:', rec.email || '—');
+    drawRow('Booking ID:', rec.bookingId || '—');
+    drawRow('Amount:', (typeof rec.amount !== 'undefined') ? `Rs ${Number(rec.amount).toLocaleString()}` : '—');
+    drawRow('Payment method:', rec.method || '—');
+    drawRow('Transaction ref:', rec.txRef || '—');
+    drawRow('Bank / Provider:', rec.bankName || '—');
+    drawRow('Transaction date:', rec.txDate || '—');
+    drawRow('Status:', rec.status || 'Pending');
+
+    if(rec.notes){
+      pdf.setFont('helvetica','bold');
+      pdf.text('Notes:', margin, y);
+      pdf.setFont('helvetica','normal');
+      const noteLines = pdf.splitTextToSize(String(rec.notes), contentW);
+      y += 12;
+      pdf.text(noteLines, margin, y);
+      y += noteLines.length * 12 + 8;
+    }
+
+    if(rec.screenshot){
+      const img = new Image();
+      img.src = rec.screenshot;
+      await new Promise((res) => { img.onload = res; img.onerror = res; });
+
+      const imgWpx = img.naturalWidth || img.width;
+      const imgHpx = img.naturalHeight || img.height;
+      const pxToPt = 0.75;
+      let imgWpt = imgWpx * pxToPt;
+      let imgHpt = imgHpx * pxToPt;
+
+      if(imgWpt > contentW){
+        const s = contentW / imgWpt;
+        imgWpt *= s; imgHpt *= s;
+      }
+
+      const availableH = H - margin - y - 110;
+      if(imgHpt <= availableH){
+        pdf.setDrawColor(200,200,200);
+        pdf.rect(margin, y - 6, contentW, imgHpt + 12, 'S');
+        pdf.addImage(rec.screenshot, 'JPEG', margin + 8, y, imgWpt - 16, imgHpt);
+        y += imgHpt + 18;
+      } else {
+        const sliceCanvas = document.createElement('canvas');
+        const scaleFactor = (contentW) / (imgWpt);
+        const availableHPt = availableH;
+        const sliceHeightPx = Math.round(availableHPt / (pxToPt));
+        let sy = 0;
+        while(sy < imgHpx){
+          const hPx = Math.min(sliceHeightPx, imgHpx - sy);
+          sliceCanvas.width = imgWpx;
+          sliceCanvas.height = hPx;
+          const ctx = sliceCanvas.getContext('2d');
+          ctx.drawImage(img, 0, sy, imgWpx, hPx, 0, 0, imgWpx, hPx);
+          const sliceData = sliceCanvas.toDataURL('image/jpeg', 0.92);
+          let renderedHpt = (hPx * pxToPt) * (contentW / (imgWpx * pxToPt));
+          if(y + renderedHpt + 60 > H - margin){
+            pdf.addPage();
+            y = margin;
+          }
+          pdf.setDrawColor(200,200,200);
+          pdf.rect(margin, y - 6, contentW, renderedHpt + 12, 'S');
+          pdf.addImage(sliceData, 'JPEG', margin + 8, y, contentW - 16, renderedHpt);
+          y += renderedHpt + 18;
+          sy += hPx;
+        }
+      }
+    }
+
+    const footerY = H - margin + 8;
+    const pageCount = pdf.getNumberOfPages();
+    for(let i = 1; i <= pageCount; i++){
+      pdf.setPage(i);
+      pdf.setFontSize(9);
+      pdf.setTextColor(120,120,120);
+      pdf.text('This is a system-generated receipt for Wander Hub Ai — keep for your records.', margin, H - margin + 4);
+      pdf.text(`Page ${i} of ${pageCount}`, W - margin, H - margin + 4, { align: 'right' });
+    }
+
+    pdf.save(`WanderHub_receipt_${rec.id}.pdf`);
+  }
+
+  // small helpers & UI
+  function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'position-fixed top-0 end-0 p-3';
+    notification.style.zIndex = '9999';
+    notification.innerHTML = `
+      <div class="toast show shadow" role="alert">
+        <div class="toast-header">
+          <i class="bi bi-info-circle text-primary me-2"></i>
+          <strong class="me-auto">Wander Hub</strong>
+          <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body">${message}</div>
+      </div>`;
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 3000);
+  }
+
+ 
+
+  // ===== bookings history =====
+  async function viewMyBookings() {
+    const email = prompt('Please enter your email to view bookings:');
+    if (!email) return;
+
+    try {
+      const response = await fetch(`/user-bookings/${encodeURIComponent(email)}`);
+      const data = await response.json();
+
+      if (data.bookings && data.bookings.length > 0) {
+        const bookingsHtml = data.bookings.map(booking => `
+          <div class="card mb-3 border-0 shadow-sm">
+            <div class="card-body">
+              <h6 class="card-title">${booking.packageName}</h6>
+              <p class="mb-1"><strong>Booking ID:</strong> ${booking.id}</p>
+              <p class="mb-1"><strong>People:</strong> ${booking.people}</p>
+              <p class="mb-1"><strong>Total:</strong> ${formatPKR(booking.totalPrice)}</p>
+              <p class="mb-1"><strong>Date:</strong> ${new Date(booking.startDate).toLocaleDateString()}</p>
+              <p class="mb-1"><strong>Status:</strong> <span class="badge bg-success">${booking.status}</span></p>
+              <small class="text-muted">Booked on: ${new Date(booking.createdAt).toLocaleDateString()}</small>
+            </div>
+          </div>`).join('');
+
+        document.getElementById('bookingsContent').innerHTML = bookingsHtml;
+      } else {
+        document.getElementById('bookingsContent').innerHTML = `
+          <div class="text-center text-muted">
+            <i class="bi bi-inbox fs-1"></i>
+            <p>No bookings found for this email</p>
+          </div>`;
+      }
+
+      const modal = new bootstrap.Modal(document.getElementById('bookingsModal'));
+      modal.show();
+    } catch (error) {
+      alert('Error loading bookings: ' + error.message);
+    }
+  }
+
+  // ===== favorites handlers =====
+  function toggleFavorite(pkgId, button) {
+    const index = favorites.indexOf(pkgId);
+    if (index === -1) {
+      favorites.push(pkgId);
+      if (button) {
+        button.innerHTML = '<i class="bi bi-heart-fill"></i>';
+        button.classList.add('btn-warning');
+      }
+    } else {
+      favorites.splice(index, 1);
+      if (button) {
+        button.innerHTML = '<i class="bi bi-heart"></i>';
+        button.classList.remove('btn-warning');
+      }
+    }
+    localStorage.setItem('wh_favorites', JSON.stringify(favorites));
+
+    const action = index === -1 ? 'added to' : 'removed from';
+    showNotification(`Package ${action} favorites!`);
+  }
+
+  // ===== init =====
+  document.addEventListener('DOMContentLoaded', function () {
+    console.log('🚀 Wander Hub AI recommender loaded (embedded payment enabled)');
+
+    updateUserStatusUI();
+
+    document.getElementById('btnSearch').addEventListener('click', doSearch);
+    document.getElementById('viewBookings').addEventListener('click', viewMyBookings);
+document.getElementById('exportFavorites').addEventListener('click', showFavorites);
+
+    document.querySelectorAll('.model-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentModel = this.dataset.model;
+        doSearch();
+      });
+    });
+
+    ['inputPlace', 'inputBudget', 'inputDays'].forEach(id => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.addEventListener('keypress', function (e) {
+          if (e.key === 'Enter') doSearch();
+        });
+      }
+    });
+
+    // initial search
+    setTimeout(doSearch, 700);
+  });
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Home | Wander Hub Ai</title>
+   <link rel="icon" type="image/png" href="templates/logofinal.png">
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: "Plus Jakarta Sans", sans-serif; }
+    .card-hover { transition: transform .22s ease, box-shadow .22s ease; }
+    .card-hover:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(13,40,70,.08); }
+    .hidden-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+    .hidden-scroll::-webkit-scrollbar { display: none; }
+    .fade { transition: all .22s ease; }
+    .trip-card { position: relative; overflow: hidden; border-radius: .75rem; }
+    .trip-card .overlay {
+      position: absolute; inset:0;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.6) 100%);
+      color: white; display:flex; flex-direction:column; justify-content:flex-end; padding:1rem;
+      transform: translateY(100%); transition: transform .28s ease;
+    }
+    .trip-card:hover .overlay { transform: translateY(0%); }
+    .guide-card { position: relative; overflow:hidden; border-radius: .75rem; cursor:pointer; transition: transform .18s ease; }
+    .guide-card:hover { transform: translateY(-6px); }
+    .guide-overlay { position:absolute; inset:0; background: rgba(0,0,0,0.5); color:white; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .18s ease; }
+    .guide-card:hover .guide-overlay { opacity:1; }
+    .modal-center { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+    #tlHelperBtn{
+      position:fixed; right:22px; bottom:22px; z-index:60;
+      min-width:132px; height:48px; padding:0 16px;
+      border-radius:9999px; font-weight:700; letter-spacing:.2px;
+      background:linear-gradient(90deg,#f97316,#38bdf8);
+      color:#fff; box-shadow:0 12px 30px rgba(0,0,0,.18);
+    }
+    #tlHelperBtn:hover{ transform:translateY(-2px); }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-orange-400 via-sky-200 to-orange-100">
+
+  <!-- NAV -->
+  <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md shadow-md">
+    <div class="container mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-6">
+        <img src="templates/logofinal.png"
+          class="w-10 h-10 rounded-full object-contain bg-white shadow-lg"
+          alt="Wander Hub Logo">
+        <div class="text-orange-700 font-bold text-lg">Wander Hub Ai</div>
+        <nav class="flex gap-8 text-gray-700 font-medium">
+          <a href="local-user.html" class="text-orange-600 font-semibold">Home</a>
+          <a href="packages.html" class="hover:text-orange-600 transition">All Packages</a>
+          <a href="packages-by-air.html" class="hover:text-orange-600 transition">Air Packages</a>
+          <a href="packages-by-road.html" class="hover:text-orange-600 transition">Road Packages</a>
+          <a href="travel-guide.html" class="hover:text-orange-600 transition">Guides</a>
+          <a href="about-us.html" class="hover:text-orange-600 transition">About Us</a>
+          <a href="contact-us.html" class="hover:text-orange-600 transition">Contact</a>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <div class="hidden md:block">
+          <input id="topSearch" placeholder="Search tours, places..." class="rounded-full px-4 py-2 w-72 bg-sky-50 focus:ring-2 focus:ring-orange-300 outline-none" />
+        </div>
+        
+        <!-- profile button -->
+        <button id="navProfileBtn" title="Profile" class="flex items-center gap-3 rounded-full px-2 py-1 hover:bg-white/60 transition" onclick="window.location.href='profile-user.html'">
+          <img id="navAvatar" src="" alt="avatar" class="w-9 h-9 rounded-full object-cover hidden" />
+          <div id="navEmoji" class="w-9 h-9 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center text-lg">👨</div>
+          <div class="hidden sm:flex flex-col text-left">
+            <span id="navName" class="text-sm font-semibold text-[#181410]">User Name</span>
+            <span id="navSub" class="text-xs text-[#8d755e]">View profile</span>
+          </div>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="container mx-auto px-6 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- LEFT: quick panel -->
+      <aside class="lg:col-span-1">
+        <div class="bg-white/95 rounded-2xl p-5 card-hover fade">
+          <div class="flex flex-col items-center">
+            <div id="leftAvatarWrap" class="w-28 h-28 rounded-full overflow-hidden bg-orange-50 flex items-center justify-center text-4xl text-orange-600 mb-3">
+              <img id="leftAvatarImg" src="" class="w-full h-full object-cover hidden" alt="avatar" />
+              <div id="leftAvatarEmoji" class="text-4xl">👨</div>
+            </div>
+            <h3 id="leftName" class="text-xl font-bold text-[#181410]">User Name</h3>
+            <p id="leftJoined" class="text-sm text-[#8d755e]">Joined: —</p>
+            <div class="mt-3 w-full grid grid-cols-2 gap-3">
+              <div class="bg-orange-50 border border-orange-100 rounded-lg p-3 text-center">
+                <div id="leftPoints" class="text-2xl font-bold text-[#181410]">0</div>
+                <div class="text-xs text-[#8d755e]">Points</div>
+              </div>
+              <div class="bg-orange-50 border border-orange-100 rounded-lg p-3 text-center">
+                <div id="leftTrips" class="text-2xl font-bold text-[#181410]">0</div>
+                <div class="text-xs text-[#8d755e]">Trips</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-5 text-sm space-y-2">
+            <div><div class="text-xs text-gray-500">Email</div><div id="leftEmail" class="text-[#181410]">—</div></div>
+            <div><div class="text-xs text-gray-500">Phone</div><div id="leftPhone" class="text-[#181410]">—</div></div>
+            <div>
+  <div class="text-xs text-gray-500">Address</div><div id="leftAddress" class="text-[#181410]">—</div></div>
+            <div><div class="text-xs text-gray-500">Languages</div><div id="leftLangs" class="text-[#181410]">—</div></div>
+            <div><div class="text-xs text-gray-500">Previous Tours</div><ul id="leftTours" class="mt-2 space-y-1 text-sm text-[#181410]"></ul></div>
+          </div>
+
+          <div class="mt-4 flex gap-2">
+            <a href="profile-user.html" class="flex-1 text-center px-3 py-2 rounded-full bg-gray-100 text-[#181410]">Edit Profile</a>
+            <button id="openAddModal" class="px-4 py-2 rounded-full bg-gradient-to-r from-orange-500 to-sky-400 text-white">+ Add Tour</button>
+          </div>
+        </div>
+
+        <!-- AI Predictor button -->
+        <button id="aiPredictBtn" class="mt-3 px-4 py-2 rounded-full bg-gradient-to-r from-orange-500 to-sky-400 text-white font-semibold" 
+                onclick="launchAIPredictor()" 
+                title="Open AI Predictor">
+          AI-Predictor
+        </button>
+        <button id="tlHelperBtn" class="mt-3 px-4 py-2 rounded-full bg-gradient-to-r from-orange-500 to-sky-400 text-white font-semibold" type="button" title="Open Translator">helper</button>
+      </aside>
+
+      <!-- CENTER: hero + featured -->
+      <section class="lg:col-span-2 space-y-6">
+        <div class="bg-cover bg-center rounded-2xl overflow-hidden relative" style="background-image: linear-gradient(0deg, rgba(0,0,0,0.25), rgba(0,0,0,0.05)), url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1600&auto=format&fit=crop'); min-height: 240px;">
+          <div class="p-8">
+            <h1 class="text-3xl md:text-4xl text-white font-black">Discover the best of Pakistan</h1>
+            <p class="text-white/90 mt-2 max-w-xl">Find curated tours, travel guiders and experiences — updated from your profile and saved tours.</p>
+            <div class="mt-4 flex gap-3">
+              <button id="exploreBtn" class="px-5 py-2 rounded-full bg-[#f97b06] text-[#181411] font-semibold" onclick="window.location.href='packages.html'">
+                Explore Pakistan
+              </button>
+              <button id="quickSearchBtn" class="px-5 py-2 rounded-full bg-white/80 text-[#181411] font-semibold">Quick search</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Featured destinations -->
+        <div class="bg-white/95 rounded-2xl p-4 card-hover">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-lg font-semibold text-[#181410]">Featured Destinations</h3>
+            <a href="#" class="text-sm text-[#8d755e]">See all</a>
+          </div>
+          <div class="flex gap-3 overflow-x-auto hidden-scroll py-2">
+            <div class="min-w-[260px] rounded-xl overflow-hidden bg-cover bg-center" style="background-image:url('templates/1_tw1xWURP5GVP2vQGOXT7RQ.jpg'); height:160px"></div>
+            <div class="min-w-[260px] rounded-xl overflow-hidden bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1470770903676-69b98201ea1c?q=80&w=800&auto=format&fit=crop'); height:160px"></div>
+            <div class="min-w-[260px] rounded-xl overflow-hidden bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1549880338-65ddcdfd017b?q=80&w=800&auto=format&fit=crop'); height:160px"></div>
+            <div class="min-w-[260px] rounded-xl overflow-hidden bg-cover bg-center" style="background-image:url('templates/DSC_5404-EFFECTS-e1546177012938-934x934.jpg'); height:160px"></div>
+          </div>
+        </div>
+
+        <!-- Your Trips -->
+        <div class="bg-white/95 rounded-2xl p-4 card-hover">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-lg font-semibold text-[#181410]">Your Trips</h3>
+            <div class="text-sm text-[#8d755e]">Manage saved trips</div>
+          </div>
+
+          <div id="tripsGallery" class="grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+        </div>
+
+        <!-- Activities & Travel Guides -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="bg-white/95 rounded-2xl p-4 card-hover">
+            <h4 class="font-semibold text-[#181410] mb-2">Popular Activities</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="rounded-xl overflow-hidden bg-cover bg-center aspect-square" style="background-image:url('templates/photo-1551632811-561732d1e306.jpg')"></div>
+              <div class="rounded-xl overflow-hidden bg-cover bg-center aspect-square" style="background-image:url('templates/-1x-1.webp')"></div>
+              <div class="rounded-xl overflow-hidden bg-cover bg-center aspect-square" style="background-image:url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=800&auto=format&fit=crop')"></div>
+            </div>
+          </div>
+
+          <div class="bg-white/95 rounded-2xl p-4 card-hover">
+            <h4 class="font-semibold text-[#181410] mb-2">Travel Guiders</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="guide-card bg-cover bg-center aspect-square" style="background-image:url('templates/istockphoto-855413388-612x612.jpg')">
+                <div class="guide-overlay">
+                  <div class="text-center px-3">
+                    <div class="font-semibold">Ali Khan</div>
+                    <div class="text-xs">Islamabad · Trek guide</div>
+                    <div class="text-xs mt-1">5+ years experience</div>
+                  </div>
+                </div>
+              </div>
+              <div class="guide-card bg-cover bg-center aspect-square" style="background-image:url('templates/istockphoto-1217081362-612x612.jpg')">
+                <div class="guide-overlay">
+                  <div class="text-center px-3">
+                    <div class="font-semibold">Fatima Malik</div>
+                    <div class="text-xs">Karachi · Cultural guide</div>
+                    <div class="text-xs mt-1">Local expert</div>
+                  </div>
+                </div>
+              </div>
+              <div class="guide-card bg-cover bg-center aspect-square" style="background-image:url('templates/caption.jpg')">
+                <div class="guide-overlay">
+                  <div class="text-center px-3">
+                    <div class="font-semibold">Omar Farooq</div>
+                    <div class="text-xs">Lahore · Wildlife</div>
+                    <div class="text-xs mt-1">Photographer & guide</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <!-- ADD TOUR MODAL -->
+  <div id="addModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 modal-center">
+    <div class="bg-white rounded-2xl w-full max-w-3xl mx-4 overflow-hidden">
+      <div class="p-6">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xl font-semibold text-[#181410]">Add New Tour</h3>
+          <button id="closeAddModal" class="text-gray-500 hover:text-gray-800">Close ✕</button>
+        </div>
+        <form id="addTourForm" class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="text-sm text-gray-600">Tour title</label>
+            <input id="modalTourTitle" class="mt-2 w-full rounded-xl border border-gray-200 p-3" placeholder="e.g. Hunza Valley" />
+            <label class="text-sm text-gray-600 mt-4 block">Description</label>
+            <textarea id="modalTourDesc" rows="4" class="mt-2 w-full rounded-xl border border-gray-200 p-3" placeholder="Short description (optional)"></textarea>
+          </div>
+          <div>
+            <label class="text-sm text-gray-600">Upload image</label>
+            <div class="mt-2 flex gap-2">
+              <label class="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg cursor-pointer">
+                <input id="modalTourImage" type="file" accept="image/*" class="hidden" />
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7M8 7l4-4 4 4M12 3v13" />
+                </svg>
+                <span class="text-sm text-gray-700">Choose file</span>
+              </label>
+              <div id="modalPreviewWrap" class="w-28 h-20 bg-gray-50 rounded-lg overflow-hidden bg-cover bg-center"></div>
+            </div>
+            <label class="text-sm text-gray-600 mt-4 block">Date (optional)</label>
+            <input id="modalTourDate" type="date" class="mt-2 w-full rounded-xl border border-gray-200 p-3" />
+            <div class="mt-4 flex gap-3">
+              <button type="submit" class="px-5 py-2 rounded-full bg-gradient-to-r from-orange-500 to-sky-400 text-white font-semibold">Save Tour</button>
+              <button id="modalCancel" type="button" class="px-4 py-2 rounded-full bg-gray-100">Cancel</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <footer class="text-center py-6 text-sm text-gray-700 bg-white/60 backdrop-blur-md mt-8">
+    © 2025 Wander Hub Ai — All Rights Reserved
+  </footer>
+
+<script>
+function launchAIPredictor() {
+  const btn = document.getElementById('aiPredictBtn');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<span class="animate-pulse">Starting AI...</span>';
+  btn.disabled = true;
+
+  setTimeout(() => {
+    window.location.href = 'http://127.0.0.1:5000';
+  }, 1000);
+
+  setTimeout(() => {
+    if (window.location.href.indexOf('127.0.0.1:5000') === -1) {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+      alert('Make sure the AI Predictor server is running!');
+    }
+  }, 3000);
+}
+
+document.getElementById('tlHelperBtn').addEventListener('click', () => {
+window.open('http://127.0.0.1:5001/helper', '_blank');
+});
+
+// ========= LOGIN + PER-USER STORAGE =========
+const rawUser = localStorage.getItem("wh_user");
+let currentUser = null;
+try {
+  currentUser = rawUser ? JSON.parse(rawUser) : null;
+} catch (e) {
+  currentUser = null;
+}
+
+const currentRole = (localStorage.getItem("wh_role") || (currentUser && currentUser.role) || "user").toLowerCase();
+const currentUserId = currentUser && currentUser.id ? currentUser.id : null;
+
+// only allow logged-in Users here
+if (!currentUserId || currentRole !== "user") {
+  alert("Please login as a User to access the dashboard.");
+  window.location.href = "login.html";
+}
+
+const STORAGE_BASE_KEY = 'wanderhub_profile_v1';
+function getProfileStorageKey() {
+  if (!currentUserId) return STORAGE_BASE_KEY;
+  return `${STORAGE_BASE_KEY}_${currentUserId}`;
+}
+
+const defaultProfile = {
+  name: 'User Name',
+  email: '',
+  phone: '',
+  address: '',        // ✅ ADD THIS
+  joinDate: '',
+  langs: ['English'],
+  bio: '',
+  points: 0,
+  trips: 0,
+  avatarType: 'emoji',
+  avatarEmoji: '👨',
+  avatarDataUrl: '',
+  tours: []
+};
+
+
+// DOM elements
+const navName = document.getElementById('navName');
+const navAvatar = document.getElementById('navAvatar');
+const navEmoji = document.getElementById('navEmoji');
+const leftName = document.getElementById('leftName');
+const leftAvatarImg = document.getElementById('leftAvatarImg');
+const leftAvatarEmoji = document.getElementById('leftAvatarEmoji');
+const leftJoined = document.getElementById('leftJoined');
+const leftPoints = document.getElementById('leftPoints');
+const leftTrips = document.getElementById('leftTrips');
+const leftEmail = document.getElementById('leftEmail');
+const leftPhone = document.getElementById('leftPhone');
+const leftLangs = document.getElementById('leftLangs');
+const leftTours = document.getElementById('leftTours');
+const tripsGallery = document.getElementById('tripsGallery');
+
+const addModal = document.getElementById('addModal');
+const openAddModal = document.getElementById('openAddModal');
+const closeAddModal = document.getElementById('closeAddModal');
+const modalCancel = document.getElementById('modalCancel');
+const addTourForm = document.getElementById('addTourForm');
+const modalTourTitle = document.getElementById('modalTourTitle');
+const modalTourDesc = document.getElementById('modalTourDesc');
+const modalTourImage = document.getElementById('modalTourImage');
+const modalPreviewWrap = document.getElementById('modalPreviewWrap');
+const modalTourDate = document.getElementById('modalTourDate');
+
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+function readProfile() {
+  const key = getProfileStorageKey();
+  let p;
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) throw new Error('no data');
+    p = JSON.parse(raw);
+  } catch (e) {
+    // first-time: seed from backend user
+    p = { ...defaultProfile };
+    if (currentUser) {
+      p.name = currentUser.name || defaultProfile.name;
+      p.email = currentUser.email || '';
+      if (!p.joinDate) p.joinDate = new Date().toISOString().slice(0, 10);
+    }
+  }
+  // migrate old "joined" field -> joinDate if exists
+  if (!p.joinDate && p.joined) {
+    p.joinDate = p.joined;
+  }
+  return p;
+}
+
+function writeProfile(p) {
+  const key = getProfileStorageKey();
+  localStorage.setItem(key, JSON.stringify(p));
+  window.dispatchEvent(new Event('profile-updated'));
+}
+
+function renderProfileUI() {
+  const p = readProfile();
+
+  navName.textContent = p.name || defaultProfile.name;
+  leftName.textContent = p.name || defaultProfile.name;
+
+  // avatar
+  if (p.avatarType === 'image' && p.avatarDataUrl) {
+    navAvatar.src = p.avatarDataUrl;
+    navAvatar.classList.remove('hidden');
+    navEmoji.classList.add('hidden');
+    leftAvatarImg.src = p.avatarDataUrl;
+    leftAvatarImg.classList.remove('hidden');
+    leftAvatarEmoji.classList.add('hidden');
+  } else {
+    const emoji = p.avatarEmoji || defaultProfile.avatarEmoji;
+    navEmoji.textContent = emoji;
+    navEmoji.classList.remove('hidden');
+    navAvatar.classList.add('hidden');
+    leftAvatarEmoji.textContent = emoji;
+    leftAvatarEmoji.classList.remove('hidden');
+    leftAvatarImg.classList.add('hidden');
+  }
+const leftAddress = document.getElementById('leftAddress');
+leftAddress.textContent = p.address || '—';
+  // 🟠 Joining date coming from profile-user.html (joinDate)
+  const jd = p.joinDate || p.joined || '';
+  leftJoined.textContent = jd ? `Joined: ${jd}` : 'Joined: —';
+
+  leftPoints.textContent = p.points ?? defaultProfile.points;
+  leftTrips.textContent = p.trips ?? 0;
+
+  leftEmail.textContent = p.email || '—';
+  leftPhone.textContent = p.phone || '—';
+  leftLangs.textContent = (p.langs || []).join(', ') || '—';
+
+  // left tours text list
+  leftTours.innerHTML = '';
+  (p.tours || []).forEach(t => {
+    const li = document.createElement('li');
+    li.textContent = t.title || t.name || '';
+    leftTours.appendChild(li);
+  });
+
+  // trips gallery
+  // trips gallery
+tripsGallery.innerHTML = '';
+
+(p.tours || []).forEach((t, idx) => {
+  const title = t.title || t.name || '';
+  const desc = t.desc || '';
+  const img = t.img || '';
+
+  const imageUrl = img
+    ? (img.startsWith('http') ? img : 'http://localhost:5000' + img)
+    : '';
+
+  const card = document.createElement('div');
+  card.className = 'trip-card bg-white/90 shadow-sm';
+
+  card.innerHTML = `
+  <div 
+    class="h-44 w-full bg-cover bg-center"
+    style="background-image: url('${imageUrl}')"
+  ></div>
+
+  <div class="overlay">
+    <div class="font-semibold text-sm">${escapeHtml(title)}</div>
+
+    ${desc ? `<div class="text-xs opacity-90 mt-1">${escapeHtml(desc)}</div>` : ''}
+
+    ${t.date ? `<div class="text-[11px] opacity-70 mt-1">📅 ${t.date}</div>` : ''}
+
+    <div class="mt-2 flex gap-2">
+      <button 
+        class="removeTourBtn text-xs text-red-600 bg-red-50 px-2 py-1 rounded"
+        data-idx="${idx}">
+        Remove
+      </button>
+    </div>
+  </div>
+`;
+
+
+  tripsGallery.appendChild(card);
+});
+
+
+  document.querySelectorAll('.removeTourBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = Number(btn.dataset.idx);
+      removeTour(idx);
+    });
+  });
+}
+
+function removeTour(index) {
+  const p = readProfile();
+  if (!p.tours || !p.tours[index]) return;
+
+  if (!confirm(`Remove tour "${p.tours[index].title}"?`)) return;
+
+  p.tours.splice(index, 1);
+
+  // ❌ DO NOT DECREASE TRIPS
+
+  writeProfile(p);
+  renderProfileUI();
+  toast('Tour removed');
+}
+
+
+// Add new tour
+addTourForm.addEventListener('submit', evt => {
+  evt.preventDefault();
+  const title = modalTourTitle.value.trim();
+  if (!title) {
+    alert('Please provide a tour title.');
+    return;
+  }
+  const desc = modalTourDesc.value.trim();
+  const date = modalTourDate.value || '';
+  const file = modalTourImage.files && modalTourImage.files[0];
+  if (file) {
+  const form = new FormData();
+  form.append("image", file);
+
+  fetch("http://localhost:5000/api/upload/image", {
+    method: "POST",
+    body: form
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (!data.success) {
+      alert("Image upload failed");
+      return;
+    }
+
+    pushTour({
+      title,
+      desc,
+      date,
+      img: data.url   // ✅ SAME FORMAT AS PROFILE PAGE
+    });
+    closeModal();
+  });
+} else {
+  pushTour({
+    title,
+    desc,
+    date,
+    img: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1200&auto=format&fit=crop'
+  });
+  closeModal();
+}
+});
+
+function pushTour(t) {
+  const p = readProfile();
+  p.tours = p.tours || [];
+  p.tours.unshift(t);
+
+  // ❗ DO NOT TOUCH p.trips HERE
+  // Trips are ONLY for booking system
+
+  writeProfile(p);
+  renderProfileUI();
+  toast('Tour saved');
+}
+
+
+openAddModal.addEventListener('click', () => addModal.classList.remove('hidden'));
+closeAddModal.addEventListener('click', closeModal);
+modalCancel.addEventListener('click', closeModal);
+function closeModal() {
+  addModal.classList.add('hidden');
+  addTourForm.reset();
+  modalPreviewWrap.style.backgroundImage = '';
+}
+
+modalTourImage.addEventListener('change', e => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) {
+    modalPreviewWrap.style.backgroundImage = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    modalPreviewWrap.style.backgroundImage = `url('${ev.target.result}')`;
+  };
+  reader.readAsDataURL(f);
+});
+
+function toast(msg) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.className = 'fixed right-6 bottom-6 bg-[#181410] text-white px-4 py-2 rounded shadow';
+  document.body.appendChild(t);
+  setTimeout(() => t.classList.add('opacity-90'), 10);
+  setTimeout(() => t.remove(), 2500);
+}
+
+// sync when profile updated in other tab
+window.addEventListener('storage', e => {
+  if (!e || !e.key) return;
+  if (e.key.startsWith(STORAGE_BASE_KEY)) {
+    renderProfileUI();
+  }
+});
+window.addEventListener('profile-updated', () => renderProfileUI());
+
+document.getElementById('topSearch').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    toast('Search: ' + e.target.value);
+  }
+});
+document.getElementById('exploreBtn').addEventListener('click', () => window.location.href = 'packages.html');
+document.getElementById('quickSearchBtn').addEventListener('click', () => document.getElementById('topSearch').focus());
+
+// initial render
+setTimeout(() => renderProfileUI(), 100);
+renderProfileUI();
+</script>
+
+</body>
+</html>

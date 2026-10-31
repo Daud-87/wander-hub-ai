@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login | Wander Hub Ai</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+  <!-- Google OAuth Library -->
+   <link rel="icon" type="image/png" href="templates/logofinal.png">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    body { font-family: "Plus Jakarta Sans", sans-serif; }
+    .hidden { display: none; }
+
+    /* Google Button Styling */
+    .google-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: white;
+      border: 2px solid #e5e7eb;
+      color: #374151;
+      font-weight: 600;
+      padding: 12px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    .google-btn:hover {
+      background: #f9fafb;
+      border-color: #d1d5db;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .google-btn img {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 20px 0;
+      color: #9ca3af;
+    }
+    .divider::before,
+    .divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: #e5e7eb;
+    }
+    .divider span {
+      padding: 0 16px;
+      font-size: 14px;
+    }
+
+    /* Full-screen overlay for login animation */
+    .login-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(180deg, rgba(255,255,255,0.88), rgba(255,255,255,0.96));
+      z-index: 9999;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      perspective: 1100px; /* helps 3D plane */
+    }
+    .login-overlay.show { display: flex; }
+
+    .anim-stage {
+      display:flex; flex-direction:column; align-items:center; gap:12px;
+      transform-style: preserve-3d;
+    }
+
+    /* Bigger logo container */
+    .logo-anim-wrap {
+      width: 200px;
+      height: 200px;
+      border-radius: 22px;
+      background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.65), rgba(255,255,255,0.3));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 30px 80px rgba(6, 182, 212, 0.12);
+      transform-origin: center;
+      will-change: transform, opacity;
+      animation: logo-pop 900ms cubic-bezier(.2,.9,.3,1);
+    }
+    .logo-anim-wrap img {
+      width: 130px;
+      height: 130px;
+      object-fit: contain;
+      display:block;
+      filter: drop-shadow(0 12px 28px rgba(0,0,0,0.12));
+    }
+
+    .login-anim-text {
+      margin-top: 6px;
+      font-weight: 700;
+      color: #334155;
+      text-align: center;
+      font-size: 16px;
+      opacity: 0;
+      transform: translateY(6px);
+      animation: text-fade 700ms 400ms forwards;
+    }
+
+    /* plane SVG container (initially hidden; becomes visible during float-out) */
+    .plane-wrap {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      left: calc(50% - 60px);
+      bottom: calc(50% - 60px);
+      pointer-events: none;
+      transform-style: preserve-3d;
+      opacity: 0;
+      will-change: transform, opacity;
+    }
+
+    .login-progress {
+      margin-top: 8px;
+      width: 220px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+    .login-progress > i {
+      display:block;
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg,#f97316,#06b6d4);
+      border-radius:999px;
+      animation: prog 4600ms linear forwards; /* long to include extra 3s wait */
+    }
+
+    /* animations */
+    @keyframes logo-pop {
+      0%   { transform: scale(.5) rotate(-8deg); opacity: 0; }
+      60%  { transform: scale(1.08) rotate(0deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    @keyframes logo-float-out {
+      0%   { transform: translateY(0) scale(1) rotateX(0deg); opacity: 1; filter: blur(0); }
+      40%  { transform: translateY(-30px) scale(1.03) rotateX(6deg); opacity: 0.95; filter: blur(.3px); }
+      100% { transform: translateY(-180px) translateX(80px) scale(.8) rotateX(18deg) rotateZ(6deg); opacity: 0; filter: blur(2.5px); }
+    }
+    @keyframes text-fade { to { opacity: 1; transform: translateY(0); } }
+    @keyframes prog { to { width:100%; } }
+
+    /* plane flight animation: appears, flies up-right with rotation and 3D tilt, then disappears */
+    @keyframes plane-flight {
+      0%   { transform: translate3d(-10px, 40px, 0) rotateZ(-10deg) rotateX(0deg) scale(.9); opacity: 0; filter: drop-shadow(0 8px 18px rgba(0,0,0,0.08)); }
+      10%  { opacity: 1; }
+      40%  { transform: translate3d(20px, -10px, 40px) rotateZ(6deg) rotateX(6deg) scale(1); }
+      80%  { transform: translate3d(180px, -160px, 160px) rotateZ(18deg) rotateX(18deg) scale(.85); opacity: 0.7; }
+      100% { transform: translate3d(320px, -320px, 320px) rotateZ(28deg) rotateX(28deg) scale(.6); opacity: 0; }
+    }
+
+    /* when the float-out stage runs, show plane and animate it */
+    .logo-anim-wrap.float-out + .login-anim-text,
+    .logo-anim-wrap.float-out ~ .login-progress { opacity: 0; transition: opacity .3s; }
+
+    /* responsive tweak */
+    @media (max-width:480px){
+      .logo-anim-wrap{width:140px;height:140px;}
+      .login-progress{width:160px;}
+      .plane-wrap{width:80px;height:80px; left:calc(50% - 40px); bottom:calc(50% - 40px);}
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-orange-400 via-sky-200 to-orange-100 flex flex-col">
+  <header class="flex items-center justify-between px-10 py-4 bg-white/80 backdrop-blur-md shadow-md">
+    <div class="flex items-center gap-3 text-orange-700 font-bold text-lg">
+      <img src="templates/logofinal.png"
+          class="w-10 h-10 rounded-full object-contain bg-white shadow-lg"
+          alt="Wander Hub Logo">
+      Wander Hub Ai
+    </div>
+
+    <!-- RIGHT SIDE BUTTONS -->
+    <div class="flex items-center gap-4">
+      <!-- LOGIN link -->
+      <a href="login.html"
+        class="text-orange-700 font-semibold hover:text-orange-600 transition">
+        Login
+      </a>
+
+      <!-- SIGNUP BUTTON (NEW) -->
+      <a href="sign-up.html"
+        class="bg-gradient-to-r from-orange-500 to-sky-400 text-white font-semibold rounded-full px-5 py-2 shadow-md hover:scale-[1.05] transition-transform">
+        Sign Up
+      </a>
+    </div>
+  </header>
+
+  <!-- ROLE SELECTION PAGE -->
+  <main id="roleSelect" class="flex flex-1 justify-center items-center">
+    <div class="bg-white/90 backdrop-blur-md shadow-2xl rounded-3xl p-10 w-full max-w-md text-center transform transition hover:scale-[1.02]">
+      <h2 class="text-3xl font-bold text-orange-700 mb-6">Login As</h2>
+      <div class="flex flex-col gap-5">
+        <button onclick="showLogin('User')" class="w-full bg-gradient-to-r from-orange-500 to-sky-400 text-white font-semibold rounded-full py-3 shadow-lg transition-transform hover:scale-[1.02]">User</button>
+        <button onclick="showLogin('Guider')" class="w-full bg-gradient-to-r from-orange-500 to-sky-400 text-white font-semibold rounded-full py-3 shadow-lg transition-transform hover:scale-[1.02]">Guider</button>
+        <button onclick="showLogin('Admin')" class="w-full bg-gradient-to-r from-orange-500 to-sky-400 text-white font-semibold rounded-full py-3 shadow-lg transition-transform hover:scale-[1.02]">Admin</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- LOGIN FORM PAGE -->
+  <main id="loginForm" class="hidden flex flex-1 justify-center items-center">
+    <div class="bg-white/90 backdrop-blur-md shadow-2xl rounded-3xl p-10 w-full max-w-md transition transform hover:scale-[1.02]">
+      <h2 id="loginTitle" class="text-3xl font-bold text-orange-700 mb-2 text-center"></h2>
+      <p class="text-gray-500 mb-8 text-center">Log in to continue your journey</p>
+
+      
+
+      <!-- Login Form -->
+      <form id="loginRealForm" class="text-left" onsubmit="handleLogin(event)">
+        <div class="mb-5">
+          <label class="block text-gray-700 font-medium mb-2">Email</label>
+          <input id="emailInp" type="email" placeholder="Enter your email" class="w-full rounded-xl border border-gray-200 bg-sky-50 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-400 h-12 px-4 outline-none transition" required />
+        </div>
+<!-- OTP SECTION (HIDDEN INITIALLY) -->
+
+        <div class="mb-4">
+          <label class="block text-gray-700 font-medium mb-2">Password</label>
+<input id="passInp" type="password"
+  placeholder="Enter your password"
+  class="w-full rounded-xl border border-gray-200 bg-sky-50 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-400 h-12 px-4 outline-none transition"
+/> </div>
+        <div class="flex justify-between items-center mb-5">
+          <div>
+            <a href="forgot-password.html" class="text-sm text-orange-600 hover:underline">Forgot password?</a>
+          </div>
+          <div>
+            <a href="sign-up.html" class="text-sm text-orange-600 hover:underline">Create account</a>
+          </div>
+        </div>
+
+        <button id="loginBtn" type="submit" class="w-full h-12 bg-gradient-to-r from-orange-500 to-sky-400 text-white font-bold rounded-full shadow-lg transition-transform hover:scale-[1.02]">
+          Log In
+        </button>
+
+
+
+        <button type="button" onclick="goBack()" class="w-full mt-6 text-orange-600 font-semibold hover:underline text-center">
+          ← Back to Role Selection
+        </button>
+        
+      </form>
+    </div>
+  </main>
+
+  <!-- Animated overlay (logo + plane + text + progress) -->
+  <div id="loginOverlay" class="login-overlay" aria-hidden="true" role="status" aria-live="polite">
+    <div class="anim-stage" role="presentation">
+      <div style="position:relative; width:280px; height:220px; display:flex; align-items:center; justify-content:center;">
+        <div id="logoWrap" class="logo-anim-wrap" aria-hidden="true">
+          <img src="templates/logofinal.png" alt="Wander Hub Logo">
+        </div>
+
+        <!-- plane element sits in same container and animates when float-out -->
+        <div id="planeWrap" class="plane-wrap" aria-hidden="true">
+          <!-- Simple plane SVG -->
+          <svg viewBox="0 0 64 64" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <g transform="translate(0,0)">
+              <path d="M4 30 L60 6 L40 34 L60 58 L4 30 Z" fill="#ff7a00" opacity="0.95"></path>
+              <path d="M4 30 L30 34 L4 30 Z" fill="#0ea5e9" opacity="0.95"></path>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <div id="loginText" class="login-anim-text">Welcome — preparing your dashboard</div>
+      <div class="login-progress" aria-hidden="true"><i></i></div>
+    </div>
+  </div>
+
+  <footer class="text-center py-4 text-sm text-gray-600 bg-white/60 backdrop-blur-md shadow-md">
+    © 2025 Wander Hub Ai — All Rights Reserved
+  </footer>
+
+<script>
+  const API_BASE = "http://localhost:5000";
+
+  function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+
+  let selectedRole = "";
+
+  function showLogin(role) {
+    selectedRole = role;
+    document.getElementById("roleSelect").classList.add("hidden");
+    document.getElementById("loginForm").classList.remove("hidden");
+    document.getElementById("loginTitle").innerText = role + " Login";
+  }
+
+  function goBack() {
+    document.getElementById("loginForm").classList.add("hidden");
+    document.getElementById("roleSelect").classList.remove("hidden");
+  }
+
+  // ================= LOGIN (NO OTP) =================
+  async function handleLogin(event) {
+    
+    event.preventDefault();
+if(!selectedRole){
+  alert("Please select a role first.");
+  return;
+}
+
+    const email = document.getElementById("emailInp").value.trim();
+    const password = document.getElementById("passInp").value;
+
+    if (!email || !password) {
+      alert("Please enter email and password");
+      return;
+    }
+
+    try {
+      const res = await fetch(API_BASE + "/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        alert(data.message || "Login failed");
+        return;
+      }
+
+      localStorage.setItem("wh_token", data.token);
+      localStorage.setItem("wh_user", JSON.stringify(data.user));
+
+
+      const backendRole = normalizeRole(data.user.role);
+const chosenRole = normalizeRole(selectedRole);
+
+if(chosenRole && backendRole !== chosenRole){
+  alert(`You selected "${selectedRole}" but your account is "${backendRole}".`);
+  return;
+}
+
+localStorage.setItem("wh_role", backendRole);
+data.user.role = backendRole;
+
+await runLoginAnimationAndRedirect(backendRole);
+
+    } catch (err) {
+      console.error(err);
+      alert("Backend not reachable. Make sure server is running.");
+    }
+  }
+
+  // ================= GOOGLE LOGIN (UNCHANGED) =================
+
+  // ================= ANIMATION + REDIRECT =================
+  async function runLoginAnimationAndRedirect(role) {
+    const overlay = document.getElementById('loginOverlay');
+    const logoWrap = document.getElementById('logoWrap');
+    const planeWrap = document.getElementById('planeWrap');
+    const progI = overlay.querySelector('.login-progress > i');
+
+    overlay.classList.add('show');
+
+    logoWrap.classList.remove('float-out');
+    planeWrap.style.opacity = 0;
+    progI.style.animation = 'none';
+    progI.offsetWidth;
+    progI.style.animation = 'prog 4600ms linear forwards';
+
+    await sleep(3900);
+
+    logoWrap.classList.add('float-out');
+    planeWrap.style.opacity = 1;
+    planeWrap.style.animation = 'plane-flight 900ms cubic-bezier(.2,.9,.2,1) forwards';
+
+    await sleep(900);
+
+    overlay.classList.remove('show');
+role = normalizeRole(role);
+
+switch(role){
+  case 'admin':
+    window.location.href = "admin.html";
+    break;
+  case 'guider':
+    window.location.href = "guide-panel.html";
+    break;
+  default:
+    window.location.href = "local-user.html";
+}
+
+  }
+  function normalizeRole(role){
+  role = String(role || '').toLowerCase();
+
+  if(role === 'guide' || role === 'guider') return 'guider';
+  if(role === 'admin') return 'admin';
+
+  return 'user';
+}
+
+
+</script>
+
+</body>
+</html>

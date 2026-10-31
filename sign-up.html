@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sign Up | Wander Hub Ai</title>
+   <link rel="icon" type="image/png" href="templates/logofinal.png">
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Google OAuth Library -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    :root{
+      --accent-1:#f97316;
+      --accent-2:#06b6d4;
+      --accent-700:#c2410c;
+    }
+    body { font-family: "Plus Jakarta Sans", sans-serif; background: linear-gradient(180deg,#fb923c 0%, #7dd3fc 50%, #fb923c 100%); min-height:100vh; }
+
+    /* Page visuals */
+    .glass { background: rgba(255,255,255,0.80); backdrop-filter: blur(6px); box-shadow: 0 6px 30px rgba(12,40,40,0.08); }
+    .rounded-3xl { border-radius: 1.5rem; }
+
+    /* Google Button Styling */
+    .google-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: white;
+      border: 2px solid #e5e7eb;
+      color: #374151;
+      font-weight: 600;
+      padding: 12px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    .google-btn:hover {
+      background: #f9fafb;
+      border-color: #d1d5db;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .google-btn img {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 20px 0;
+      color: #9ca3af;
+    }
+    .divider::before,
+    .divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: #e5e7eb;
+    }
+    .divider span {
+      padding: 0 16px;
+      font-size: 14px;
+    }
+
+    /* animation overlay (copied from login) */
+    .login-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(180deg, rgba(255,255,255,0.88), rgba(255,255,255,0.96));
+      z-index: 9999;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      perspective: 1100px;
+    }
+    .login-overlay.show { display:flex; }
+
+    .anim-stage { display:flex; flex-direction:column; align-items:center; gap:12px; transform-style: preserve-3d; }
+
+    .logo-anim-wrap {
+      width: 200px; height: 200px; border-radius: 22px;
+      background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.65), rgba(255,255,255,0.3));
+      display:flex; align-items:center; justify-content:center;
+      box-shadow: 0 30px 80px rgba(6, 182, 212, 0.12); transform-origin:center;
+      will-change: transform, opacity; animation: logo-pop 900ms cubic-bezier(.2,.9,.3,1);
+    }
+    .logo-anim-wrap img { width:130px; height:130px; object-fit:contain; filter: drop-shadow(0 12px 28px rgba(0,0,0,0.12)); }
+
+    .login-anim-text { margin-top:6px; font-weight:700; color:#334155; text-align:center; font-size:16px; opacity:0; transform:translateY(6px); animation: text-fade 700ms 400ms forwards; }
+
+    .plane-wrap { position:absolute; width:120px; height:120px; left:calc(50% - 60px); bottom:calc(50% - 60px); pointer-events:none; transform-style: preserve-3d; opacity:0; will-change: transform, opacity; }
+
+    .login-progress { margin-top:8px; width:220px; height:8px; border-radius:999px; background: rgba(0,0,0,0.06); overflow:hidden; }
+    .login-progress > i { display:block; height:100%; width:0%; background: linear-gradient(90deg,var(--accent-1),var(--accent-2)); border-radius:999px; animation: prog 4600ms linear forwards; }
+
+    @keyframes logo-pop {
+      0%   { transform: scale(.5) rotate(-8deg); opacity: 0; }
+      60%  { transform: scale(1.08) rotate(0deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    @keyframes logo-float-out {
+      0%   { transform: translateY(0) scale(1) rotateX(0deg); opacity: 1; filter: blur(0); }
+      40%  { transform: translateY(-30px) scale(1.03) rotateX(6deg); opacity: 0.95; filter: blur(.3px); }
+      100% { transform: translateY(-180px) translateX(80px) scale(.8) rotateX(18deg) rotateZ(6deg); opacity: 0; filter: blur(2.5px); }
+    }
+    @keyframes text-fade { to { opacity: 1; transform: translateY(0); } }
+    @keyframes prog { to { width:100%; } }
+
+    @keyframes plane-flight {
+      0%   { transform: translate3d(-10px, 40px, 0) rotateZ(-10deg) rotateX(0deg) scale(.9); opacity: 0; }
+      10%  { opacity: 1; }
+      40%  { transform: translate3d(20px, -10px, 40px) rotateZ(6deg) rotateX(6deg) scale(1); }
+      80%  { transform: translate3d(180px, -160px, 160px) rotateZ(18deg) rotateX(18deg) scale(.85); opacity: 0.7; }
+      100% { transform: translate3d(320px, -320px, 320px) rotateZ(28deg) rotateX(28deg) scale(.6); opacity: 0; }
+    }
+
+    .logo-anim-wrap.float-out + .login-anim-text,
+    .logo-anim-wrap.float-out ~ .login-progress { opacity: 0; transition: opacity .3s; }
+
+    @media (max-width:480px){
+      .logo-anim-wrap{width:140px;height:140px;}
+      .login-progress{width:160px;}
+      .plane-wrap{width:80px;height:80px; left:calc(50% - 40px); bottom:calc(50% - 40px);}
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="flex items-center justify-between px-10 py-4 bg-white/80 backdrop-blur-md shadow-md">
+    <div class="flex items-center gap-3 text-orange-700 font-bold text-lg">
+      <img src="templates/logofinal.png" class="w-10 h-10 rounded-full object-contain bg-white shadow-lg" alt="Wander Hub Logo">
+      Wander Hub Ai
+    </div>
+
+    <!-- THEMED LOGIN BUTTON -->
+    <button
+      class="bg-gradient-to-r from-orange-500 to-sky-400 text-white font-semibold rounded-full px-4 py-2 shadow-md hover:scale-[1.03] transition-transform"
+      onclick="window.location.href='login.html'">
+      Log In
+    </button>
+  </header>
+
+  <!-- Main Signup Section -->
+  <main class="flex flex-1 justify-center items-center px-5 py-10">
+    <div class="glass rounded-3xl p-10 w-full max-w-md transition transform hover:scale-[1.02]">
+      <h2 class="text-center text-3xl font-bold text-orange-700 mb-2">Create Your Account</h2>
+      <p class="text-center text-gray-500 mb-8">Join the community and start exploring</p>
+
+      <div class="divider">
+        <span>or</span>
+      </div>
+
+      <!-- Signup Form -->
+      <form id="signupForm" class="space-y-5" onsubmit="handleSignup(event)">
+        <div>
+          <label class="block text-gray-700 font-medium mb-2">Full Name</label>
+          <input id="name" type="text" placeholder="Enter your full name" required
+            class="w-full rounded-xl border border-gray-200 bg-sky-50 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-400 h-12 px-4 outline-none transition" />
+        </div>
+
+        <div>
+          <label class="block text-gray-700 font-medium mb-2">Email</label>
+          <input id="email" type="email" placeholder="Enter your email" required
+            class="w-full rounded-xl border border-gray-200 bg-sky-50 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-400 h-12 px-4 outline-none transition" />
+        </div>
+
+        <!-- UPDATED: Role selection with admin -->
+        <div>
+          <label class="block text-gray-700 font-medium mb-2">Sign up as</label>
+          <div class="flex flex-col gap-2">
+            <label class="flex items-center gap-2 text-sm text-gray-700">
+              <input type="radio" name="roleSelect" value="user" checked>
+              <span>User</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm text-gray-700">
+              <input type="radio" name="roleSelect" value="guider">
+              <span>Guider</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm text-gray-700">
+              <input type="radio" name="roleSelect" value="admin">
+              <span>Admin</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4">
+          <div>
+            <label class="block text-gray-700 font-medium mb-2">Password</label>
+            <input id="password" type="password" placeholder="Enter password" required
+              class="w-full rounded-xl border border-gray-200 bg-sky-50 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-400 h-12 px-4 outline-none transition" />
+          </div>
+
+          <div>
+            <label class="block text-gray-700 font-medium mb-2">Confirm Password</label>
+            <input id="confirmPassword" type="password" placeholder="Confirm password" required
+              class="w-full rounded-xl border border-gray-200 bg-sky-50 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-400 h-12 px-4 outline-none transition" />
+          </div>
+        </div>
+
+        <button id="signupBtn" type="submit" class="w-full h-12 bg-gradient-to-r from-orange-500 to-sky-400 hover:from-orange-600 hover:to-sky-500 text-white font-bold rounded-full shadow-lg transition-transform hover:scale-[1.02]">
+          Sign Up
+        </button>
+
+        <p class="text-center text-sm text-gray-600 mt-3">
+          Already have an account?
+          <a href="login.html" class="text-orange-600 font-semibold hover:underline">Log In</a>
+        </p>
+
+        <p class="text-center text-xs text-gray-500 mt-6">
+          By signing up, you agree to our
+          <a href="#" class="text-orange-500 hover:underline">Terms of Service</a>
+          and
+          <a href="#" class="text-orange-500 hover:underline">Privacy Policy</a>.
+        </p>
+      </form>
+    </div>
+  </main>
+
+  <!-- Animated overlay (logo + plane + text + progress) -->
+  <div id="signupOverlay" class="login-overlay" aria-hidden="true" role="status" aria-live="polite">
+    <div class="anim-stage" role="presentation">
+      <div style="position:relative; width:280px; height:220px; display:flex; align-items:center; justify-content:center;">
+        <div id="logoWrap" class="logo-anim-wrap" aria-hidden="true">
+          <img src="templates/logofinal.png" alt="Wander Hub Logo">
+        </div>
+
+        <div id="planeWrap" class="plane-wrap" aria-hidden="true">
+          <svg viewBox="0 0 64 64" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <g transform="translate(0,0)">
+              <path d="M4 30 L60 6 L40 34 L60 58 L4 30 Z" fill="#ff7a00" opacity="0.95"></path>
+              <path d="M4 30 L30 34 L4 30 Z" fill="#0ea5e9" opacity="0.95"></path>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <div id="signupText" class="login-anim-text">Welcome — preparing your dashboard</div>
+      <div class="login-progress" aria-hidden="true"><i></i></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-center py-4 text-sm text-gray-600 bg-white/60 backdrop-blur-md">
+    © 2025 Wander Hub Ai — All Rights Reserved
+  </footer>
+
+  <script>
+
+    function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+    // Handle Google Sign Up
+    async function handleGoogleSignUp() {
+      try {
+        // Initialize Google OAuth
+        google.accounts.id.initialize({
+          client_id: "YOUR_GOOGLE_CLIENT_ID", // Replace with your actual client ID
+          callback: handleGoogleResponse,
+          ux_mode: "popup",
+          context: "signup"
+        });
+
+        // Show Google signup prompt
+        google.accounts.id.prompt((notification) => {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            // Fallback to regular signup
+            alert("Google signup not available. Please use the form below.");
+          }
+        });
+
+      } catch (error) {
+        console.error("Google signup error:", error);
+        alert("Error initializing Google signup. Please use the form.");
+      }
+    }
+
+    // Handle Google OAuth response
+    async function handleGoogleResponse(response) {
+      const googleBtn = document.querySelector('.google-btn');
+      const originalText = googleBtn.innerHTML;
+      googleBtn.disabled = true;
+      googleBtn.innerHTML = 'Creating account...';
+
+      try {
+        const res = await fetch("http://localhost:5000/api/auth/google", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ token: response.credential })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.message || "Google signup failed.");
+        }
+
+        // Save user data
+        localStorage.setItem("wh_token", data.token);
+        localStorage.setItem("wh_user", JSON.stringify(data.user));
+        localStorage.setItem("wh_role", data.user.role);
+        localStorage.setItem("wh_just_logged_in", "1");
+        localStorage.setItem("wh_google_signup", "true");
+
+        // Show success and run animation
+        await runGoogleSignupAnimationAndRedirect(data.user.role);
+
+      } catch (err) {
+        console.error("Google signup error:", err);
+        alert(err.message || "Google signup failed. Please try the form.");
+      } finally {
+        googleBtn.disabled = false;
+        googleBtn.innerHTML = originalText;
+      }
+    }
+
+    // Animation for Google signup
+    async function runGoogleSignupAnimationAndRedirect(role) {
+      const overlay = document.getElementById('signupOverlay');
+      const logoWrap = document.getElementById('logoWrap');
+      const planeWrap = document.getElementById('planeWrap');
+      const progI = overlay.querySelector('.login-progress > i');
+      const textEl = document.getElementById('signupText');
+      
+      // Update text for Google signup
+      textEl.textContent = "Welcome — setting up your account";
+
+      overlay.classList.add('show');
+      overlay.setAttribute('aria-hidden','false');
+
+      // Reset states
+      logoWrap.classList.remove('float-out');
+      planeWrap.style.opacity = 0;
+      planeWrap.style.animation = 'none';
+      progI.style.animation = 'none';
+
+      void progI.offsetWidth; // force reflow
+      progI.style.animation = 'prog 4600ms linear forwards';
+
+      await sleep(900);
+      await sleep(3000);
+
+      logoWrap.classList.add('float-out');
+      planeWrap.style.opacity = 1;
+      planeWrap.style.animation = 'plane-flight 900ms cubic-bezier(.2,.9,.2,1) forwards';
+
+      await sleep(920);
+
+      overlay.classList.remove('show');
+      overlay.setAttribute('aria-hidden','true');
+
+      // Redirect based on role
+      role = (role || "").toLowerCase();
+      if (role === 'admin') {
+        window.location.href = 'admin.html';
+      } else if (role === 'guider') {
+        window.location.href = 'guide-panel.html';
+      } else {
+        window.location.href = 'local-user.html';
+      }
+    }
+
+    // only handles animation + redirect AFTER backend success
+    async function runSignupAnimationAndRedirect() {
+      const btn = document.getElementById('signupBtn');
+      const overlay = document.getElementById('signupOverlay');
+      const logoWrap = document.getElementById('logoWrap');
+      const planeWrap = document.getElementById('planeWrap');
+      const progI = overlay.querySelector('.login-progress > i');
+
+      btn.disabled = true;
+      btn.classList.add('opacity-80','cursor-not-allowed');
+
+      overlay.classList.add('show');
+      overlay.setAttribute('aria-hidden','false');
+
+      logoWrap.classList.remove('float-out');
+      planeWrap.style.opacity = 0;
+      planeWrap.style.animation = 'none';
+      progI.style.animation = 'none';
+
+      void progI.offsetWidth; // force reflow
+      progI.style.animation = 'prog 4600ms linear forwards';
+
+      await sleep(900);
+      await sleep(3000);
+
+      logoWrap.classList.add('float-out');
+      planeWrap.style.opacity = 1;
+      planeWrap.style.animation = 'plane-flight 900ms cubic-bezier(.2,.9,.2,1) forwards';
+
+      await sleep(920);
+
+      overlay.classList.remove('show');
+      overlay.setAttribute('aria-hidden','true');
+
+      localStorage.setItem('wh_signed_up', '1');
+
+      window.location.href = 'login.html';
+    }
+
+    // Signup with backend + then animation
+    async function handleSignup(e){
+      e.preventDefault();
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const pass = document.getElementById('password').value;
+      const confirm = document.getElementById('confirmPassword').value;
+      const roleInput = document.querySelector('input[name="roleSelect"]:checked');
+      const role = roleInput ? roleInput.value : "user";
+
+      if(!name || !email || !pass || !confirm){
+        alert('Please fill all fields.');
+        return;
+      }
+      if(pass !== confirm){
+        alert('Passwords do not match.');
+        return;
+      }
+      if(pass.length < 6){
+        alert('Password should be at least 6 characters.');
+        return;
+      }
+
+      const btn = document.getElementById('signupBtn');
+      btn.disabled = true;
+      btn.classList.add('opacity-80','cursor-not-allowed');
+
+      try {
+        const res = await fetch("http://localhost:5000/api/signup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name: name,
+            email: email,
+            password: pass,
+            role: role
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.message || "Signup failed.");
+        }
+
+        alert(data.message || "Signup successful! Redirecting to login...");
+
+        await runSignupAnimationAndRedirect();
+
+      } catch (err) {
+        console.error("Signup error:", err);
+        alert(err.message || "Error connecting to server.");
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('opacity-80','cursor-not-allowed');
+      }
+    }
+  </script>
+</body>
+</html>
