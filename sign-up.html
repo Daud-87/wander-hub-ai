@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="config.js"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Sign Up | Wander Hub Ai</title>
@@ -289,7 +290,7 @@
       googleBtn.innerHTML = 'Creating account...';
 
       try {
-        const res = await fetch("http://localhost:5000/api/auth/google", {
+        const res = await fetch(window.WH_API_BASE + "/api/auth/google", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -436,7 +437,7 @@
       btn.classList.add('opacity-80','cursor-not-allowed');
 
       try {
-        const res = await fetch("http://localhost:5000/api/signup", {
+        const res = await fetch(window.WH_API_BASE + "/api/signup", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"

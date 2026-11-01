@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="config.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login | Wander Hub Ai</title>
@@ -291,7 +292,7 @@
   </footer>
 
 <script>
-  const API_BASE = "http://localhost:5000";
+  const API_BASE = window.WH_API_BASE;
 
   function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 

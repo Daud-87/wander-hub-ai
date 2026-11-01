@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+<script src="config.js"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Profile | Wander Hub Ai</title>
@@ -729,7 +730,7 @@ const LASTREAD_KEY = `wanderhub_lastread_v1_${currentUserId}`;
             const form = new FormData();
 form.append("image", f);
 
-fetch("http://localhost:5000/api/upload/image", {
+fetch(window.WH_API_BASE + "/api/upload/image", {
   method: "POST",
   body: form
 })
@@ -786,7 +787,7 @@ fetch("http://localhost:5000/api/upload/image", {
   const form = new FormData();
   form.append("image", f);
 
-  fetch("http://localhost:5000/api/upload/image", {
+  fetch(window.WH_API_BASE + "/api/upload/image", {
     method: "POST",
     body: form
   })
@@ -833,7 +834,7 @@ fetch("http://localhost:5000/api/upload/image", {
       list.forEach(t => {
         const src = t.img.startsWith('http')
   ? t.img
-: 'http://localhost:5000' + t.img;
+: window.WH_API_BASE + t.img;
         const name = t.name || t.title || '';
         const card = document.createElement('div');
         card.className = 'tour-card bg-cover bg-center aspect-video cursor-pointer transform hover:scale-[1.02] transition';
@@ -869,7 +870,7 @@ fetch("http://localhost:5000/api/upload/image", {
             const form = new FormData();
 form.append("image", f);
 
-fetch("http://localhost:5000/api/upload/image", {
+fetch(window.WH_API_BASE + "/api/upload/image", {
   method: "POST",
   body: form
 })
@@ -937,7 +938,7 @@ fileInput.addEventListener("change", async e => {
   const form = new FormData();
   form.append("image", file);
 
-  const res = await fetch("http://localhost:5000/api/upload/image", {
+  const res = await fetch(window.WH_API_BASE + "/api/upload/image", {
     method: "POST",
     body: form
   });
@@ -946,7 +947,7 @@ fileInput.addEventListener("change", async e => {
   if (!data.success) return alert("Image upload failed");
 
   // 🔴 IMPORTANT: make URL absolute
-  const fullUrl = "http://localhost:5000" + data.url;
+  const fullUrl = window.WH_API_BASE + data.url;
 
   // 🔵 show image immediately
   avatarImg.src = fullUrl;

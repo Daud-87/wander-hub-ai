@@ -1,0 +1,6 @@
+project-root
+app1.py
+tts_audio
+backend/node_modules
+backend/users.json
+backend/resetTokens.json

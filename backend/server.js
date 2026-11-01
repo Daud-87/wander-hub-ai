@@ -14,6 +14,11 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// On Vercel the project folder is read-only; only /tmp is writable (and it is temporary).
+const DATA_DIR = process.env.VERCEL ? "/tmp" : __dirname;
+const UPLOAD_DIR = path.join(DATA_DIR, "uploads");
+fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
 const JWT_SECRET = process.env.JWT_SECRET || "wander_hub_ai_secret_key";
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "test_client_id";
 
@@ -28,11 +33,11 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(UPLOAD_DIR));
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "uploads"));
+    cb(null, UPLOAD_DIR);
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
@@ -58,8 +63,8 @@ app.post("/api/upload/image", upload.single("image"), (req, res) => {
 
 
 // Path to files
-const usersFilePath = path.join(__dirname, "users.json");
-const resetTokensFilePath = path.join(__dirname, "resetTokens.json");
+const usersFilePath = path.join(DATA_DIR, "users.json");
+const resetTokensFilePath = path.join(DATA_DIR, "resetTokens.json");
 
 // Helper: read users from file
 function readUsers() {
@@ -544,8 +549,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
+// Start server (skipped when running as a Vercel function)
+if (require.main === module) app.listen(PORT, () => {
   console.log(`========================================`);
   console.log(`🚀  Server running on http://localhost:${PORT}`);
   console.log(`🔐  JWT Secret: ${JWT_SECRET ? "Loaded" : "Using default"}`);
@@ -560,3 +565,5 @@ app.listen(PORT, () => {
   console.log(`    • POST /api/auth/reset-password  - Reset password`);
   console.log(`========================================`);
 });
+
+module.exports = app;
