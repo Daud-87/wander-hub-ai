@@ -1,12 +1,16 @@
 {
   "version": 2,
-  "framework": null,
-  "rewrites": [
-    { "source": "/", "destination": "/landing.html" },
-    { "source": "/api/(.*)", "destination": "/api/index.js" },
-    { "source": "/uploads/(.*)", "destination": "/api/index.js" }
+  "builds": [
+    { "src": "api/index.js", "use": "@vercel/node", "config": { "includeFiles": ["backend/**"] } },
+    { "src": "*.html", "use": "@vercel/static" },
+    { "src": "config.js", "use": "@vercel/static" },
+    { "src": "static/**", "use": "@vercel/static" },
+    { "src": "templates/**", "use": "@vercel/static" }
   ],
-  "functions": {
-    "api/index.js": { "includeFiles": "backend/**" }
-  }
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/index.js" },
+    { "src": "/uploads/(.*)", "dest": "/api/index.js" },
+    { "handle": "filesystem" },
+    { "src": "/", "dest": "/landing.html" }
+  ]
 }
