@@ -454,6 +454,8 @@ app.post("/api/auth/verify-token", async (req, res) => {
 
 // ========== GET USER BY ID ==========
 app.get("/api/user/:id", (req, res) => {
+  // Not exposed on the public Vercel deployment (would list every signup).
+  if (process.env.VERCEL) return res.status(404).json({ success: false, message: "Endpoint not found" });
   try {
     const { id } = req.params;
     const users = readUsers();
@@ -484,6 +486,8 @@ app.get("/api/user/:id", (req, res) => {
 
 // ========== GET ALL USERS (ADMIN) ==========
 app.get("/api/users", (req, res) => {
+  // Not exposed on the public Vercel deployment (would list every signup).
+  if (process.env.VERCEL) return res.status(404).json({ success: false, message: "Endpoint not found" });
   try {
     const users = readUsers();
     
