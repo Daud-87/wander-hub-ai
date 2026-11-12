@@ -205,13 +205,35 @@
 
   </style>
 <link rel="stylesheet" href="responsive.css">
+<style>
+  /* ===== Mobile admin layout (side menu drawer) ===== */
+  #whSideBackdrop { display:none; }
+  body > div > header { position:relative; z-index:10; }
+  .export-menu { background:#fff !important; z-index:100002 !important; }
+  @media (max-width: 767px) {
+    #sidebar.wh-open { display:block !important; position:fixed; top:0; left:0; bottom:0; width:82%; max-width:300px; z-index:100001; overflow-y:auto; box-shadow:0 0 40px rgba(0,0,0,.35); }
+    #whSideBackdrop.wh-open { display:block; position:fixed; inset:0; background:rgba(2,6,23,.5); z-index:100000; }
+    #sidebar.wh-open .sidebar-list button { padding:14px 16px; font-size:16px; }
+    #sidebarCollapse { display:none !important; }
+    #openManageUsersBtn { display:none !important; }
+    #clock { padding:6px 10px !important; font-size:13px; }
+    #notifications { right:12px !important; left:12px; top:12px !important; }
+    .panel { padding:10px !important; overflow-y:auto; align-items:flex-start !important; }
+    .panel > div { max-width:100% !important; }
+    #inboxPanel > div > div.flex { flex-direction:column; }
+    #inboxPanel aside { width:100% !important; max-height:38%; border-right:0; border-bottom:1px solid rgba(0,0,0,.08); }
+    .export-menu { right:0 !important; left:auto !important; max-width:80vw; }
+    main table { display:block; overflow-x:auto; }
+  }
+</style>
 </head>
 
 <body class="min-h-screen bg-gradient-to-br from-orange-400 via-sky-200 to-orange-100 text-slate-900 accent-color">
   <div id="notifications" class="fixed top-6 right-6 z-50 flex flex-col gap-3"></div>
   <div class="min-h-screen flex flex-col">
-<header class="flex items-center justify-between px-6 py-4 bg-white/70 backdrop-blur-md border-b border-white/20">
-  <div class="flex items-center gap-4">
+<header class="flex flex-wrap items-center justify-between gap-2 px-3 md:px-6 py-3 md:py-4 bg-white/70 backdrop-blur-md border-b border-white/20">
+  <div class="flex items-center gap-3">
+    <button id="whSideToggle" type="button" aria-label="Open menu" aria-expanded="false" class="md:hidden h-10 w-10 rounded-xl glass flex items-center justify-center text-orange-700 text-xl shadow-md">&#9776;</button>
     <div class="flex items-center gap-3">
       <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-gradient-to-tr from-orange-500 to-sky-400 text-white shadow-lg">
         <img src="templates/logofinal.png"
@@ -292,8 +314,10 @@
 
     <div class="flex flex-1">
       <!-- SIDEBAR -->
+<div id="whSideBackdrop"></div>
 <aside id="sidebar" class="w-72 bg-gradient-to-b from-orange-100 to-orange-50 p-3 hidden md:block">
-  <nav class="mt-6 sidebar-list space-y-2">
+  <button id="whSideClose" type="button" class="md:hidden w-full text-right px-3 py-1 text-slate-600 text-sm">&#10005; Close menu</button>
+  <nav class="mt-2 md:mt-6 sidebar-list space-y-2">
 
     <!-- Home (Active) -->
     <button id="btnHome" class="flex items-center gap-3 px-3 py-2 rounded-lg text-orange-600 font-medium" title="Home">
@@ -367,10 +391,10 @@
 </aside>
 
       <!-- MAIN -->
-      <main class="flex-1 p-6">
+      <main class="flex-1 p-3 md:p-6 min-w-0">
         <!-- top row -->
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-          <div class="flex items-center gap-4">
+          <div class="flex flex-wrap items-center gap-3 md:gap-4">
             <div class="rounded-2xl p-4 bg-white/70 glass glow">
               <div class="text-sm text-slate-600">Welcome back,</div>
               <div class="text-lg font-bold text-orange-700">Admin</div>
@@ -382,7 +406,7 @@
           </div>
 
           <!-- small counters -->
-          <div class="flex gap-4">
+          <div class="flex flex-wrap gap-3 md:gap-4">
             <div class="p-4 rounded-2xl glass text-center min-w-[140px]">
               <div class="text-sm text-slate-600">Total Bookings</div>
               <div class="text-2xl font-bold text-orange-600" id="cntBookings">0</div>
@@ -739,18 +763,18 @@
 
   <!-- Users/Guiders modal (reused) -->
   <div id="entityModal" class="panel hidden">
-    <div class="bg-white rounded-2xl w-full max-w-2xl p-6">
+    <div class="bg-white rounded-2xl w-full max-w-2xl p-4 md:p-6 max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between mb-4">
         <h3 id="entityTitle" class="text-lg font-bold">Manage</h3>
         <button id="closeEntity" class="px-3 py-2 rounded bg-white/6">Close</button>
       </div>
 
-      <div class="flex gap-4">
-        <div class="w-1/2">
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="w-full md:w-1/2">
           <h4 class="font-semibold mb-2">List</h4>
           <ul id="entityList" class="space-y-2 max-h-64 overflow-auto"></ul>
         </div>
-        <div class="w-1/2">
+        <div class="w-full md:w-1/2">
           <h4 class="font-semibold mb-2">Add / Edit</h4>
           <input id="entityName" placeholder="Full name" class="w-full p-2 rounded border mb-2" />
           <input id="entityContact" placeholder="Contact (email/phone)" class="w-full p-2 rounded border mb-2" />
@@ -4006,6 +4030,7 @@ updateNotifBadge();
 function loadAdminUsers(){
   const users = JSON.parse(localStorage.getItem('wh_users') || '[]');
   const list = document.getElementById('usersList'); // left column container
+  if (!list) return;
   list.innerHTML = '';
 
   users.forEach((u, index) => {
@@ -4120,5 +4145,27 @@ function createBookingFromPayment(payment) {
 
 </script>
 <script src="responsive.js"></script>
+
+<script>
+(function () {
+  var side = document.getElementById('sidebar');
+  var back = document.getElementById('whSideBackdrop');
+  var burger = document.getElementById('whSideToggle');
+  if (!side || !burger) return;
+  function setOpen(open) {
+    side.classList.toggle('wh-open', open);
+    if (back) back.classList.toggle('wh-open', open);
+    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    document.body.style.overflow = open ? 'hidden' : '';
+  }
+  burger.addEventListener('click', function (e) { e.stopPropagation(); setOpen(!side.classList.contains('wh-open')); });
+  if (back) back.addEventListener('click', function () { setOpen(false); });
+  var c = document.getElementById('whSideClose'); if (c) c.addEventListener('click', function () { setOpen(false); });
+  // tapping any menu item runs its normal action and then closes the drawer
+  side.addEventListener('click', function (e) { if (e.target.closest('button') && !e.target.closest('#whSideClose')) setTimeout(function () { setOpen(false); }, 0); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
+  window.addEventListener('resize', function () { if (window.innerWidth >= 768) setOpen(false); });
+})();
+</script>
 </body>
 </html>
