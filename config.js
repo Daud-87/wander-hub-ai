@@ -9,10 +9,10 @@
 
   // Flask AI Predictor (project-root/app.py). Paste its public URL here after hosting it
   // (for example on Render): 'https://your-ai-predictor.onrender.com'
-  var AI_PREDICTOR_URL = '';
+  var AI_PREDICTOR_URL = 'https://wander-hub-predictor.vercel.app';
   window.WH_AI_URL = local ? 'http://127.0.0.1:5000' : AI_PREDICTOR_URL;
 
   // Flask translation helper (app1.py). Paste its public URL + '/helper' when hosted.
-  var HELPER_URL = '';
+  var HELPER_URL = 'https://wander-hub-helper.vercel.app/helper';
   window.WH_HELPER_URL = local ? 'http://127.0.0.1:5001/helper' : HELPER_URL;
 })();
