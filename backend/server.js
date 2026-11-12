@@ -173,6 +173,10 @@ app.post("/api/signup", async (req, res) => {
 
 
 // ========== LOGIN ==========
+function isAdminEmail(email) {
+  return (process.env.ADMIN_EMAILS || "").toLowerCase().split(",").map(e => e.trim()).filter(Boolean).includes(String(email || "").toLowerCase());
+}
+
 app.post("/api/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -186,6 +190,11 @@ app.post("/api/login", async (req, res) => {
     const match = await bcrypt.compare(password, user.password);
     if (!match) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
+    }
+
+    if (isAdminEmail(user.email) && user.role !== "admin") {
+      user.role = "admin";
+      writeUsers(users);
     }
 
     const token = jwt.sign(
