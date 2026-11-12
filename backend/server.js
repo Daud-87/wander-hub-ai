@@ -182,6 +182,26 @@ app.post("/api/login", async (req, res) => {
     const { email, password } = req.body;
     const users = readUsers();
 
+    // Permanent admin login: ADMIN_EMAILS + ADMIN_PASSWORD (Vercel settings) always work,
+    // even after the temporary user storage has been reset.
+    const adminPw = process.env.ADMIN_PASSWORD || "";
+    if (adminPw && isAdminEmail(email) && typeof password === "string") {
+      const h = v => crypto.createHash("sha256").update(String(v)).digest();
+      if (crypto.timingSafeEqual(h(password), h(adminPw))) {
+        const em = email.toLowerCase();
+        let adm = users.find(u => u.email === em);
+        const hash = await bcrypt.hash(adminPw, 10);
+        if (!adm) {
+          adm = { id: Date.now().toString(), name: "Admin", email: em, password: hash, role: "admin", createdAt: new Date().toISOString() };
+          users.push(adm);
+        } else {
+          adm.password = hash;
+          adm.role = "admin";
+        }
+        writeUsers(users);
+      }
+    }
+
     const user = users.find(u => u.email === email.toLowerCase());
     if (!user) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
