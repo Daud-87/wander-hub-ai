@@ -143,6 +143,8 @@ app.post("/api/signup", async (req, res) => {
       return res.status(409).json({ success: false, message: "Email already exists" });
     }
 
+    const adminEmails = (process.env.ADMIN_EMAILS || "").toLowerCase().split(",").map(e => e.trim()).filter(Boolean);
+    if (role === "admin" && !adminEmails.includes(email)) role = "user";
     role = ["user", "admin", "guider"].includes(role) ? role : "user";
     const hashedPassword = await bcrypt.hash(password, 10);
 

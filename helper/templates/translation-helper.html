@@ -1,0 +1,563 @@
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wander Hub Ai | Translator & Chat</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: "Plus Jakarta Sans", sans-serif; }
+
+      /* Chat popup — bigger, resizable */
+      .chatbot-box{
+        display:none; position:fixed; bottom:30px; right:30px;
+        width:420px; height:560px; max-width:90vw; max-height:85vh;
+        background:#fff; border-radius:1rem; box-shadow:0 10px 30px rgba(0,0,0,.2);
+        overflow:hidden; flex-direction:column; justify-content:space-between;
+        z-index:9999; resize:both;
+      }
+      /* KEY FIX: let inner flex column shrink so #chatArea can scroll */
+      .chatbot-box .flex.flex-col{ height:100%; min-height:0; }
+      /* Make the message area scrollable and smooth */
+      #chatArea{ flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain; scrollbar-gutter:stable; }
+
+      .voice-pulse { animation:pulse 1s infinite; }
+      @keyframes pulse { 0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)} }
+      /* ===== Chat message bubbles ===== */
+.chat-msg {
+  max-width: 90%;
+  padding: 6px 10px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  font-size: 14px;
+  line-height: 1.4;
+  background: #f8fafc;
+  color: #1f2937;
+}
+
+.chat-user {
+  margin-left: auto;
+  text-align: right;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+}
+
+.chat-ai {
+  margin-right: auto;
+  background: #f1f5f9;
+  border: 1px solid #e5e7eb;
+}
+
+
+/* ===== Audio inside chat ===== */
+.chat-msg audio {
+  width: 100%;
+  max-width: 100%;
+  display: block;
+}
+
+    </style>
+  </head>
+
+  <body class="min-h-screen bg-gradient-to-br from-orange-400 via-sky-200 to-orange-100 flex flex-col text-[#181410]">
+
+    <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md shadow-md">
+      <div class="container mx-auto px-6 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-10">
+<img
+  src="/static/images/logofinal.png"
+  alt="Wander Hub Logo"
+  class="w-10 h-10 object-contain rounded-full bg-white shadow-lg"
+/>
+
+          <div class="text-orange-700 font-bold text-lg">Wander Hub Ai</div>
+        </div>
+
+        
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex justify-center items-center flex-1 px-5 py-10">
+      <div class="bg-white/90 backdrop-blur-md shadow-2xl rounded-3xl p-10 w-full max-w-lg transition transform hover:scale-[1.02]">
+        <h2 class="text-center text-3xl font-bold text-orange-700 mb-4">🌍 Wander Hub AI Translator & Chat</h2>
+        <p class="text-center text-gray-600 mb-8">Translate between multiple languages, speak using your voice, or ask our AI for travel guidance!</p>
+
+        <!-- Language Selection -->
+        <div><select id="sourceLang"
+  class="form-input w-full bg-sky-50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400">
+</select></div>
+<br>
+<div><select id="targetLang"
+  class="form-input w-full bg-sky-50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400">
+</select>
+</div>
+      <br>  <!-- Input Area -->
+<textarea
+  id="inputText"
+  placeholder="Enter words to translate or speak..."
+  class="w-full min-h-[260px] max-h-[320px] rounded-xl bg-sky-50 p-4 resize-y focus:outline-none focus:ring-2 focus:ring-orange-400"
+></textarea>
+
+
+        <!-- Translate Button -->
+        <button onclick="translateText()" class="mt-5 w-full bg-gradient-to-r from-orange-500 to-sky-400 hover:from-orange-600 hover:to-sky-500 text-white font-bold py-3 rounded-full shadow-lg transition-transform hover:scale-[1.02]">Translate</button>
+
+        <!-- Output -->
+        <textarea id="outputText" placeholder="Translation appears here..." readonly class="w-full min-h-[100px] mt-5 rounded-xl bg-sky-50 p-4 resize-none focus:outline-none"></textarea>
+
+        <!-- Feature Buttons -->
+        <div class="flex gap-6 justify-center mt-6">
+          <div class="flex flex-col items-center gap-2">
+            <button id="voiceBtn" class="bg-orange-50 p-3 rounded-full hover:bg-orange-100 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#db6a00" viewBox="0 0 256 256"><path d="M128,176a48.05,48.05,0,0,0,48-48V64a48,48,0,0,0-96,0v64A48.05,48.05,0,0,0,128,176ZM96,64a32,32,0,0,1,64,0v64a32,32,0,0,1-64,0Zm40,143.6V232a8,8,0,0,1-16,0V207.6A80.11,80.11,0,0,1,48,128a8,8,0,0,1,16,0,64,64,0,0,0,128,0,8,8,0,0,1,16,0A80.11,80.11,0,0,1,136,207.6Z"/></svg>
+            </button>
+            <span class="text-sm font-medium text-gray-700">Voice</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <button onclick="toggleChatbot()" class="bg-orange-50 p-3 rounded-full hover:bg-orange-100 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#db6a00" viewBox="0 0 256 256"><path d="M140,128a12,12,0,1,1-12-12A12,12,0,0,1,140,128ZM84,116a12,12,0,1,0,12,12A12,12,0,0,0,84,116Zm88,0a12,12,0,1,0,12,12A12,12,0,0,0,172,116Z"/></svg>
+            </button>
+            <span class="text-sm font-medium text-gray-700">Chatbot</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Chatbot Popup -->
+    <div id="chatbotBox" class="chatbot-box flex">
+      <div class="flex flex-col flex-1">
+       <div class="bg-gradient-to-r from-orange-500 to-sky-400 text-white text-center font-bold py-3 relative">
+  Wander Hub AI Chat
+  <button onclick="closeChatbot()" class="absolute right-3 top-2 text-white text-xl">×</button>
+</div>
+        <div id="chatArea" class="p-3 text-sm"></div>
+        <div class="p-2 border-t flex gap-2">
+          <input id="chatInput" type="text" placeholder="Ask something..." class="flex-1 border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400">
+          <button onclick="sendChat()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-xl px-4">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-sm text-gray-600 bg-white/60 backdrop-blur-md">
+      © 2025 Wander Hub Ai — All Rights Reserved
+    </footer>
+
+    <script>
+      /* ================== FULL LANGUAGE LIST ================== */
+const LANGUAGES = {
+  auto: "Auto Detect",
+  af: "Afrikaans",
+  sq: "Albanian",
+  am: "Amharic",
+  ar: "Arabic",
+  hy: "Armenian",
+  az: "Azerbaijani",
+  eu: "Basque",
+  bn: "Bengali",
+  bs: "Bosnian",
+  bg: "Bulgarian",
+  ca: "Catalan",
+  zh: "Chinese",
+  hr: "Croatian",
+  cs: "Czech",
+  da: "Danish",
+  nl: "Dutch",
+  en: "English",
+  et: "Estonian",
+  fa: "Persian",
+  fi: "Finnish",
+  fr: "French",
+  de: "German",
+  el: "Greek",
+  gu: "Gujarati",
+  he: "Hebrew",
+  hi: "Hindi",
+  hu: "Hungarian",
+  id: "Indonesian",
+  it: "Italian",
+  ja: "Japanese",
+  kn: "Kannada",
+  ko: "Korean",
+  lv: "Latvian",
+  lt: "Lithuanian",
+  ml: "Malayalam",
+  mr: "Marathi",
+  ms: "Malay",
+  ne: "Nepali",
+  no: "Norwegian",
+  pa: "Punjabi",
+  pl: "Polish",
+  pt: "Portuguese",
+  ro: "Romanian",
+  ru: "Russian",
+  si: "Sinhala",
+  sk: "Slovak",
+  sl: "Slovenian",
+  es: "Spanish",
+  sw: "Swahili",
+  sv: "Swedish",
+  ta: "Tamil",
+  te: "Telugu",
+  th: "Thai",
+  tr: "Turkish",
+  uk: "Ukrainian",
+  ur: "Urdu",
+  vi: "Vietnamese",
+  cy: "Welsh"
+};
+
+/* ================== POPULATE DROPDOWNS ================== */
+function populateLanguages(){
+  const source = document.getElementById("sourceLang");
+  const target = document.getElementById("targetLang");
+
+  source.innerHTML = "";
+  target.innerHTML = "";
+
+  for(const code in LANGUAGES){
+    const label = LANGUAGES[code];
+
+    // Source
+    const opt1 = document.createElement("option");
+    opt1.value = code;
+    opt1.textContent = label;
+    source.appendChild(opt1);
+
+    // Target (NO auto detect)
+    if(code !== "auto"){
+      const opt2 = document.createElement("option");
+      opt2.value = code;
+      opt2.textContent = label;
+      target.appendChild(opt2);
+    }
+  }
+
+  // Defaults
+  source.value = "auto";
+  target.value = "en";
+}
+
+document.addEventListener("DOMContentLoaded", populateLanguages);
+
+      /* ================== CONFIG ================== */
+      const GEMINI_API_KEY = ""; // optional (leave empty if not using)
+      const GEMINI_MODEL   = "gemini-1.5-flash-latest";
+      const GEMINI_URL     = `https://generativelanguage.googleapis.com/v1/models/${GEMINI_MODEL}:generateContent`;
+
+      // DeepSeek/OpenRouter key stored only in localStorage
+      const DS_KEY_STORAGE = "DEEPSEEK_OR_KEY";
+      const DS_NATIVE_URL  = "https://api.deepseek.com/v1/chat/completions";
+      const OR_URL         = "https://openrouter.ai/api/v1/chat/completions";
+      const DS_NATIVE_MODEL= "deepseek-chat";
+      const OR_MODEL       = "deepseek/deepseek-chat";
+
+      /* ================== UTIL ================== */
+      function escapeHtml(str){ return String(str).replace(/[&<>"']/g, s=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[s])); }
+      
+
+      /* ================== Translation (public API) ================== */
+     
+
+      /* ================== Voice (as-is) ================== */
+      const recognition = new (window.SpeechRecognition||window.webkitSpeechRecognition)();
+      recognition.lang='en-US'; recognition.continuous=false; recognition.interimResults=false;
+      const voiceBtn=document.getElementById('voiceBtn'); const inputText=document.getElementById('inputText');
+      voiceBtn?.addEventListener('click',()=>{ try{recognition.start()}catch(_){} });
+      recognition.onstart=()=>voiceBtn?.classList.add('voice-pulse');
+      recognition.onresult=(e)=>{ inputText.value=e.results[0][0].transcript; };
+      recognition.onerror=(e)=>alert("Voice recognition error: "+e.error);
+      recognition.onend=()=>voiceBtn?.classList.remove('voice-pulse');
+
+      /* ================== Chat backends ================== */
+      async function publicAgentReply(userText){
+        const q=userText.trim(); const lower=q.toLowerCase();
+        // weather
+        const wx=lower.match(/(?:weather|temp|temperature)\s+(?:in|at)\s+(.+)/);
+        if(wx){
+          const place=wx[1].replace(/[?.!]+$/,'').trim();
+          const g=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(place)}&count=1&language=en&format=json`);
+          const gj=await g.json(); if(!gj?.results?.length) return `I couldn’t find "${place}". Try a bigger city name.`;
+          const {latitude,longitude,name,country}=gj.results[0];
+          const w=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&timezone=auto`);
+          const wj=await w.json(); const cw=wj?.current_weather; if(!cw) return `Weather data not available for ${name}, ${country}.`;
+          return `Weather for ${name}, ${country}:\n• Temperature: ${cw.temperature}°C\n• Wind: ${cw.windspeed} km/h\n• Time: ${cw.time}`;
+        }
+        // currency
+        const convAmt=lower.match(/convert\s+([\d.,]+)\s*([a-z]{3})\s*(?:to|in|→)\s*([a-z]{3})/)||
+                      lower.match(/([\d.,]+)\s*([a-z]{3})\s*(?:to|in|→)\s*([a-z]{3})/i);
+        const pairOnly=lower.match(/([a-z]{3})\s*(?:to|in|→)\s*([a-z]{3})/i);
+        if(convAmt){
+          const amt=Number(convAmt[1].replace(/,/g,'')); const from=convAmt[2].toUpperCase(); const to=convAmt[3].toUpperCase();
+          if(!isFinite(amt)) return "Please provide a valid amount, e.g., convert 120 usd to pkr";
+          const r=await fetch(`https://api.exchangerate.host/convert?from=${from}&to=${to}&amount=${amt}&places=6`);
+          const j=await r.json(); const out=j?.result;
+          return (typeof out==='number')?`${amt} ${from} = ${out.toLocaleString()} ${to} (rate: ${j.info?.rate})`:"I couldn't fetch the conversion right now.";
+        }else if(pairOnly){
+          const from=pairOnly[1].toUpperCase(); const to=pairOnly[2].toUpperCase();
+          const r=await fetch(`https://api.exchangerate.host/latest?base=${from}&symbols=${to}`); const j=await r.json(); const rate=j?.rates?.[to];
+          return (typeof rate==='number')?`1 ${from} = ${rate} ${to} (date: ${j.date})`:"I couldn't fetch that rate right now.";
+        }
+        // about/info
+        const about=lower.match(/^(?:about|info|tell me about)\s+(.+)/);
+        if(about){
+          const topic=about[1].trim();
+          try{
+            const rc=await fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(topic)}?fullText=false`);
+            const rj=await rc.json();
+            if(Array.isArray(rj)&&rj[0]){
+              const c=rj[0]; const name=c.name?.common||topic; const capital=Array.isArray(c.capital)?c.capital.join(', '):(c.capital||'—');
+              const region=c.region||'—'; const currencyCode=c.currencies?Object.keys(c.currencies)[0]:'—';
+              const languageList=c.languages?Object.values(c.languages).join(', '):'—';
+              return `Country: ${name}\nRegion: ${region}\nCapital: ${capital}\nCurrency: ${currencyCode}\nLanguages: ${languageList}\nPopulation: ${c.population?.toLocaleString?.()||'—'}`;
+            }
+          }catch(_) {}
+          const w=await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic)}`);
+          if(w.ok){ const js=await w.json(); const summary=js.extract||js.description||'No summary.'; return summary.length>900?summary.slice(0,900)+'…':summary; }
+          return "I couldn't find info on that topic.";
+        }
+        return `I’m a free public travel helper. Try:
+  • “weather in Lahore”
+  • “convert 100 usd to pkr”
+  • “usd to eur”
+  • “about Pakistan”`;
+      }
+
+      async function geminiChatCall(userText){
+        if(!GEMINI_API_KEY) throw new Error("NO_GEMINI_KEY");
+        const body={ contents:[{ role:"user", parts:[{ text:`You are Wander Hub AI, a friendly travel assistant.\nUser: ${userText}` }]}] };
+        const res=await fetch(GEMINI_URL,{ method:"POST", headers:{ "Content-Type":"application/json","x-goog-api-key":GEMINI_API_KEY }, body:JSON.stringify(body) });
+        if(!res.ok){ let msg=res.statusText; try{ msg=(await res.json())?.error?.message||msg }catch{} throw new Error(msg.includes("API key")?"NO_GEMINI_KEY":msg); }
+        const data=await res.json(); const text=(data?.candidates?.[0]?.content?.parts||[]).map(p=>p.text).join("\n").trim();
+        return text||"No answer.";
+      }
+
+      function getDeepseekKey(){
+        let key=(localStorage.getItem(DS_KEY_STORAGE)||"").trim();
+        if(!key){ key=(prompt("Enter your DeepSeek/OpenRouter API key (stored locally in your browser):")||"").trim(); if(key) localStorage.setItem(DS_KEY_STORAGE,key); }
+        return key;
+      }
+      function resetDeepseekKey(){ localStorage.removeItem(DS_KEY_STORAGE); alert("DeepSeek/OpenRouter key cleared. Next chat will ask again."); }
+
+      async function deepseekChatCall(userText){
+        const key=getDeepseekKey(); if(!key) throw new Error("NO_DS_KEY");
+        const isOR=key.startsWith("sk-or-"); const url=isOR?OR_URL:DS_NATIVE_URL; const model=isOR?OR_MODEL:DS_NATIVE_MODEL;
+        const body={ model, messages:[ {role:"system",content:"You are Wander Hub AI, a friendly travel assistant. Be concise and helpful."}, {role:"user",content:userText} ], temperature:0.7 };
+        const headers={ "Content-Type":"application/json", "Authorization":"Bearer "+key };
+        if(isOR){ headers["HTTP-Referer"]=location.origin||"http://localhost"; headers["X-Title"]="Wander Hub AI"; }
+        const res=await fetch(url,{ method:"POST", headers, body:JSON.stringify(body) });
+        if(!res.ok){ const t=await res.text(); if(/unauthorized|invalid|forbidden|401|403/i.test(t)) throw new Error("NO_DS_KEY"); throw new Error(t||"DeepSeek/OpenRouter error"); }
+        const data=await res.json(); const text=data?.choices?.[0]?.message?.content?.trim();
+        return text||"No answer.";
+      }
+async function translateText() {
+  const input = document.getElementById("inputText").value.trim();
+  const output = document.getElementById("outputText");
+  let source = document.getElementById("sourceLang").value;
+  let target = document.getElementById("targetLang").value;
+
+  if (!input || !source || !target) {
+    alert("Please fill all fields.");
+    return;
+  }
+
+  if (source === "zh-CN") source = "zh";
+  if (target === "zh-CN") target = "zh";
+
+  output.value = "⏳ Translating...";
+
+  try {
+    const res = await fetch("/translate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: input,
+        source_lang: source,
+        target_lang: target
+      })
+    });
+
+    const data = await res.json();
+    output.value = data.translated_text || "⚠️ Translation failed.";
+
+    if (data.translated_text) {
+      playTTS(data.translated_text, target);
+    }
+
+  } catch (err) {
+    console.error(err);
+    output.value = "⚠️ Server error.";
+  }
+}
+
+function closeChatbot(){
+  document.getElementById("chatbotBox").style.display = "none";
+}
+
+
+
+async function playTTS(text, lang){
+  try{
+    const res = await fetch("/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, lang })
+    });
+
+    const data = await res.json();
+    if(!data.audio_url) return;
+
+    // 🔹 Show audio ONLY under translation output
+    const outputBox = document.getElementById("outputText");
+
+    // Remove old audio if exists
+    document.getElementById("translationAudio")?.remove();
+
+    const audioWrapper = document.createElement("div");
+    audioWrapper.id = "translationAudio";
+    audioWrapper.className = "mt-3";
+
+    audioWrapper.innerHTML = `
+      <audio controls class="w-full">
+        <source src="${data.audio_url}" type="audio/mpeg">
+      </audio>
+    `;
+
+    outputBox.parentNode.appendChild(audioWrapper);
+
+  }catch(err){
+    console.error("TTS error:", err);
+  }
+}
+function toggleChatbot(){
+  const box = document.getElementById("chatbotBox");
+  if(!box) return;
+
+  // Show chatbot
+  box.style.display = "flex";
+
+  // Bring it to front
+  box.style.zIndex = 9999;
+
+  // Smooth scroll to chatbot
+  box.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+
+  // Focus input after open
+  setTimeout(() => {
+    document.getElementById("chatInput")?.focus();
+  }, 300);
+}
+
+
+      /* ================== Unified chat ================== */
+     async function sendChat(){
+  const chatInput = document.getElementById("chatInput");
+  const chatArea  = document.getElementById("chatArea");
+  const msg = chatInput.value.trim();
+  if(!msg) return;
+
+  if(msg.toLowerCase()==="/resetkey"){
+    resetDeepseekKey();
+    chatInput.value="";
+    return;
+  }
+
+  // USER MESSAGE
+  chatArea.innerHTML += `
+    <div class="chat-msg chat-user">
+      ${escapeHtml(msg)}
+    </div>
+  `;
+  chatInput.value="";
+  scrollChatToBottom();
+
+  // AI TYPING
+  chatArea.innerHTML += `
+    <div id="aiTyping" class="chat-msg chat-ai">
+      AI is typing...
+    </div>
+  `;
+  scrollChatToBottom();
+
+  try{
+    let aiMsg;
+    try{
+      aiMsg = await geminiChatCall(msg);
+    }catch{
+      try{
+        aiMsg = await deepseekChatCall(msg);
+      }catch{
+        aiMsg = await publicAgentReply(msg);
+      }
+    }
+
+    document.getElementById("aiTyping")?.remove();
+
+    chatArea.innerHTML += `
+      <div class="chat-msg chat-ai whitespace-pre-wrap">
+        ${escapeHtml(aiMsg)}
+      </div>
+    `;
+    scrollChatToBottom();
+
+  }catch(e){
+    document.getElementById("aiTyping")?.remove();
+    chatArea.innerHTML += `
+      <div class="chat-msg chat-ai text-red-600">
+        Error: ${escapeHtml(e.message)}
+      </div>
+    `;
+    scrollChatToBottom();
+  }
+}
+
+      window.sendChat = sendChat;
+
+      /* ================== UX helpers ================== */
+      function scrollChatToBottom(){
+        const el=document.getElementById('chatArea'); if(!el) return;
+        requestAnimationFrame(()=>{ el.scrollTop = el.scrollHeight; });
+      }
+      // Enter to send (Shift+Enter = newline)
+      document.getElementById('chatInput')?.addEventListener('keydown',e=>{
+        if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendChat(); }
+      });
+      // Observe message changes and keep pinned
+      new MutationObserver(scrollChatToBottom).observe(document.getElementById('chatArea'),{childList:true});
+      document.addEventListener('DOMContentLoaded', scrollChatToBottom);
+
+      // Draggable popup by the gradient header
+      (function enableDrag(){
+        const box=document.getElementById('chatbotBox'); if(!box) return;
+        const handle=box.querySelector('.flex.flex-col > div'); if(!handle) return;
+        handle.style.cursor='grab';
+        let down=false,sx=0,sy=0,sl=0,st=0;
+        function md(e){
+          down=true; handle.style.cursor='grabbing';
+          const r=box.getBoundingClientRect();
+          box.style.left=r.left+'px'; box.style.top=r.top+'px'; box.style.right='auto'; box.style.bottom='auto';
+          sx=e.clientX; sy=e.clientY; sl=r.left; st=r.top;
+          document.addEventListener('mousemove',mm); document.addEventListener('mouseup',mu);
+        }
+        function mm(e){
+          if(!down) return;
+          const L=Math.min(Math.max(0, sl+(e.clientX-sx)), innerWidth - box.offsetWidth);
+          const T=Math.min(Math.max(0, st+(e.clientY-sy)), innerHeight - box.offsetHeight);
+          box.style.left=L+'px'; box.style.top=T+'px';
+        }
+        function mu(){ down=false; handle.style.cursor='grab'; document.removeEventListener('mousemove',mm); document.removeEventListener('mouseup',mu); }
+        handle.addEventListener('mousedown',md);
+        addEventListener('resize',()=>{
+          const r=box.getBoundingClientRect();
+          box.style.left=Math.min(Math.max(0,r.left), innerWidth - box.offsetWidth)+'px';
+          box.style.top =Math.min(Math.max(0,r.top ), innerHeight- box.offsetHeight)+'px';
+        });
+      })();
+    </script>
+  </body>
+  </html>

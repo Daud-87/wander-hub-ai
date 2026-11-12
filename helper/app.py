@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify, send_file, render_template, send_from
 import requests
 from gtts import gTTS
 import uuid
+import base64
+import io
 import os
 
 app = Flask(__name__, template_folder="templates")
@@ -10,8 +12,6 @@ app = Flask(__name__, template_folder="templates")
 # PATHS
 # -------------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-AUDIO_DIR = os.path.join(BASE_DIR, "tts_audio")
-os.makedirs(AUDIO_DIR, exist_ok=True)
 
 TRANSLATE_API = "https://translate.googleapis.com/translate_a/single"
 
@@ -45,7 +45,7 @@ def translate():
     }
 
 
-    res = requests.get(TRANSLATE_API, params=params)
+    res = requests.get(TRANSLATE_API, params=params, timeout=20)
     result = res.json()
     translated_text = "".join([item[0] for item in result[0]])
 
@@ -63,14 +63,10 @@ def tts():
     if not text:
         return jsonify({"error": "No text"}), 400
 
-    filename = f"{uuid.uuid4()}.mp3"
-    filepath = os.path.join(AUDIO_DIR, filename)
-
-    gTTS(text=text, lang=lang).save(filepath)
-
-    return jsonify({
-        "audio_url": f"/tts_audio/{filename}"
-    })
+    buf = io.BytesIO()
+    gTTS(text=text, lang=lang).write_to_fp(buf)
+    b64 = base64.b64encode(buf.getvalue()).decode()
+    return jsonify({"audio_url": "data:audio/mpeg;base64," + b64})
 
 # -------------------------------
 # SERVE SAVED AUDIO FILES

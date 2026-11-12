@@ -20,8 +20,9 @@ STATIC_DIR = os.path.join(BASE_DIR, 'static')
 
 DATAFILE = os.path.join(BASE_DIR, 'package_dataset_pakistan_01_corrected.csv')
 MODEL_FILE = os.path.join(BASE_DIR, 'model_store.pkl')
-PAYMENTS_FILE = os.path.join(BASE_DIR, 'payments_store.json')
-BOOKINGS_FILE = os.path.join(BASE_DIR, 'bookings_store.json')
+_WRITE_DIR = '/tmp' if os.environ.get('VERCEL') else BASE_DIR
+PAYMENTS_FILE = os.path.join(_WRITE_DIR, 'payments_store.json')
+BOOKINGS_FILE = os.path.join(_WRITE_DIR, 'bookings_store.json')
 
 TOP_K_DEFAULT = 10
 _lock = threading.Lock()
@@ -75,7 +76,8 @@ class ModelStore:
         self.model = None
         self.mapping = None
 
-    def save(self, path=MODEL_FILE):
+    def save(self, path=None):
+        path = path or os.path.join(_WRITE_DIR, 'model_store.pkl')
         try:
             with open(path, 'wb') as f:
                 pickle.dump({'model': self.model, 'mapping': self.mapping}, f)
@@ -294,6 +296,12 @@ def create_package_result(row, score):
         'difficulty': safe_str(row.get('difficulty', '')),
         'score': score
     }
+
+# Load/train the model at import time so serverless (Vercel) works too
+try:
+    ensure_model()
+except Exception as _e:
+    print('Model init failed:', _e)
 
 # --- Enhanced Routes ---
 @app.route('/')
