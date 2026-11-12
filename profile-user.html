@@ -128,6 +128,7 @@
   .status-pill.cancelled { background:#fee2e2; color:#991b1b; }
 </style>
 
+<link rel="stylesheet" href="responsive.css">
 </head>
 <body class="min-h-screen bg-gradient-to-br from-orange-400 via-sky-200 to-orange-100 flex flex-col">
 
@@ -157,7 +158,7 @@
     <div class="max-w-6xl mx-auto">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- LEFT SIDEBAR -->
-        <aside class="col-span-1">
+        <aside class="md:col-span-1">
           <div class="bg-white/95 rounded-2xl p-5 card-hover fade">
             <div class="flex flex-col items-center gap-3 pb-4 border-b border-gray-100">
               <div id="avatarWrap" class="relative w-32 h-32 rounded-full overflow-hidden bg-orange-50 flex items-center justify-center text-5xl text-orange-600">
@@ -227,7 +228,7 @@
         </aside>
 
         <!-- MAIN -->
-        <section class="col-span-2 space-y-6">
+        <section class="md:col-span-2 space-y-6">
           <!-- Profile form -->
           <div class="bg-white/95 rounded-2xl p-6 card-hover fade">
             <div class="flex items-center justify-between">
@@ -1175,5 +1176,6 @@ document.getElementById('profileSearch')?.addEventListener('input', e => {
 });
 
   </script>
+<script src="responsive.js"></script>
 </body>
 </html>

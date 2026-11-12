@@ -31,6 +31,7 @@ body{font-family:"Plus Jakarta Sans",sans-serif;background: linear-gradient(180d
 .footer-note{font-size:13px;color:#666;margin-top:10px;}
 .error{color:crimson;margin-top:8px;font-weight:600;}
 </style>
+<link rel="stylesheet" href="responsive.css">
 </head>
 <body>
 <div class="wrap">
@@ -360,5 +361,6 @@ refreshSymbols.addEventListener('click', ()=> loadSymbols(true));
 function init(){ renderHistory(); loadSymbols(false).then(()=>addQuickPicks()); setStatus(''); }
 init();
 </script>
+<script src="responsive.js"></script>
 </body>
 </html>

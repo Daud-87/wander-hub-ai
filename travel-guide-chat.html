@@ -16,6 +16,7 @@
       min-height:100vh;
     }
     .chat-wrapper{
+      width:calc(100% - 1.5rem);
       max-width:900px;
       margin:2rem auto;
       background:rgba(255,255,255,0.95);
@@ -62,7 +63,13 @@
       max-width:70%;
     }
     .small-muted{ color:#6b6b6b; font-size:.95rem; }
+    @media (max-width:640px){
+      .chat-wrapper{ margin:.75rem auto; height:calc(100vh - 130px); height:calc(100dvh - 130px); min-height:420px; }
+      .chat-header, .chat-footer{ padding:.75rem; gap:.6rem; }
+      .message.agent .bubble, .message.user .bubble{ max-width:85%; }
+    }
   </style>
+<link rel="stylesheet" href="responsive.css">
 </head>
 <body class="flex flex-col min-h-screen">
 
@@ -200,5 +207,6 @@ setInterval(renderChat, 900);
 /* initial */
 renderChat();
 </script>
+<script src="responsive.js"></script>
 </body>
 </html>

@@ -13,6 +13,7 @@
     .thumb{width:100%;max-height:220px;object-fit:cover;border-radius:.5rem;border:1px solid rgba(0,0,0,0.06)}
     .small-muted{font-size:.85rem;color:#6b7280}
   </style>
+<link rel="stylesheet" href="responsive.css">
 </head>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -93,7 +94,7 @@
 
       <div class="space-y-2">
         <label class="block text-sm font-medium">Upload transaction screenshot</label>
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <input id="txFile" type="file" accept="image/*" class="rounded p-2" />
           <button id="clearFile" type="button" class="px-3 py-2 rounded bg-white/80">Clear</button>
           <div id="fileInfo" class="small-muted ml-auto"></div>
@@ -826,5 +827,6 @@ downloadReceiptBtn.addEventListener('click', async () => {
 
 })();
 </script>
+<script src="responsive.js"></script>
 </body>
 </html>
