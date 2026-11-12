@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "app.py", "use": "@vercel/python", "config": { "maxLambdaSize": "250mb", "includeFiles": ["templates/**", "static/**", "package_dataset_pakistan_01_corrected.csv"] } }
+  ],
+  "routes": [ { "src": "/(.*)", "dest": "app.py" } ]
+}
