@@ -76,7 +76,11 @@ def ask_ai(user_text):
                       "messages": [{"role": "system", "content": SYSTEM_PROMPT},
                                    {"role": "user", "content": user_text}]},
                 timeout=25)
-            txt = r.json()["choices"][0]["message"]["content"].strip()
+            try:
+                txt = r.json()["choices"][0]["message"]["content"].strip()
+            except Exception:
+                print("openrouter HTTP", r.status_code, r.text[:300].replace("\n", " "))
+                txt = ""
             if txt:
                 return txt, "openrouter"
         except Exception as e:
