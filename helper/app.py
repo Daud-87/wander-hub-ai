@@ -6,6 +6,7 @@ import base64
 import io
 import os
 import time
+from kb import answer as kb_answer, intro as kb_intro
 
 app = Flask(__name__, template_folder="templates")
 
@@ -80,36 +81,19 @@ def ask_ai(user_text):
                 return txt, "openrouter"
         except Exception as e:
             print("openrouter failed:", e)
-    # keyless public endpoint (tried up to 3 times - the free service is sometimes busy)
-    msgs = [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": user_text}]
-    deadline = time.time() + 8.5
-    for attempt in range(3):
-        for model in ("openai", "openai-fast", "mistral"):
-            if time.time() > deadline:
-                break
-            try:
-                r = requests.post("https://text.pollinations.ai/openai",
-                                  json={"model": model, "messages": msgs}, timeout=max(2, min(7, deadline - time.time())))
-                try:
-                    txt = r.json()["choices"][0]["message"]["content"].strip()
-                except Exception:
-                    print("pollinations", model, "HTTP", r.status_code, r.text[:200].replace("\n", " "))
-                    if r.status_code in (401, 402, 403, 429):
-                        break
-                    continue
-                if txt:
-                    return txt, "pollinations"
-            except Exception as e:
-                print("pollinations", model, "failed:", e)
-        if time.time() > deadline:
-            break
-        try:
-            r = requests.get("https://text.pollinations.ai/" + requests.utils.quote(user_text),
-                             params={"system": SYSTEM_PROMPT}, timeout=max(2, min(7, deadline - time.time())))
-            if r.status_code == 200 and r.text.strip():
-                return r.text.strip(), "pollinations-get"
-        except Exception as e:
-            print("pollinations get failed:", e)
+    # optional keyless public service: one quick attempt only. It is limited to about
+    # 1 reply per 45 seconds per server IP, so the built-in guide above is the main answer source.
+    try:
+        r = requests.post("https://text.pollinations.ai/openai",
+                          json={"model": "openai",
+                                "messages": [{"role": "system", "content": SYSTEM_PROMPT},
+                                             {"role": "user", "content": user_text}]},
+                          timeout=7)
+        txt = r.json()["choices"][0]["message"]["content"].strip()
+        if txt:
+            return txt, "pollinations"
+    except Exception as e:
+        print("pollinations unavailable:", str(e)[:120])
     return None, "none"
 
 @app.route("/chat", methods=["GET", "POST"])
@@ -120,10 +104,16 @@ def chat():
         text = request.args.get("q", "")
     if not text.strip():
         return jsonify({"error": "Empty message"}), 400
+    # 1) built-in Pakistan travel guide (no key, no limits)
+    guide = kb_answer(text)
+    if guide:
+        return jsonify({"reply": guide, "source": "guide"})
+    # 2) optional AI (OpenRouter key if configured, else a free public service)
     reply, source = ask_ai(text)
-    if not reply:
-        return jsonify({"reply": None, "source": source}), 200
-    return jsonify({"reply": reply, "source": source})
+    if reply:
+        return jsonify({"reply": reply, "source": source})
+    # 3) friendly fallback
+    return jsonify({"reply": "I don't have a ready answer for that one yet.\n\n" + kb_intro(), "source": "fallback"})
 
 # -------------------------------
 # TEXT TO SPEECH (SAVE + RETURN URL)
