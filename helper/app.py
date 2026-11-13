@@ -90,7 +90,13 @@ def ask_ai(user_text):
             try:
                 r = requests.post("https://text.pollinations.ai/openai",
                                   json={"model": model, "messages": msgs}, timeout=max(2, min(7, deadline - time.time())))
-                txt = r.json()["choices"][0]["message"]["content"].strip()
+                try:
+                    txt = r.json()["choices"][0]["message"]["content"].strip()
+                except Exception:
+                    print("pollinations", model, "HTTP", r.status_code, r.text[:200].replace("\n", " "))
+                    if r.status_code in (401, 402, 403, 429):
+                        break
+                    continue
                 if txt:
                     return txt, "pollinations"
             except Exception as e:
