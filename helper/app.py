@@ -96,7 +96,7 @@ def ask_ai(user_text):
     user_text = (user_text or "").strip()[:1500]
     key = os.environ.get("OPENROUTER_API_KEY", "").strip()
     if key:
-        deadline = time.time() + 9
+        deadline = time.time() + 9.5
         for model in openrouter_free_models():
             left = deadline - time.time()
             if left < 2:
@@ -106,10 +106,10 @@ def ask_ai(user_text):
                     "https://openrouter.ai/api/v1/chat/completions",
                     headers={"Authorization": "Bearer " + key, "Content-Type": "application/json",
                              "X-Title": "Wander Hub AI"},
-                    json={"model": model, "max_tokens": 400,
+                    json={"model": model, "max_tokens": 1500,
                           "messages": [{"role": "system", "content": SYSTEM_PROMPT},
                                        {"role": "user", "content": user_text}]},
-                    timeout=min(7, left))
+                    timeout=min(8, left))
                 try:
                     txt = (r.json()["choices"][0]["message"]["content"] or "").strip()
                 except Exception:
