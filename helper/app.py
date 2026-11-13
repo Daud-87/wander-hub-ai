@@ -63,28 +63,62 @@ SYSTEM_PROMPT = ("You are Wander Hub AI, a friendly travel assistant for a Pakis
                  "Give short, practical answers (under 120 words) about destinations, itineraries, budgets, "
                  "seasons, transport, food and local tips. If unsure, say so.")
 
+
+_FREE_CACHE = {"t": 0, "models": []}
+_PREFER = ("llama-3.3", "llama-3.1", "gemma", "qwen", "mistral", "deepseek", "gpt-oss", "glm", "nemotron", "phi")
+
+def openrouter_free_models():
+    """Currently free text models on OpenRouter (cached for an hour). OPENROUTER_MODEL overrides."""
+    forced = os.environ.get("OPENROUTER_MODEL", "").strip()
+    if forced:
+        return [forced]
+    if _FREE_CACHE["models"] and time.time() - _FREE_CACHE["t"] < 3600:
+        return _FREE_CACHE["models"]
+    ids = []
+    try:
+        data = requests.get("https://openrouter.ai/api/v1/models", timeout=6).json().get("data", [])
+        for m in data:
+            pr = m.get("pricing") or {}
+            mid = m.get("id", "")
+            out = (m.get("architecture") or {}).get("output_modalities") or ["text"]
+            if str(pr.get("prompt")) in ("0", "0.0") and str(pr.get("completion")) in ("0", "0.0") \
+               and out == ["text"] and not any(x in mid for x in ("audio", "embed", "image", "vision", "guard", "router")):
+                ids.append(mid)
+    except Exception as e:
+        print("model list failed:", str(e)[:120])
+    ids.sort(key=lambda i: next((n for n, k in enumerate(_PREFER) if k in i), 99))
+    ids = ids[:4]
+    if ids:
+        _FREE_CACHE.update(t=time.time(), models=ids)
+    return ids
+
 def ask_ai(user_text):
     user_text = (user_text or "").strip()[:1500]
     key = os.environ.get("OPENROUTER_API_KEY", "").strip()
     if key:
-        try:
-            r = requests.post(
-                "https://openrouter.ai/api/v1/chat/completions",
-                headers={"Authorization": "Bearer " + key, "Content-Type": "application/json",
-                         "X-Title": "Wander Hub AI"},
-                json={"model": os.environ.get("OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct:free"),
-                      "messages": [{"role": "system", "content": SYSTEM_PROMPT},
-                                   {"role": "user", "content": user_text}]},
-                timeout=25)
+        deadline = time.time() + 9
+        for model in openrouter_free_models():
+            left = deadline - time.time()
+            if left < 2:
+                break
             try:
-                txt = r.json()["choices"][0]["message"]["content"].strip()
-            except Exception:
-                print("openrouter HTTP", r.status_code, r.text[:300].replace("\n", " "))
-                txt = ""
-            if txt:
-                return txt, "openrouter"
-        except Exception as e:
-            print("openrouter failed:", e)
+                r = requests.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={"Authorization": "Bearer " + key, "Content-Type": "application/json",
+                             "X-Title": "Wander Hub AI"},
+                    json={"model": model, "max_tokens": 400,
+                          "messages": [{"role": "system", "content": SYSTEM_PROMPT},
+                                       {"role": "user", "content": user_text}]},
+                    timeout=min(7, left))
+                try:
+                    txt = (r.json()["choices"][0]["message"]["content"] or "").strip()
+                except Exception:
+                    print("openrouter", model, "HTTP", r.status_code, r.text[:200].replace("\n", " "))
+                    txt = ""
+                if txt:
+                    return txt, "openrouter:" + model
+            except Exception as e:
+                print("openrouter", model, "failed:", str(e)[:120])
     # optional keyless public service: one quick attempt only. It is limited to about
     # 1 reply per 45 seconds per server IP, so the built-in guide above is the main answer source.
     try:
