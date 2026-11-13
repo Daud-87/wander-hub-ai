@@ -288,7 +288,7 @@ INTENTS = [
     ("budget", r"budget|cost|price|cheap|expens|how much|afford|per person|money|spend"),
     ("pack", r"pack|bring|wear|carry|clothes|clothing|luggage|take with"),
     ("safety", r"safe|safety|secur|danger|risk|kids|child|family|families|solo|women|woman|female"),
-    ("food", r"food|eat|restaurant|cuisine|dish|dishes|snack|breakfast|dinner|lunch"),
+    ("food", r"food|eat|restaurant|cuisine|dish|dishes|snack|breakfast|dinner|lunch|paye|nihari|biryani|kebab|karahi|chargha|halwa|haleem|sajji|trout|street food|taste|delicious"),
     ("reach", r"reach|how to get|get to|route|transport|travel to|bus|train|flight|fly|drive|distance|road"),
     ("highlights", r"things to do|to see|to visit|visit|places|attraction|sights|see in|do in|itinerary|plan|trip|tour|days?"),
 ]
