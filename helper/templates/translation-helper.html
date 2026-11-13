@@ -461,11 +461,7 @@ function toggleChatbot(){
   const msg = chatInput.value.trim();
   if(!msg) return;
 
-  if(msg.toLowerCase()==="/resetkey"){
-    resetDeepseekKey();
-    chatInput.value="";
-    return;
-  }
+  
 
   // USER MESSAGE
   chatArea.innerHTML += `
@@ -486,11 +482,17 @@ function toggleChatbot(){
 
   try{
     let aiMsg;
-    try{
-      aiMsg = await geminiChatCall(msg);
-    }catch{
+    const low = msg.toLowerCase();
+    const needsTool = /(weather|temp|temperature)\s+(in|at)\s+/.test(low) ||
+                      /\b(usd|pkr|eur|gbp|aed|sar|inr|cny|jpy|cad|aud|try|chf|qar|kwd|omr|bdt|myr|sgd|thb)\s*(to|in|→)\s*(usd|pkr|eur|gbp|aed|sar|inr|cny|jpy|cad|aud|try|chf|qar|kwd|omr|bdt|myr|sgd|thb)\b/.test(low) || /^convert\s+/.test(low) ||
+                      /^(about|info|tell me about)\s+/.test(low);
+    if(needsTool){
+      aiMsg = await publicAgentReply(msg);
+    }else{
       try{
-        aiMsg = await deepseekChatCall(msg);
+        const r = await fetch("/chat", { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ message: msg }) });
+        const j = await r.json();
+        aiMsg = j.reply || await publicAgentReply(msg);
       }catch{
         aiMsg = await publicAgentReply(msg);
       }

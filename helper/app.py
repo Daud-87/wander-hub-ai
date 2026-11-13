@@ -51,6 +51,69 @@ def translate():
 
     return jsonify({"translated_text": translated_text})
 
+
+# -------------------------------
+# CHATBOT (no key needed from the visitor)
+# 1) OPENROUTER_API_KEY env var (optional, set by the site owner) -> OpenRouter
+# 2) otherwise a free keyless public text API
+# -------------------------------
+SYSTEM_PROMPT = ("You are Wander Hub AI, a friendly travel assistant for a Pakistan-focused travel platform. "
+                 "Give short, practical answers (under 120 words) about destinations, itineraries, budgets, "
+                 "seasons, transport, food and local tips. If unsure, say so.")
+
+def ask_ai(user_text):
+    user_text = (user_text or "").strip()[:1500]
+    key = os.environ.get("OPENROUTER_API_KEY", "").strip()
+    if key:
+        try:
+            r = requests.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers={"Authorization": "Bearer " + key, "Content-Type": "application/json",
+                         "X-Title": "Wander Hub AI"},
+                json={"model": os.environ.get("OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct:free"),
+                      "messages": [{"role": "system", "content": SYSTEM_PROMPT},
+                                   {"role": "user", "content": user_text}]},
+                timeout=25)
+            txt = r.json()["choices"][0]["message"]["content"].strip()
+            if txt:
+                return txt, "openrouter"
+        except Exception as e:
+            print("openrouter failed:", e)
+    # keyless public endpoint
+    try:
+        r = requests.post(
+            "https://text.pollinations.ai/openai",
+            json={"model": "openai",
+                  "messages": [{"role": "system", "content": SYSTEM_PROMPT},
+                               {"role": "user", "content": user_text}]},
+            timeout=25)
+        txt = r.json()["choices"][0]["message"]["content"].strip()
+        if txt:
+            return txt, "pollinations"
+    except Exception as e:
+        print("pollinations failed:", e)
+    try:
+        r = requests.get("https://text.pollinations.ai/" + requests.utils.quote(user_text),
+                         params={"system": SYSTEM_PROMPT}, timeout=25)
+        if r.status_code == 200 and r.text.strip():
+            return r.text.strip(), "pollinations-get"
+    except Exception as e:
+        print("pollinations get failed:", e)
+    return None, "none"
+
+@app.route("/chat", methods=["GET", "POST"])
+def chat():
+    if request.method == "POST":
+        text = (request.get_json(silent=True) or {}).get("message", "")
+    else:
+        text = request.args.get("q", "")
+    if not text.strip():
+        return jsonify({"error": "Empty message"}), 400
+    reply, source = ask_ai(text)
+    if not reply:
+        return jsonify({"reply": None, "source": source}), 200
+    return jsonify({"reply": reply, "source": source})
+
 # -------------------------------
 # TEXT TO SPEECH (SAVE + RETURN URL)
 # -------------------------------
