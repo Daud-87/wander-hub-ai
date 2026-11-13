@@ -490,9 +490,14 @@ function toggleChatbot(){
       aiMsg = await publicAgentReply(msg);
     }else{
       try{
-        const r = await fetch("/chat", { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ message: msg }) });
-        const j = await r.json();
-        aiMsg = j.reply || await publicAgentReply(msg);
+        let j = null;
+        for(let i=0;i<2 && !(j && j.reply);i++){
+          try{
+            const r = await fetch("/chat", { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ message: msg }) });
+            j = await r.json();
+          }catch(_){ j = null; }
+        }
+        aiMsg = (j && j.reply) ? j.reply : "The AI is busy right now. Please try again in a moment.\n\nMeanwhile you can ask:\n  • “weather in Lahore”\n  • “convert 100 usd to pkr”\n  • “about Pakistan”";
       }catch{
         aiMsg = await publicAgentReply(msg);
       }

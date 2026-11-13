@@ -5,6 +5,7 @@ import uuid
 import base64
 import io
 import os
+import time
 
 app = Flask(__name__, template_folder="templates")
 
@@ -79,26 +80,30 @@ def ask_ai(user_text):
                 return txt, "openrouter"
         except Exception as e:
             print("openrouter failed:", e)
-    # keyless public endpoint
-    try:
-        r = requests.post(
-            "https://text.pollinations.ai/openai",
-            json={"model": "openai",
-                  "messages": [{"role": "system", "content": SYSTEM_PROMPT},
-                               {"role": "user", "content": user_text}]},
-            timeout=25)
-        txt = r.json()["choices"][0]["message"]["content"].strip()
-        if txt:
-            return txt, "pollinations"
-    except Exception as e:
-        print("pollinations failed:", e)
-    try:
-        r = requests.get("https://text.pollinations.ai/" + requests.utils.quote(user_text),
-                         params={"system": SYSTEM_PROMPT}, timeout=25)
-        if r.status_code == 200 and r.text.strip():
-            return r.text.strip(), "pollinations-get"
-    except Exception as e:
-        print("pollinations get failed:", e)
+    # keyless public endpoint (tried up to 3 times - the free service is sometimes busy)
+    msgs = [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": user_text}]
+    deadline = time.time() + 8.5
+    for attempt in range(3):
+        for model in ("openai", "openai-fast", "mistral"):
+            if time.time() > deadline:
+                break
+            try:
+                r = requests.post("https://text.pollinations.ai/openai",
+                                  json={"model": model, "messages": msgs}, timeout=max(2, min(7, deadline - time.time())))
+                txt = r.json()["choices"][0]["message"]["content"].strip()
+                if txt:
+                    return txt, "pollinations"
+            except Exception as e:
+                print("pollinations", model, "failed:", e)
+        if time.time() > deadline:
+            break
+        try:
+            r = requests.get("https://text.pollinations.ai/" + requests.utils.quote(user_text),
+                             params={"system": SYSTEM_PROMPT}, timeout=max(2, min(7, deadline - time.time())))
+            if r.status_code == 200 and r.text.strip():
+                return r.text.strip(), "pollinations-get"
+        except Exception as e:
+            print("pollinations get failed:", e)
     return None, "none"
 
 @app.route("/chat", methods=["GET", "POST"])
